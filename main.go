@@ -2,45 +2,107 @@
 package main
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-func main() {
-	app := tview.NewApplication()
+const logo = `
 
-	newPrimitive := func(text string) tview.Primitive {
-		return tview.NewTextView().
-			SetTextAlign(tview.AlignCenter).
-			SetText(text)
+   __|    \    __| __|  _ )   _ \ \ \  / 
+ \__ \   _ \   _|  _|   _ \  (   | >  <  
+ ____/ _/  _\ _|  ___| ___/ \___/  _/\_\ 
+`
+
+// The application.
+var app = tview.NewApplication()
+
+const (
+	subtitle   = `safebox - UNIFIED KEY MANAGEMENT SYSTEM`
+	navigation = `Ctrl-C: Exit`
+	mouse      = `(or use your mouse)`
+)
+
+// Cover returns the cover page.
+func Cover(nextSlide func()) (title string, content tview.Primitive) {
+	// What's the size of the logo?
+	lines := strings.Split(logo, "\n")
+	logoWidth := 0
+	logoHeight := len(lines)
+	for _, line := range lines {
+		if len(line) > logoWidth {
+			logoWidth = len(line)
+		}
 	}
-	menu := tview.NewList().
-		AddItem("Create Main Key", "Create a main key to derive others", 'm', nil).
-		AddItem("Derive Key", "Derive keys from main key", 'd', nil).
-		AddItem("Quit", "Press to exit", 'q', func() {
-			app.Stop()
+	logoBox := tview.NewTextView().
+		SetTextColor(tcell.ColorGreen).
+		SetDoneFunc(func(key tcell.Key) {
+			nextSlide()
+		})
+	fmt.Fprint(logoBox, logo)
+
+	// Create a frame for the subtitle and navigation infos.
+	frame := tview.NewFrame(tview.NewBox()).
+		SetBorders(0, 0, 0, 0, 0, 0).
+		AddText(subtitle, true, tview.AlignCenter, tcell.ColorWhite).
+		AddText("", true, tview.AlignCenter, tcell.ColorWhite).
+		AddText(navigation, true, tview.AlignCenter, tcell.ColorDarkMagenta).
+		AddText(mouse, true, tview.AlignCenter, tcell.ColorDarkMagenta)
+
+	// Create a Flex layout that centers the logo and subtitle.
+	flex := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(tview.NewBox(), 0, 7, false).
+		AddItem(tview.NewFlex().
+			AddItem(tview.NewBox(), 0, 1, false).
+			AddItem(logoBox, logoWidth, 1, true).
+			AddItem(tview.NewBox(), 0, 1, false), logoHeight, 1, true).
+		AddItem(frame, 0, 10, false)
+
+	return "F1", flex
+}
+
+type Slide func(nextSlide func()) (title string, content tview.Primitive)
+
+func main() {
+	pages := tview.NewPages()
+	slides := []Slide{
+		Cover,
+	}
+
+	// The bottom row has some info on where we are.
+	info := tview.NewTextView().
+		SetDynamicColors(true).
+		SetRegions(true).
+		SetWrap(false).
+		SetHighlightedFunc(func(added, removed, remaining []string) {
+			pages.SwitchToPage(added[0])
 		})
 
-	main := newPrimitive("Main content")
-	sideBar := newPrimitive("Side Bar")
+	nextSlide := func() {
+		slide, _ := strconv.Atoi(info.GetHighlights()[0])
+		slide = (slide + 1) % len(slides)
+		info.Highlight(strconv.Itoa(slide)).
+			ScrollToHighlight()
+	}
+	for index, slide := range slides {
+		title, primitive := slide(nextSlide)
+		pages.AddPage(strconv.Itoa(index), primitive, true, index == 0)
+		fmt.Fprintf(info, `%d ["%d"][darkcyan]%s[white][""]  `, index+1, index, title)
+	}
+	info.Highlight("0")
 
-	grid := tview.NewGrid().
-		SetRows(3, 0, 3).
-		SetColumns(30, 0, 30).
-		SetBorders(true).
-		AddItem(newPrimitive("Header"), 0, 0, 1, 3, 0, 0, false).
-		AddItem(newPrimitive("Footer"), 2, 0, 1, 3, 0, 0, false)
+	// Create the main layout.
+	layout := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(pages, 0, 1, true).
+		AddItem(info, 1, 1, false)
 
-	// Layout for screens narrower than 100 cells (menu and side bar are hidden).
-	grid.AddItem(menu, 0, 0, 0, 0, 0, 0, true).
-		AddItem(main, 1, 0, 1, 3, 0, 0, false).
-		AddItem(sideBar, 0, 0, 0, 0, 0, 0, false)
-
-	// Layout for screens wider than 100 cells.
-	grid.AddItem(menu, 1, 0, 1, 1, 0, 100, true).
-		AddItem(main, 1, 1, 1, 1, 0, 100, false).
-		AddItem(sideBar, 1, 2, 1, 1, 0, 100, false)
-
-	if err := app.SetRoot(grid, true).EnableMouse(true).Run(); err != nil {
+	// Start the application.
+	if err := app.SetRoot(layout, true).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
 }
