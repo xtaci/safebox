@@ -65,12 +65,23 @@ func Cover(nextSlide func()) (title string, content tview.Primitive) {
 	return "F1", flex
 }
 
+// Main Key generation
+func MainKey(nextSlide func()) (title string, content tview.Primitive) {
+	// Create a Flex layout that centers the logo and subtitle.
+	flex := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(tview.NewBox(), 0, 7, false)
+
+	return "F2", flex
+}
+
 type Slide func(nextSlide func()) (title string, content tview.Primitive)
 
 func main() {
 	pages := tview.NewPages()
 	slides := []Slide{
 		Cover,
+		MainKey,
 	}
 
 	// The bottom row has some info on where we are.
@@ -100,6 +111,22 @@ func main() {
 		SetDirection(tview.FlexRow).
 		AddItem(pages, 0, 1, true).
 		AddItem(info, 1, 1, false)
+
+	// Shortcuts to navigate the slides.
+	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyF1 {
+			nextSlide()
+			return nil
+		} else if event.Key() == tcell.KeyF2 {
+			info.Highlight(strconv.Itoa(1)).
+				ScrollToHighlight()
+			return nil
+		} else if event.Key() == tcell.KeyCtrlP {
+			return nil
+		}
+
+		return event
+	})
 
 	// Start the application.
 	if err := app.SetRoot(layout, true).EnableMouse(true).Run(); err != nil {
