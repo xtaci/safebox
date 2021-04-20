@@ -11,6 +11,6 @@ An unifed key management system to make life easier. The main goal of safebox is
 
 up to 16384 keys can be derived with a single main key.
 
-# Retro Style
+# TUI
 
-Safebox is designed with a retro-style text-based user interface(tui), so a box such as Raspberry Pi will be able to act as key mangement box.
+Safebox is designed with a DOS style text-based user interface(tui), so a box such as Raspberry Pi will be able to act as key mangement box.
