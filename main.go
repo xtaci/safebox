@@ -40,6 +40,10 @@ var (
 	}
 )
 
+var (
+	keyLoaded bool
+)
+
 // Main Key generation
 func MainKey() (title string, shortCut tcell.Key, content tview.Primitive) {
 	// Create a Flex layout that centers the logo and subtitle.
@@ -61,24 +65,18 @@ func DeriveKey() (title string, shortCut tcell.Key, content tview.Primitive) {
 }
 
 func main() {
-	// Main frame
-	mainFrame := tview.NewFlex().
-		SetDirection(tview.FlexColumn).
-		AddItem(MainWindow(), 0, 80, true).
-		AddItem(Info(), 0, 20, true)
-
-	// Create the layout.
-	layout := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(mainFrame, 0, 1, true).
-		AddItem(FooterNotLoaded(), 1, 1, false)
-
 	splashShowed := false
 	// capture any key
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if !splashShowed {
-			app.SetRoot(layout, true)
+			app.SetRoot(layoutInit(), true)
 			splashShowed = true
+			return nil
+		}
+
+		if keyLoaded {
+			app.SetRoot(layoutLoaded(), true)
+			return nil
 		}
 		return event
 	})

@@ -7,19 +7,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-func MainWindow() (content tview.Primitive) {
-	// Create a frame for the subtitle and navigation infos.
-	box := tview.NewBox().
-		SetBorder(true).
-		SetBackgroundColor(tcell.ColorDimGray)
-
-	frame := tview.NewFrame(box).
-		SetBorders(0, 0, 0, 0, 0, 0).
-		AddText("not loaded", true, tview.AlignCenter, tcell.ColorWhite)
-	return frame
-}
-
-func FooterNotLoaded() (content tview.Primitive) {
+func footerNotLoaded() (content tview.Primitive) {
 	// The bottom row has some info on where we are.
 	info := tview.NewTextView().
 		SetDynamicColors(true).
