@@ -75,6 +75,16 @@ func MainKey(nextSlide func()) (title string, content tview.Primitive) {
 	return "F2", flex
 }
 
+// Key generation
+func DeriveKey(nextSlide func()) (title string, content tview.Primitive) {
+	// Create a Flex layout that centers the logo and subtitle.
+	flex := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(tview.NewBox(), 0, 7, false)
+
+	return "F3", flex
+}
+
 type Slide func(nextSlide func()) (title string, content tview.Primitive)
 
 func main() {
