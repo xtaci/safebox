@@ -2,9 +2,6 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -21,53 +18,27 @@ var app = tview.NewApplication()
 
 const (
 	subtitle   = `safebox - UNIFIED KEY MANAGEMENT SYSTEM`
-	navigation = `Ctrl-C: Exit`
+	navigation = `Press any key to continue...`
 	mouse      = `(or use your mouse)`
 )
 
 var (
 	keyNames = map[tcell.Key]string{
-		tcell.KeyF1: "F1",
-		tcell.KeyF2: "F2",
-		tcell.KeyF3: "F3",
+		tcell.KeyF1:  "F1",
+		tcell.KeyF2:  "F2",
+		tcell.KeyF3:  "F3",
+		tcell.KeyF4:  "F4",
+		tcell.KeyESC: "ESC",
+	}
+
+	shortCuts = map[tcell.Key]string{
+		tcell.KeyF1:  "Gen Master Key",
+		tcell.KeyF2:  "Load Master Key",
+		tcell.KeyF3:  "Derive Key",
+		tcell.KeyF4:  "Label Key",
+		tcell.KeyESC: "QUIT",
 	}
 )
-
-// Cover returns the cover page.
-func Cover() (title string, shortCut tcell.Key, content tview.Primitive) {
-	// What's the size of the logo?
-	lines := strings.Split(logo, "\n")
-	logoWidth := 0
-	logoHeight := len(lines)
-	for _, line := range lines {
-		if len(line) > logoWidth {
-			logoWidth = len(line)
-		}
-	}
-	logoBox := tview.NewTextView().
-		SetTextColor(tcell.ColorGreen)
-	fmt.Fprint(logoBox, logo)
-
-	// Create a frame for the subtitle and navigation infos.
-	frame := tview.NewFrame(tview.NewBox()).
-		SetBorders(0, 0, 0, 0, 0, 0).
-		AddText(subtitle, true, tview.AlignCenter, tcell.ColorWhite).
-		AddText("", true, tview.AlignCenter, tcell.ColorWhite).
-		AddText(navigation, true, tview.AlignCenter, tcell.ColorDarkMagenta).
-		AddText(mouse, true, tview.AlignCenter, tcell.ColorDarkMagenta)
-
-	// Create a Flex layout that centers the logo and subtitle.
-	flex := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(tview.NewBox(), 0, 7, false).
-		AddItem(tview.NewFlex().
-			AddItem(tview.NewBox(), 0, 1, false).
-			AddItem(logoBox, logoWidth, 1, true).
-			AddItem(tview.NewBox(), 0, 1, false), logoHeight, 1, true).
-		AddItem(frame, 0, 10, false)
-
-	return "Home", tcell.KeyF1, flex
-}
 
 // Main Key generation
 func MainKey() (title string, shortCut tcell.Key, content tview.Primitive) {
@@ -89,52 +60,31 @@ func DeriveKey() (title string, shortCut tcell.Key, content tview.Primitive) {
 	return "Drive Key", tcell.KeyF3, flex
 }
 
-type Slide func() (title string, shortCutKey tcell.Key, content tview.Primitive)
-
 func main() {
-	pages := tview.NewPages()
-	slides := []Slide{
-		Cover,
-		MainKey,
-	}
+	// Main frame
+	mainFrame := tview.NewFlex().
+		SetDirection(tview.FlexColumn).
+		AddItem(MainWindow(), 0, 80, true).
+		AddItem(Info(), 0, 20, true)
 
-	// The bottom row has some info on where we are.
-	info := tview.NewTextView().
-		SetDynamicColors(true).
-		SetRegions(true).
-		SetWrap(false).
-		SetHighlightedFunc(func(added, removed, remaining []string) {
-			pages.SwitchToPage(added[0])
-		})
-
-	for idx, slide := range slides {
-		title, key, primitive := slide()
-		pages.AddPage(title, primitive, true, idx == 0)
-		fmt.Fprintf(info, `[%s] ["%s"][darkcyan]%s[white][""]  `, keyNames[key], keyNames[key], title)
-	}
-
-	// switch to home
-	info.Highlight("Home")
-
-	// Create the main layout.
+	// Create the layout.
 	layout := tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(pages, 0, 1, true).
-		AddItem(info, 1, 1, false)
+		AddItem(mainFrame, 0, 1, true).
+		AddItem(FooterNotLoaded(), 1, 1, false)
 
-	// shortcuts set
+	splashShowed := false
+	// capture any key
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		for _, slide := range slides {
-			title, key, _ := slide()
-			if event.Key() == key {
-				info.Highlight(title)
-				return nil
-			}
+		if !splashShowed {
+			app.SetRoot(layout, true)
+			splashShowed = true
 		}
 		return event
 	})
-	// Start the application.
-	if err := app.SetRoot(layout, true).EnableMouse(true).Run(); err != nil {
+
+	// Start the application and set root to Cover
+	if err := app.SetRoot(Cover(), true).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
 }
