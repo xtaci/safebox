@@ -8,7 +8,7 @@ func layoutInit() tview.Primitive {
 	mainFrame := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
 		AddItem(mainFrameNotLoaded(), 0, 80, true).
-		AddItem(Info(), 0, 20, true)
+		AddItem(infoNotLoaded(), 0, 20, true)
 
 	// Create the layout.
 	layout := tview.NewFlex().
@@ -25,7 +25,7 @@ func layoutLoaded() tview.Primitive {
 	mainFrame := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
 		AddItem(mainFrameNotLoaded(), 0, 80, true).
-		AddItem(Info(), 0, 20, true)
+		AddItem(infoNotLoaded(), 0, 20, true)
 
 	// Create the layout.
 	layout := tview.NewFlex().

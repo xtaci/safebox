@@ -1,20 +1,32 @@
 package main
 
 import (
-	"github.com/gdamore/tcell/v2"
+	"fmt"
+
 	"github.com/rivo/tview"
 )
 
-var KeyUsage = `
-how to use
+var infoString = `
+MASTER KEY CREATED:\t%v
+NUM DERIVED KEYS:\t%v
+
+SYSTEM INFORMATION:
+OS: \t%v
+KERNEL:\t%v
+
+COPYRIGHT 2021 (C) xtaci
 `
 
-func Info() (content tview.Primitive) {
-	box := tview.NewBox().
-		SetBorder(true)
+func infoNotLoaded() (content tview.Primitive) {
+	info := tview.NewTextView()
 
-	frame := tview.NewFrame(box).
-		SetBorders(0, 0, 0, 0, 0, 0).
-		AddText(KeyUsage, true, tview.AlignCenter, tcell.ColorWhite)
-	return frame
+	info.SetBorder(true).
+		SetTitle("- KEY INFO -")
+	fmt.Fprintf(info, infoString)
+
+	flex := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(info, 0, 8, false)
+
+	return flex
 }

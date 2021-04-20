@@ -1,18 +1,21 @@
 package main
 
 import (
-	"github.com/gdamore/tcell/v2"
+	"fmt"
+
 	"github.com/rivo/tview"
 )
 
-func mainFrameNotLoaded() (content tview.Primitive) {
-	// Create a frame for the subtitle and navigation infos.
-	box := tview.NewBox().
-		SetBorder(true).
-		SetBackgroundColor(tcell.ColorDimGray)
+var verString = "VER 1.0"
 
-	frame := tview.NewFrame(box).
-		SetBorders(0, 0, 0, 0, 0, 0).
-		AddText("not loaded", true, tview.AlignCenter, tcell.ColorWhite)
-	return frame
+func mainFrameNotLoaded() (content tview.Primitive) {
+	info := tview.NewBox().SetBorder(true).SetTitle(fmt.Sprintf("- SAFEBOX KEY MANGEMENT SYSTEM %v -", verString))
+
+	text := tview.NewTextView().
+		SetTextAlign(tview.AlignCenter)
+
+	fmt.Fprintf(text, "KEY NOT LOADED")
+
+	flex := tview.NewFrame(info)
+	return flex
 }
