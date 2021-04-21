@@ -32,6 +32,9 @@ func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 		state = shortCutsActivated
 		return nil
 	case tcell.KeyF2:
+		mainFrame = loadKeyWindow()
+		updateView()
+		state = shortCutsActivated
 		return nil
 	case tcell.KeyESC:
 		if state == shortCutsActivated {
