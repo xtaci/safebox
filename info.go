@@ -19,14 +19,13 @@ COPYRIGHT 2021 (C) xtaci
 
 func infoNotLoaded() (content tview.Primitive) {
 	info := tview.NewTextView()
-
-	info.SetBorder(true).
-		SetTitle("- KEY INFO -")
 	fmt.Fprintf(info, infoString)
 
 	flex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(info, 0, 8, false)
+		AddItem(info, 0, 8, false).
+		SetTitle("- KEY INFO -").
+		SetBorder(true)
 
 	return flex
 }
