@@ -11,18 +11,54 @@ import (
 var verString = "VER 1.0"
 var mainFrameTitle = fmt.Sprintf("- SAFEBOX KEY MANGEMENT SYSTEM %v -", verString)
 
+func exporterSelect(idx uint16) *tview.Flex {
+	exporterLabel := "Select an exporter (hit Enter):"
+	var exportorNames []string
+	for k := range exports {
+		exportorNames = append(exportorNames, exports[k].Name())
+	}
+
+	outputBox := tview.NewTextView()
+	outputBox.SetScrollable(true)
+	outputBox.SetWrap(true)
+
+	selected := 0
+	form := tview.NewForm()
+	form.SetTitle("EXPORT KEY")
+	form.AddDropDown(exporterLabel, exportorNames, 0, func(option string, optionIndex int) {
+		selected = optionIndex
+	})
+	form.AddButton("Export", func() {
+		key, _ := masterKey.deriveKey(idx, exports[selected].KeySize())
+		bts, _ := exports[selected].Export(key)
+		outputBox.Write(bts)
+		form.RemoveButton(0)
+		form.AddButton("Return", func() {
+			root.RemovePage("export")
+		})
+	})
+	form.SetFocus(0)
+
+	view := tview.NewFlex()
+	view.SetBorder(true)
+	view.SetDirection(tview.FlexRow).
+		AddItem(form, 0, 1, true).
+		AddItem(outputBox, 0, 1, false)
+
+	return modal(80, 40, view)
+}
+
 func deriveKeyOperation(idx uint16) *tview.Flex {
 	form := tview.NewForm()
 	form.SetBorder(true)
 	form.SetTitle("SETTING KEY PROPERTIES")
 	form.AddInputField("Label", masterKey.labels[idx], 16, nil, nil)
-	form.AddButton("OK", func() {
+	form.AddButton("Update", func() {
 		root.RemovePage("prompt")
 		root.SwitchToPage("main")
 	})
 	form.AddButton("Export", func() {
-		root.RemovePage("prompt")
-		root.SwitchToPage("main")
+		root.AddAndSwitchToPage("export", exporterSelect(idx), true)
 	})
 	form.SetFocus(0)
 
@@ -66,7 +102,6 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 			label = hex.EncodeToString(key[:8])
 		}
 		list.AddItem(fmt.Sprintf("KEY%v", i), label, 0, nil)
-
 	}
 
 	// key selection

@@ -15,7 +15,7 @@ func TestExport(t *testing.T) {
 	t.Log("key:", hex.EncodeToString(key))
 
 	eth := new(EthereumExporter)
-	priv, err := eth.ExportPrivateKey(key)
+	priv, err := eth.Export(key)
 	assert.Nil(t, err)
 	t.Log("output:", string(priv))
 }

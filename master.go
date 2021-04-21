@@ -76,7 +76,11 @@ func (mkey *MasterKey) deriveKey(id uint16, keySize int) (key []byte, err error)
 	md := sha256.Sum256(encryptedKey[:])
 
 	// 3. use pbkdf2 to suit the key size
-	key = pbkdf2.Key(md[:], []byte(SALT), PBKDF2_ITER, keySize, sha1.New)
+	if len(md) != keySize {
+		key = pbkdf2.Key(md[:], []byte(SALT), PBKDF2_ITER, keySize, sha1.New)
+	} else {
+		key = md[:]
+	}
 	return key, err
 }
 

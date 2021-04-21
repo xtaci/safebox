@@ -43,10 +43,8 @@ func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 			body.AddItem(mainFrame, 0, 80, true)
 			state = normalWindow
 			return nil
-		} else {
-			app.Stop()
-			return event
 		}
+		return event
 	default:
 		return event
 	}

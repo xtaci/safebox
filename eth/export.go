@@ -24,8 +24,11 @@ type EthereumExporter struct{}
 func (exp *EthereumExporter) Name() string {
 	return "Ethereum"
 }
+func (exp *EthereumExporter) KeySize() int {
+	return 32
+}
 
-func (exp *EthereumExporter) ExportPrivateKey(key []byte) ([]byte, error) {
+func (exp *EthereumExporter) Export(key []byte) ([]byte, error) {
 	curve := secp256k1.S256()
 
 	// use pbkdf to extend the key
