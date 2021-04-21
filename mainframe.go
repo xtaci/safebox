@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/rivo/tview"
 )
@@ -52,10 +53,13 @@ func deriveKeyOperation(idx uint16) *tview.Flex {
 	form := tview.NewForm()
 	form.SetBorder(true)
 	form.SetTitle("SETTING KEY PROPERTIES")
-	form.AddInputField("Label", masterKey.labels[idx], 16, nil, nil)
+	form.AddInputField("Label", masterKey.lables[idx], 16, nil, nil)
 	form.AddButton("Update", func() {
+		//update key
+		masterKey.lables[idx] = form.GetFormItemByLabel("Label").(*tview.InputField).GetText()
+		fmt.Fprint(os.Stderr, "XX", idx, masterKey.lables[idx])
+		masterKey.store(masterKey.password, masterKey.path)
 		root.RemovePage("prompt")
-		root.SwitchToPage("main")
 	})
 	form.AddButton("Export", func() {
 		root.AddAndSwitchToPage("export", exporterSelect(idx), true)
@@ -96,8 +100,8 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 		}
 
 		var label string
-		if masterKey.labels[i] != "" {
-			label = masterKey.labels[i]
+		if masterKey.lables[i] != "" {
+			label = masterKey.lables[i]
 		} else {
 			label = hex.EncodeToString(key[:8])
 		}

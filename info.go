@@ -17,7 +17,7 @@ func infoWindow() (content *tview.Flex) {
 	if masterKey != nil {
 		fmt.Fprintf(info, infoString,
 			time.Unix(masterKey.createdAt, 0),
-			len(masterKey.labels),
+			len(masterKey.lables),
 		)
 	}
 

@@ -44,7 +44,7 @@ var (
 
 func main() {
 	// Start the application and set root to Cover
-	if err := app.SetRoot(Cover(), true).EnableMouse(true).Run(); err != nil {
+	if err := app.SetRoot(Cover(), true).Run(); err != nil {
 		panic(err)
 	}
 }

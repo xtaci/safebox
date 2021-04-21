@@ -34,17 +34,18 @@ const (
 )
 
 type MasterKey struct {
+	password  []byte
 	createdAt int64
 	path      string
 	masterKey [MasterKeyLength]byte
-	labels    map[uint16]string
+	lables    map[uint16]string
 }
 
 type DerivedKey [24]byte
 
 func newMasterKey() *MasterKey {
 	mkey := new(MasterKey)
-	mkey.labels = make(map[uint16]string)
+	mkey.lables = make(map[uint16]string)
 	return mkey
 }
 
@@ -105,6 +106,7 @@ func (mkey *MasterKey) store(password []byte, path string) (err error) {
 	}
 	defer file.Close()
 
+	mkey.password = password
 	// Created At
 	err = binary.Write(file, binary.LittleEndian, mkey.createdAt)
 	if err != nil {
@@ -119,7 +121,7 @@ func (mkey *MasterKey) store(password []byte, path string) (err error) {
 	}
 
 	// num labels
-	err = binary.Write(file, binary.LittleEndian, uint16(len(mkey.labels)))
+	err = binary.Write(file, binary.LittleEndian, uint16(len(mkey.lables)))
 	if err != nil {
 		return err
 	}
@@ -141,7 +143,7 @@ func (mkey *MasterKey) store(password []byte, path string) (err error) {
 	}
 
 	// write labels with 0 ending
-	for id, label := range mkey.labels {
+	for id, label := range mkey.lables {
 		var labelBytes [LABEL_SIZE]byte
 		// write id
 		err = binary.Write(file, binary.LittleEndian, id)
@@ -168,6 +170,7 @@ func (mkey *MasterKey) load(password []byte, path string) (err error) {
 	}
 	defer file.Close()
 
+	mkey.password = password
 	// Read Created At
 	err = binary.Read(file, binary.LittleEndian, &mkey.createdAt)
 	if err != nil {
@@ -228,14 +231,14 @@ func (mkey *MasterKey) load(password []byte, path string) (err error) {
 			return err
 		}
 
-		idx := bytes.IndexByte(lableBytes[:], byte(0))
-		if idx != -1 {
+		idx := bytes.IndexByte(lableBytes[:], 0)
+		if idx == -1 {
 			label = string(lableBytes[:])
 		} else {
 			label = string(lableBytes[:idx])
 		}
 
-		mkey.labels[id] = label
+		mkey.lables[id] = label
 	}
 
 	return nil
