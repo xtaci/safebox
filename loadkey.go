@@ -17,11 +17,13 @@ func passwordPromptLoad(path string) *tview.Flex {
 		SetMaskCharacter('*')
 	form.AddFormItem(passwordField)
 	form.AddButton("OK", func() {
-		err := masterKey.load([]byte(passwordField.GetText()), path)
+		// create a master key
+		masterKeyToLoad := newMasterKey()
+		err := masterKeyToLoad.load([]byte(passwordField.GetText()), path)
 		if err != nil {
 			root.AddAndSwitchToPage("prompt", failWindow(fmt.Sprintf("Failed Reading Master Key!!!\n%v", err)), true)
-			masterKey = nil
 		} else {
+			masterKey = masterKeyToLoad
 			masterKey.path = path
 			root.AddAndSwitchToPage("prompt", successWindow(fmt.Sprintf("Successfully Loaded Master Key!!!\n%v", path)), true)
 		}
@@ -36,8 +38,6 @@ func loadKeyWindow() (content *tview.Flex) {
 		SetTextAlign(tview.AlignLeft).
 		SetDynamicColors(true)
 
-	// create a master key
-	masterKey = newMasterKey()
 	// path input field
 	path, err := os.Getwd()
 	if err != nil {
