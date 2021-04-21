@@ -80,7 +80,7 @@ func (mkey *MasterKey) deriveKey(id int, keySize int) (key []byte, err error) {
 	return key, err
 }
 
-// save the master key with password encryption
+// store the master key with password encryption
 //
 // Master key storage format:
 //
@@ -94,8 +94,8 @@ func (mkey *MasterKey) deriveKey(id int, keySize int) (key []byte, err error) {
 //
 //
 // NOTE: all integers are stored in LITTLE-ENDIAN
-func (mkey *MasterKey) save(password []byte, path string) (err error) {
-	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0444)
+func (mkey *MasterKey) store(password []byte, path string) (err error) {
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0400)
 	if err != nil {
 		log.Fatal(err)
 	}
