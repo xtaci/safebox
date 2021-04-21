@@ -31,7 +31,7 @@ func Cover() (content tview.Primitive) {
 		AddText(navigation, true, tview.AlignCenter, tcell.ColorDarkMagenta)
 
 	// Create a Flex layout that centers the logo and subtitle.
-	flex := tview.NewFlex().
+	container := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(tview.NewBox(), 0, 7, false).
 		AddItem(tview.NewFlex().
@@ -41,11 +41,11 @@ func Cover() (content tview.Primitive) {
 		AddItem(frame, 0, 10, false)
 
 	// Input capture
-	flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	container.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		initBody := layoutInit()
 		app.SetRoot(initBody, true)
 		return event
 	})
 
-	return flex
+	return container
 }

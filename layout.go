@@ -5,10 +5,12 @@ import (
 	"github.com/rivo/tview"
 )
 
+var mainFrame *tview.Flex
+
 // initial page
 func layoutInit() tview.Primitive {
 	// Main frame
-	mainFrame := mainFrameNotLoaded()
+	mainFrame = mainFrameMasterKeyNotLoaded()
 	body := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
 		AddItem(infoNotLoaded(), 0, 20, false).
@@ -21,10 +23,10 @@ func layoutInit() tview.Primitive {
 		AddItem(footerNotLoaded(), 1, 1, false)
 
 	// Input capture
-	layout.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	mainFrame.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyF1 {
 			body.RemoveItem(mainFrame)
-			mainFrame := keyGenWindow()
+			mainFrame = keyGenWindow()
 			body.AddItem(mainFrame, 0, 80, true)
 			return nil
 		}
@@ -37,10 +39,10 @@ func layoutInit() tview.Primitive {
 // layout when master keys confirmed
 func layoutLoaded() tview.Primitive {
 	// Main frame
-	mainFrame := tview.NewFlex().
+	mainFrame = tview.NewFlex().
 		SetDirection(tview.FlexColumn).
 		AddItem(infoNotLoaded(), 0, 20, false).
-		AddItem(mainFrameNotLoaded(), 0, 80, true)
+		AddItem(mainFrameMasterKeyNotLoaded(), 0, 80, true)
 
 	// Create the layout.
 	layout := tview.NewFlex().

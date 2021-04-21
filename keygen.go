@@ -8,7 +8,9 @@ import (
 	"github.com/rivo/tview"
 )
 
-func keyGenWindow() (content tview.Primitive) {
+var keyGenWindowTitle = "- KEY GENERATION -"
+
+func keyGenWindow() (content *tview.Flex) {
 	text := tview.NewTextView().
 		SetTextAlign(tview.AlignLeft).
 		SetDynamicColors(true)
@@ -40,9 +42,13 @@ func keyGenWindow() (content tview.Primitive) {
 	form.AddButton("Cancel", nil)
 	form.SetFocus(0)
 
-	grid := tview.NewGrid()
-	grid.AddItem(text, 0, 0, 20, 20, 0, 0, false)
-	grid.AddItem(form, 40, 0, 20, 20, 0, 0, true)
+	flex := tview.NewFlex()
+	flex.SetDirection(tview.FlexRow).
+		SetBorder(true).
+		SetTitle(keyGenWindowTitle)
+	flex.AddItem(text, 0, 1, false)
+	flex.AddItem(form, 0, 1, true)
+	flex.AddItem(tview.NewBox(), 0, 8, false)
 
-	return grid
+	return flex
 }
