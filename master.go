@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -19,7 +20,8 @@ import (
 )
 
 var (
-	ErrInvalidKeyId = errors.New("invalid key id")
+	ErrInvalidKeyId      = errors.New("invalid key id")
+	ErrPasswordIncorrect = errors.New("incorrect password to decrypt the master key")
 )
 var (
 	IV          = []byte{167, 79, 156, 18, 172, 27, 1, 164, 21, 242, 193, 252, 120, 230, 107, 115}
@@ -97,6 +99,7 @@ func (mkey *MasterKey) save(password []byte, path string) (err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer file.Close()
 
 	// Created At
 	err = binary.Write(file, binary.LittleEndian, mkey.createdAt)
@@ -148,6 +151,87 @@ func (mkey *MasterKey) save(password []byte, path string) (err error) {
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// load a master key from disk
+func (mkey *MasterKey) load(password []byte, path string) (err error) {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	// Read Created At
+	err = binary.Read(file, binary.LittleEndian, &mkey.createdAt)
+	if err != nil {
+		return err
+	}
+
+	// Read SHA 256 of raw key
+	var loadedMD [sha256.Size]byte
+	_, err = io.ReadFull(file, loadedMD[:])
+	if err != nil {
+		return err
+	}
+
+	// read num labels
+	var numLables uint16
+	err = binary.Read(file, binary.LittleEndian, &numLables)
+	if err != nil {
+		return err
+	}
+
+	// Read encrypted Key
+	_, err = io.ReadFull(file, mkey.masterKey[:])
+	if err != nil {
+		return err
+	}
+
+	// expand the password to create AES-256 key
+	key := pbkdf2.Key(password, []byte(SALT), PBKDF2_ITER, 32, sha1.New)
+	aesBlock, err := NewAESBlockCrypt(key)
+	if err != nil {
+		return err
+	}
+
+	// decrypt the key
+	aesBlock.Decrypt(mkey.masterKey[:], mkey.masterKey[:])
+
+	// Compare SHA256
+	computedMD := sha256.Sum256(mkey.masterKey[:])
+	if computedMD != loadedMD {
+		return ErrPasswordIncorrect
+	}
+
+	// read lables
+	for i := uint16(0); i < numLables; i++ {
+		var lableBytes [LABEL_SIZE]byte
+		var id uint16
+
+		// read id
+		err = binary.Read(file, binary.LittleEndian, &id)
+		if err != nil {
+			return err
+		}
+
+		// read label
+		var label string
+		_, err = io.ReadFull(file, lableBytes[:])
+		if err != nil {
+			return err
+		}
+
+		idx := bytes.IndexByte(lableBytes[:], byte(0))
+		if idx != -1 {
+			label = string(lableBytes[:])
+		} else {
+			label = string(lableBytes[:idx])
+		}
+
+		mkey.labels[id] = label
 	}
 
 	return nil
