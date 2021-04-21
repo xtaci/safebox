@@ -17,12 +17,12 @@ KERNEL:\t%v
 COPYRIGHT 2021 (C) xtaci
 `
 
-func infoNotLoaded() (content tview.Primitive) {
+func infoNotLoaded() (content *tview.Flex) {
 	info := tview.NewTextView()
 	fmt.Fprintf(info, infoString)
 
-	flex := tview.NewFlex().
-		SetDirection(tview.FlexRow).
+	flex := tview.NewFlex()
+	flex.SetDirection(tview.FlexRow).
 		AddItem(info, 0, 8, false).
 		SetTitle("- KEY INFO -").
 		SetBorder(true)
