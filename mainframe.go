@@ -45,7 +45,7 @@ func exporterSelect(idx uint16) *tview.Flex {
 		AddItem(form, 0, 1, true).
 		AddItem(outputBox, 0, 1, false)
 
-	return modal(80, 40, view)
+	return modal(80, 20, view)
 }
 
 func deriveKeyOperation(idx uint16) *tview.Flex {
