@@ -40,5 +40,12 @@ func Cover() (content tview.Primitive) {
 			AddItem(tview.NewBox(), 0, 1, false), logoHeight, 1, true).
 		AddItem(frame, 0, 10, false)
 
+	// Input capture
+	flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		initBody := layoutInit()
+		app.SetRoot(initBody, true)
+		return event
+	})
+
 	return flex
 }

@@ -6,8 +6,12 @@ import (
 	"crypto/rand"
 	"crypto/sha1"
 	"crypto/sha256"
+	"encoding/binary"
 	"errors"
 	"io"
+	"log"
+	"os"
+	"time"
 	"unsafe"
 
 	xor "github.com/templexxx/xorsimd"
@@ -23,15 +27,22 @@ var (
 	PBKDF2_ITER = 4096
 )
 
-const MasterKeyLength = 256 * 1024 // 256 KB
+const (
+	MasterKeyLength = 256 * 1024 // 256 KB
+	LABEL_SIZE      = 16
+)
+
 type MasterKey struct {
+	createdAt int64
 	masterKey [MasterKeyLength]byte
+	labels    map[uint16]string
 }
 
 type DerivedKey [24]byte
 
 func newMasterKey() *MasterKey {
 	mkey := new(MasterKey)
+	mkey.labels = make(map[uint16]string)
 	return mkey
 }
 
@@ -40,6 +51,7 @@ func (mkey *MasterKey) generateMasterKey(entropy []byte) error {
 	if err != nil {
 		return err
 	}
+	mkey.createdAt = time.Now().Unix()
 	return nil
 }
 
@@ -64,6 +76,81 @@ func (mkey *MasterKey) deriveKey(id int, keySize int) (key []byte, err error) {
 	// 3. use pbkdf2 to suit the key size
 	key = pbkdf2.Key(md[:], []byte(SALT), PBKDF2_ITER, keySize, sha1.New)
 	return key, err
+}
+
+// save the master key with password encryption
+//
+// Master key storage format:
+//
+// CREATED DATE (64bit unix timestamp)
+// SHA256 of raw key(256 bit)
+// Num Labels(16bit)
+// ENCRYPTED MASTER KEY DATA(16KB)
+// |Lable 1(uint16 little endian) | Label(16Byte 0 ending) |
+// ...
+// |Lable N(uint16 little endian) | Label(16Byte 0 ending) |
+//
+//
+// NOTE: all integers are stored in LITTLE-ENDIAN
+func (mkey *MasterKey) save(password []byte, path string) (err error) {
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0400)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Created At
+	err = binary.Write(file, binary.LittleEndian, mkey.createdAt)
+	if err != nil {
+		return err
+	}
+
+	// SHA 256 of raw key
+	md := sha256.Sum256(mkey.masterKey[:])
+	_, err = file.Write(md[:])
+	if err != nil {
+		return err
+	}
+
+	// num labels
+	err = binary.Write(file, binary.LittleEndian, uint16(len(mkey.labels)))
+	if err != nil {
+		return err
+	}
+
+	// write encrypted(AES-256) master key
+	// expand the password to create AES-256 key
+	key := pbkdf2.Key(password, []byte(SALT), PBKDF2_ITER, 32, sha1.New)
+	var encryptedMasterKey [MasterKeyLength]byte
+	aesBlock, err := NewAESBlockCrypt(key)
+	if err != nil {
+		return err
+	}
+	aesBlock.Encrypt(encryptedMasterKey[:], mkey.masterKey[:])
+
+	// write encrypted key
+	_, err = file.Write(encryptedMasterKey[:])
+	if err != nil {
+		return err
+	}
+
+	// write labels with 0 ending
+	for id, label := range mkey.labels {
+		var labelBytes [LABEL_SIZE]byte
+		// write id
+		err = binary.Write(file, binary.LittleEndian, id)
+		if err != nil {
+			return err
+		}
+
+		// write label(maximum 16 bytes)
+		copy(labelBytes[:], []byte(label))
+		_, err = file.Write(labelBytes[:])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // BlockCrypt defines encryption/decryption methods for a given byte slice.

@@ -29,14 +29,20 @@ func keyGenWindow() (content tview.Primitive) {
 	}
 
 	form := tview.NewForm()
-	form.AddInputField("Path", path, 32, nil, nil)
+	inputField := tview.NewInputField().
+		SetLabel("Path: ").
+		SetText(path + "/.safebox.key").
+		SetFieldWidth(64)
+	form.AddFormItem(inputField)
 	form.AddButton("Save", func() {
+
 	})
 	form.AddButton("Cancel", nil)
+	form.SetFocus(0)
 
-	//
 	grid := tview.NewGrid()
 	grid.AddItem(text, 0, 0, 20, 20, 0, 0, false)
-	grid.AddItem(form, 20, 0, 20, 20, 0, 0, false)
+	grid.AddItem(form, 40, 0, 20, 20, 0, 0, true)
+
 	return grid
 }

@@ -39,49 +39,9 @@ var (
 	}
 )
 
-var (
-	keyLoaded bool
-)
-
-// Main Key generation
-func MainKey() (title string, shortCut tcell.Key, content tview.Primitive) {
-	// Create a Flex layout that centers the logo and subtitle.
-	flex := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(tview.NewBox(), 0, 7, false)
-
-	return "Main Key", tcell.KeyF2, flex
-}
-
-// Key generation
-func DeriveKey() (title string, shortCut tcell.Key, content tview.Primitive) {
-	// Create a Flex layout that centers the logo and subtitle.
-	flex := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(tview.NewBox(), 0, 7, false)
-
-	return "Drive Key", tcell.KeyF3, flex
-}
-
 func main() {
-	splashShowed := false
-	// capture any key
-	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if !splashShowed {
-			app.SetRoot(layoutInit(), true)
-			splashShowed = true
-			return nil
-		}
-
-		if keyLoaded {
-			app.SetRoot(layoutLoaded(), true)
-			return nil
-		}
-		return event
-	})
-
 	// Start the application and set root to Cover
-	if err := app.SetRoot(keyGenWindow(), true).EnableMouse(true).Run(); err != nil {
+	if err := app.SetRoot(Cover(), true).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
 }
