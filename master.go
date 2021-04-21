@@ -10,7 +10,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
-	"log"
 	"os"
 	"time"
 	"unsafe"
@@ -58,7 +57,7 @@ func (mkey *MasterKey) generateMasterKey(entropy []byte) error {
 }
 
 // derive the N-th id with current master key with specified key size
-func (mkey *MasterKey) deriveKey(id int, keySize int) (key []byte, err error) {
+func (mkey *MasterKey) deriveKey(id uint16, keySize int) (key []byte, err error) {
 	if id >= MasterKeyLength/aes.BlockSize || id < 0 {
 		return nil, ErrInvalidKeyId
 	}
@@ -95,9 +94,9 @@ func (mkey *MasterKey) deriveKey(id int, keySize int) (key []byte, err error) {
 //
 // NOTE: all integers are stored in LITTLE-ENDIAN
 func (mkey *MasterKey) store(password []byte, path string) (err error) {
-	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0400)
+	file, err := os.Create(path)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer file.Close()
 
@@ -160,7 +159,7 @@ func (mkey *MasterKey) store(password []byte, path string) (err error) {
 func (mkey *MasterKey) load(password []byte, path string) (err error) {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer file.Close()
 

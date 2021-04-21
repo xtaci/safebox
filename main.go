@@ -16,6 +16,9 @@ const logo = `
 // The application.
 var app = tview.NewApplication()
 
+// The master key
+var masterKey *MasterKey
+
 const (
 	subtitle   = `safebox - UNIFIED KEY MANAGEMENT SYSTEM`
 	navigation = `Press any key to continue...`

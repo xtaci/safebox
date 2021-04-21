@@ -13,12 +13,14 @@ const (
 )
 
 var (
-	mainFrame *tview.Flex
-	body      *tview.Flex
-	info      *tview.Flex
-	footer    tview.Primitive
-	layout    *tview.Flex
-	state     windowState
+	pages      *tview.Pages
+	background *tview.TextView
+	mainFrame  *tview.Flex
+	body       *tview.Flex
+	info       *tview.Flex
+	footer     tview.Primitive
+	layout     *tview.Flex
+	state      windowState
 )
 
 // global shortcuts handling
@@ -33,7 +35,7 @@ func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 	case tcell.KeyESC:
 		if state == wndKeyGen {
 			body.RemoveItem(mainFrame)
-			mainFrame = mainFrameMasterKeyNotLoaded()
+			mainFrame = mainFrameWindow()
 			body.AddItem(mainFrame, 0, 80, true)
 			state = wndNotLoaded
 			return nil
@@ -44,10 +46,10 @@ func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 	}
 }
 
-// initial page
-func layoutInit() tview.Primitive {
+// container
+func container() *tview.Pages {
 	// Main frame
-	mainFrame = mainFrameMasterKeyNotLoaded()
+	mainFrame = mainFrameWindow()
 	info = infoNotLoaded()
 	footer = footerNotLoaded()
 	body = tview.NewFlex().
@@ -61,27 +63,13 @@ func layoutInit() tview.Primitive {
 		AddItem(body, 0, 1, true).
 		AddItem(footer, 1, 1, false)
 
+	pages = tview.NewPages().
+		AddPage("main", layout, true, true)
+
 	state = wndNotLoaded
 
 	// Input capture
 	app.SetInputCapture(globalInputCapture)
 
-	return layout
-}
-
-// layout when master keys confirmed
-func layoutLoaded() tview.Primitive {
-	// Main frame
-	mainFrame = tview.NewFlex().
-		SetDirection(tview.FlexColumn).
-		AddItem(infoNotLoaded(), 0, 20, false).
-		AddItem(mainFrameMasterKeyNotLoaded(), 0, 80, true)
-
-	// Create the layout.
-	layout := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(mainFrame, 0, 1, true).
-		AddItem(footerNotLoaded(), 1, 1, false)
-
-	return layout
+	return pages
 }
