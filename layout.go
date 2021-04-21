@@ -8,12 +8,12 @@ import (
 type windowState byte
 
 const (
-	wndNotLoaded windowState = iota
-	wndKeyGen
+	normalWindow windowState = iota
+	shortCutsActivated
 )
 
 var (
-	pages      *tview.Pages
+	root       *tview.Pages
 	background *tview.TextView
 	mainFrame  *tview.Flex
 	body       *tview.Flex
@@ -27,31 +27,33 @@ var (
 func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 	switch event.Key() {
 	case tcell.KeyF1:
-		body.RemoveItem(mainFrame)
 		mainFrame = keyGenWindow()
-		body.AddItem(mainFrame, 0, 80, true)
-		state = wndKeyGen
+		updateView()
+		state = shortCutsActivated
+		return nil
+	case tcell.KeyF2:
 		return nil
 	case tcell.KeyESC:
-		if state == wndKeyGen {
+		if state == shortCutsActivated {
 			body.RemoveItem(mainFrame)
 			mainFrame = mainFrameWindow()
 			body.AddItem(mainFrame, 0, 80, true)
-			state = wndNotLoaded
+			state = normalWindow
 			return nil
+		} else {
+			app.Stop()
+			return event
 		}
-		return event
 	default:
 		return event
 	}
 }
 
-// container
-func container() *tview.Pages {
+func initLayouts() {
 	// Main frame
 	mainFrame = mainFrameWindow()
-	info = infoNotLoaded()
-	footer = footerNotLoaded()
+	info = infoWindow()
+	footer = footerWindow()
 	body = tview.NewFlex().
 		SetDirection(tview.FlexColumn).
 		AddItem(info, 0, 20, false).
@@ -63,13 +65,29 @@ func container() *tview.Pages {
 		AddItem(body, 0, 1, true).
 		AddItem(footer, 1, 1, false)
 
-	pages = tview.NewPages().
+	root = tview.NewPages().
 		AddPage("main", layout, true, true)
 
-	state = wndNotLoaded
+	state = normalWindow
 
 	// Input capture
 	app.SetInputCapture(globalInputCapture)
+}
 
-	return pages
+func updateView() {
+	body = tview.NewFlex().
+		SetDirection(tview.FlexColumn).
+		AddItem(info, 0, 20, false).
+		AddItem(mainFrame, 0, 80, true)
+
+	// Create the layout.
+	layout = tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(body, 0, 1, true).
+		AddItem(footer, 1, 1, false)
+
+	root = tview.NewPages().
+		AddPage("main", layout, true, true)
+
+	app.SetRoot(root, true)
 }

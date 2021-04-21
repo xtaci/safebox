@@ -44,7 +44,8 @@ func Cover() (content tview.Primitive) {
 	containerSet := false
 	flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if !containerSet {
-			app.SetRoot(container(), true)
+			initLayouts()
+			app.SetRoot(root, true)
 			containerSet = true
 		}
 		return event

@@ -35,6 +35,7 @@ const (
 
 type MasterKey struct {
 	createdAt int64
+	path      string
 	masterKey [MasterKeyLength]byte
 	labels    map[uint16]string
 }

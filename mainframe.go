@@ -11,12 +11,18 @@ import (
 var verString = "VER 1.0"
 var mainFrameTitle = fmt.Sprintf("- SAFEBOX KEY MANGEMENT SYSTEM %v -", verString)
 
-func deriveKeyOperation(idx int) *tview.Flex {
+func deriveKeyOperation(idx uint16) *tview.Flex {
 	form := tview.NewForm()
 	form.SetBorder(true)
+	form.SetTitle("SETTING KEY PROPERTIES")
+	form.AddInputField("Label", masterKey.labels[idx], 16, nil, nil)
 	form.AddButton("OK", func() {
-		pages.RemovePage("prompt")
-		pages.SwitchToPage("main")
+		root.RemovePage("prompt")
+		root.SwitchToPage("main")
+	})
+	form.AddButton("Export", func() {
+		root.RemovePage("prompt")
+		root.SwitchToPage("main")
 	})
 	form.SetFocus(0)
 
@@ -44,6 +50,7 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 		return flex
 	}
 
+	// key list
 	list := tview.NewList()
 	for i := uint16(0); i < 100; i++ {
 		// we derive and show the part of the key
@@ -61,8 +68,10 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 		list.AddItem(fmt.Sprintf("KEY%v", i), label, 0, nil)
 
 	}
+
+	// key selection
 	list.SetSelectedFunc(func(idx int, mainText, secondaryText string, shortcut rune) {
-		pages.AddAndSwitchToPage("prompt", deriveKeyOperation(idx), true)
+		root.AddAndSwitchToPage("prompt", deriveKeyOperation(uint16(idx)), true)
 	})
 
 	flex := tview.NewFlex()

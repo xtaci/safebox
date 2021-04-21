@@ -2,24 +2,24 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/rivo/tview"
 )
 
 var infoString = `
-MASTER KEY CREATED:\t%v
-NUM DERIVED KEYS:\t%v
-
-SYSTEM INFORMATION:
-OS: \t%v
-KERNEL:\t%v
-
-COPYRIGHT 2021 (C) xtaci
+MASTER KEY CREATED:%v
+NUM LABLED KEYS:%v
 `
 
-func infoNotLoaded() (content *tview.Flex) {
+func infoWindow() (content *tview.Flex) {
 	info := tview.NewTextView()
-	fmt.Fprintf(info, infoString)
+	if masterKey != nil {
+		fmt.Fprintf(info, infoString,
+			time.Unix(masterKey.createdAt, 0),
+			len(masterKey.labels),
+		)
+	}
 
 	flex := tview.NewFlex()
 	flex.SetDirection(tview.FlexRow).

@@ -7,7 +7,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-func footerNotLoaded() (content tview.Primitive) {
+func footerWindow() (content tview.Primitive) {
 	// The bottom row has some info on where we are.
 	info := tview.NewTextView().
 		SetDynamicColors(true).

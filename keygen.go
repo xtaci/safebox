@@ -17,7 +17,7 @@ func modal(width int, height int, primitive tview.Primitive) *tview.Flex {
 		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 			AddItem(nil, 0, 1, false).
 			AddItem(primitive, height, 1, true).
-			AddItem(nil, 0, 1, false), width, 1, false).
+			AddItem(nil, 0, 1, false), width, 1, true).
 		AddItem(nil, 0, 1, false)
 }
 
@@ -26,23 +26,26 @@ func failWindow(reason string) *tview.Modal {
 		SetText(reason).
 		AddButtons([]string{"OK"}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			pages.RemovePage("prompt")
+			root.RemovePage("prompt")
 		})
 
 	fail.SetBackgroundColor(tcell.ColorHotPink)
 	return fail
 }
 
-func successWindow(reason string) *tview.Modal {
-	fail := tview.NewModal().
-		SetText(reason).
+func successWindow(message string) *tview.Modal {
+	wnd := tview.NewModal().
+		SetText(message).
 		AddButtons([]string{"OK"}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			pages.RemovePage("prompt")
+			mainFrame = mainFrameWindow()
+			info = infoWindow()
+			// refresh view
+			updateView()
 		})
 
-	fail.SetBackgroundColor(tcell.ColorDarkGreen)
-	return fail
+	wnd.SetBackgroundColor(tcell.ColorDarkGreen)
+	return wnd
 }
 
 func passwordPrompt(path string) *tview.Flex {
@@ -53,16 +56,14 @@ func passwordPrompt(path string) *tview.Flex {
 		SetMaskCharacter('*')
 	form.AddFormItem(passwordField)
 	form.AddButton("OK", func() {
-		pages.RemovePage("prompt")
 		err := masterKey.store([]byte(passwordField.GetText()), path)
 
 		// display message after store
 		if err != nil {
-			pages.AddAndSwitchToPage("prompt", failWindow("Failed Storing Master Key!!!"), true)
+			root.AddAndSwitchToPage("prompt", failWindow("Failed Storing Master Key!!!"), true)
 		} else {
-			pages.AddAndSwitchToPage("prompt", successWindow("Successfully Stored Master Key!!!"), true)
-			body.RemoveItem(mainFrame)
-			body.AddItem(mainFrameWindow(), 0, 80, true)
+			masterKey.path = path
+			root.AddAndSwitchToPage("prompt", successWindow(fmt.Sprint("Successfully Stored Master Key!!!\n", path)), true)
 		}
 	})
 	form.SetFocus(0)
@@ -97,7 +98,7 @@ func keyGenWindow() (content *tview.Flex) {
 		SetFieldWidth(64)
 	form.AddFormItem(inputField)
 	form.AddButton("Save", func() {
-		pages.AddAndSwitchToPage("prompt", passwordPrompt(inputField.GetText()), true)
+		root.AddAndSwitchToPage("prompt", passwordPrompt(inputField.GetText()), true)
 	})
 	form.AddButton("Cancel", nil)
 	form.SetFocus(0)
