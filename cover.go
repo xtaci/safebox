@@ -28,8 +28,7 @@ func Cover() (content tview.Primitive) {
 		SetBorders(0, 0, 0, 0, 0, 0).
 		AddText(subtitle, true, tview.AlignCenter, tcell.ColorWhite).
 		AddText("", true, tview.AlignCenter, tcell.ColorWhite).
-		AddText(navigation, true, tview.AlignCenter, tcell.ColorDarkMagenta).
-		AddText(mouse, true, tview.AlignCenter, tcell.ColorDarkMagenta)
+		AddText(navigation, true, tview.AlignCenter, tcell.ColorDarkMagenta)
 
 	// Create a Flex layout that centers the logo and subtitle.
 	flex := tview.NewFlex().

@@ -35,7 +35,7 @@ func newMasterKey() *MasterKey {
 	return mkey
 }
 
-func (mkey *MasterKey) generateMasterKey() error {
+func (mkey *MasterKey) generateMasterKey(entropy []byte) error {
 	_, err := io.ReadFull(rand.Reader, mkey.masterKey[:])
 	if err != nil {
 		return err
