@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -90,9 +91,26 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 		return flex
 	}
 
-	// key list
-	list := tview.NewList()
-	list.SetWrapAround(false)
+	// key table
+	table := tview.NewTable().SetBorders(true)
+	table.SetTitle(mainFrameTitle)
+
+	// table header
+	table.SetCell(0, 0,
+		tview.NewTableCell("KEY NAME").
+			SetTextColor(tcell.ColorRed).
+			SetSelectable(false).
+			SetAlign(tview.AlignLeft))
+
+	table.SetCell(0, 1,
+		tview.NewTableCell("KEY PREFIX").
+			SetTextColor(tcell.ColorRed).
+			SetSelectable(false).
+			SetAlign(tview.AlignLeft))
+
+	// fix table header
+	table.SetFixed(1, 0)
+	table.SetSelectable(true, true)
 
 	addDerivedKeys := func(start uint16) {
 		for i := uint16(0); i < 64; i++ {
@@ -106,23 +124,31 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 				log.Fatal(err)
 			}
 
-			list.AddItem(hex.EncodeToString(key[:8])+"...", masterKey.lables[idx], 0, nil)
+			table.SetCell(int(idx)+1, 0,
+				tview.NewTableCell(masterKey.lables[idx]).
+					SetTextColor(tcell.ColorRed).
+					SetAlign(tview.AlignLeft))
+
+			table.SetCell(int(idx)+1, 1,
+				tview.NewTableCell(hex.EncodeToString(key)).
+					SetTextColor(tcell.ColorRed).
+					SetAlign(tview.AlignLeft))
 		}
 	}
 
 	// add initial derived keys
 	addDerivedKeys(0)
 
-	list.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
+	table.SetSelectionChangedFunc(func(row, column int) {
 		// moved to last
-		if index == list.GetItemCount()-1 {
-			addDerivedKeys(uint16(index))
+		if row == table.GetRowCount()-1 {
+			addDerivedKeys(uint16(row) - 1)
 		}
 	})
 
 	// key selection
-	list.SetSelectedFunc(func(idx int, mainText, secondaryText string, shortcut rune) {
-		showDeriveKeyOperation(uint16(idx))
+	table.SetSelectedFunc(func(row, column int) {
+		showDeriveKeyOperation(uint16(row) - 1)
 	})
 
 	flex := tview.NewFlex()
@@ -130,6 +156,6 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 		SetBorder(true).
 		SetTitle(mainFrameTitle)
 
-	flex.AddItem(list, 0, 1, true)
+	flex.AddItem(table, 0, 1, true)
 	return flex
 }
