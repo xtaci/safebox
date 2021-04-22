@@ -9,15 +9,19 @@ import (
 )
 
 const logo = `
-
-   __|    \    __| __|  _ )   _ \ \ \  / 
- \__ \   _ \   _|  _|   _ \  (   | >  <  
- ____/ _/  _\ _|  ___| ___/ \___/  _/\_\ 
+ ________  ________  ________ _______   ________  ________     ___    ___
+|\   ____\|\   __  \|\  _____\\  ___ \ |\   __  \|\   __  \   |\  \  /  /|
+\ \  \___|\ \  \|\  \ \  \__/\ \   __/|\ \  \|\ /\ \  \|\  \  \ \  \/  / /
+ \ \_____  \ \   __  \ \   __\\ \  \_|/_\ \   __  \ \  \\\  \  \ \    / /
+  \|____|\  \ \  \ \  \ \  \_| \ \  \_|\ \ \  \|\  \ \  \\\  \  /     \/
+    ____\_\  \ \__\ \__\ \__\   \ \_______\ \_______\ \_______\/  /\   \
+   |\_________\|__|\|__|\|__|    \|_______|\|_______|\|_______/__/ /\ __\
+   \|_________|                                               |__|/ \|__|
 `
 
 const (
-	subtitle   = `safebox - UNIFIED KEY MANAGEMENT SYSTEM`
-	navigation = `Press any key to continue...`
+	subtitle   = `[::u]UNIFIED KEY MANAGEMENT SYSTEM`
+	navigation = `[::bl]Press any key to continue...[-:-:-]`
 )
 
 // coverPage returns the coverPage page.
@@ -38,9 +42,9 @@ func coverPage() *tview.Flex {
 	// Create a frame for the subtitle and navigation infos.
 	frame := tview.NewFrame(tview.NewBox()).
 		SetBorders(0, 0, 0, 0, 0, 0).
-		AddText(subtitle, true, tview.AlignCenter, tcell.ColorWhite).
-		AddText("", true, tview.AlignCenter, tcell.ColorWhite).
-		AddText(navigation, true, tview.AlignCenter, tcell.ColorDarkMagenta)
+		AddText(subtitle, true, tview.AlignCenter, tcell.ColorGold).
+		AddText("", true, tview.AlignCenter, tcell.ColorGold).
+		AddText(navigation, true, tview.AlignCenter, tcell.ColorLightGray)
 
 	// Create a Flex layout that centers the logo and subtitle.
 	flex := tview.NewFlex().
