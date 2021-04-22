@@ -21,6 +21,14 @@ func modal(width int, height int, primitive tview.Primitive) *tview.Flex {
 		AddItem(nil, 0, 1, false)
 }
 
+func rawOutput(primitive tview.Primitive) *tview.Flex {
+	return tview.NewFlex().
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(primitive, 1, 1, true).
+			AddItem(nil, 0, 1, false), 1, 1, true)
+}
+
 func failWindow(reason string) *tview.Modal {
 	fail := tview.NewModal().
 		SetText(reason).

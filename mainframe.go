@@ -33,20 +33,16 @@ func exporterSelect(idx uint16) *tview.Flex {
 		key, _ := masterKey.deriveKey(idx, exports[selected].KeySize())
 		bts, _ := exports[selected].Export(key)
 		outputBox.Write(bts)
-		form.RemoveButton(0)
-		form.AddButton("Return", func() {
-			root.RemovePage("export")
-		})
+		root.AddAndSwitchToPage("output", outputBox, true)
 	})
 	form.SetFocus(0)
 
 	view := tview.NewFlex()
 	view.SetBorder(true)
 	view.SetDirection(tview.FlexRow).
-		AddItem(form, 0, 1, true).
-		AddItem(outputBox, 0, 1, false)
+		AddItem(form, 0, 1, true)
 
-	return modal(80, 20, view)
+	return modal(100, 20, view)
 }
 
 func deriveKeyOperation(idx uint16) *tview.Flex {
