@@ -10,6 +10,7 @@ import (
 func footerWindow() *tview.TextView {
 	// The bottom row has some info on where we are.
 	info := tview.NewTextView().
+		SetToggleHighlights(true).
 		SetDynamicColors(true).
 		SetRegions(true).
 		SetWrap(false)

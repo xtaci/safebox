@@ -56,7 +56,10 @@ func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 
 	case tcell.KeyEsc:
 		if name, _ := root.GetFrontPage(); name != pageMain {
-			root.HidePage(name)
+			root.RemovePage(name)
+			if name, _ := root.GetFrontPage(); name == pageMain {
+				footer.Highlight(footer.GetHighlights()...)
+			}
 		}
 		return nil
 
