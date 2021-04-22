@@ -10,7 +10,8 @@ import (
 var loadKeyWindowTitle = "-=- LOAD MASTER KEY -=-"
 var loadKeyPasswordTitle = "-=- PASSWORD TO DECRYPT MASTER KEY -=-"
 
-func passwordPromptLoad(path string) *tview.Flex {
+func showLoadPassword(parent string, path string) {
+	windowName := "showLoadPassword"
 	form := tview.NewForm()
 	form.SetBorder(true)
 	form.SetTitle(loadKeyPasswordTitle)
@@ -23,20 +24,28 @@ func passwordPromptLoad(path string) *tview.Flex {
 		masterKeyToLoad := newMasterKey()
 		err := masterKeyToLoad.load([]byte(passwordField.GetText()), path)
 		if err != nil {
-			addAndShowPopup("msgbox", failWindow(fmt.Sprintf("Failed Reading Master Key!!!\n%v", err)))
+			showFailWindow("FAILURE", err.Error())
+			root.RemovePage(windowName)
 		} else {
-			masterKey = masterKeyToLoad
-			masterKey.path = path
-
-			addAndShowPopup("msgbox", successWindow(fmt.Sprintf("Successfully Loaded Master Key!!!\n%v", path)))
+			showSuccessWindow("SUCCESS", fmt.Sprintf("Successfully Loaded Master Key!!!\n%v", path), func() {
+				masterKey = masterKeyToLoad
+				masterKey.path = path
+				info = infoWindow()
+				mainFrame = mainFrameWindow()
+				refreshBody()
+				root.RemovePage(windowName)
+				root.RemovePage(parent)
+			})
 		}
 	})
 	form.SetFocus(0)
 
-	return modal(40, 10, form)
+	root.AddPage(windowName, popup(40, 10, form), true, true)
 }
 
-func loadKeyWindow() (content tview.Primitive) {
+func showLoadKeyWindow() {
+	windowName := "showLoadKeyWindow"
+
 	// path input field
 	path, err := os.Getwd()
 	if err != nil {
@@ -50,12 +59,11 @@ func loadKeyWindow() (content tview.Primitive) {
 		SetFieldWidth(64)
 	form.AddFormItem(inputField)
 	form.AddButton("Load", func() {
-		addAndShowPopup("load password promopt", passwordPromptLoad(inputField.GetText()))
+		showLoadPassword(windowName, inputField.GetText())
 	})
-	form.AddButton("Cancel", nil)
 	form.SetBorder(true)
 	form.SetTitle(loadKeyWindowTitle)
 	form.SetFocus(0)
 
-	return form
+	root.AddPage(windowName, popup(80, 15, form), true, true)
 }

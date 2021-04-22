@@ -5,21 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
 var keyGenWindowTitle = "- KEY GENERATION -"
-
-func modal(width int, height int, primitive tview.Primitive) *tview.Flex {
-	return tview.NewFlex().
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(nil, 0, 1, false).
-			AddItem(primitive, height, 1, true).
-			AddItem(nil, 0, 1, false), width, 1, true).
-		AddItem(nil, 0, 1, false)
-}
 
 func rawOutput(primitive tview.Primitive) *tview.Flex {
 	return tview.NewFlex().
@@ -29,35 +18,8 @@ func rawOutput(primitive tview.Primitive) *tview.Flex {
 			AddItem(nil, 0, 1, false), 1, 1, true)
 }
 
-func failWindow(reason string) *tview.Modal {
-	fail := tview.NewModal().
-		SetText(reason).
-		AddButtons([]string{"OK"}).
-		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			closePopup()
-		})
-
-	fail.SetBackgroundColor(tcell.ColorHotPink)
-	return fail
-}
-
-func successWindow(message string) *tview.Modal {
-	wnd := tview.NewModal().
-		SetText(message).
-		AddButtons([]string{"OK"}).
-		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			// update info window & mainFrame window
-			info = infoWindow()
-			mainFrame = mainFrameWindow()
-			updateView()
-			root.SwitchToPage(pageMain)
-		})
-
-	wnd.SetBackgroundColor(tcell.ColorDarkGreen)
-	return wnd
-}
-
-func passwordPrompt(path string) *tview.Flex {
+func showKeyGenPasswordPrompt(path string) {
+	windowName := "showKeyGenPasswordPrompt"
 	form := tview.NewForm()
 	form.SetBorder(true)
 	passwordField := tview.NewInputField().SetLabel("Password").
@@ -69,18 +31,20 @@ func passwordPrompt(path string) *tview.Flex {
 
 		// display message after store
 		if err != nil {
-			addAndShowPopup("passwordPrompt", failWindow("Failed Storing Master Key!!!"))
+			showFailWindow("FAILURE", err.Error())
 		} else {
 			masterKey.path = path
-			addAndShowPopup("passwordPrompt", successWindow(fmt.Sprint("Successfully Stored Master Key!!!\n", path)))
+			showSuccessWindow("SUCCESS", fmt.Sprint("Successfully Stored Master Key!!!\n", path), nil)
+			root.HidePage(windowName)
 		}
 	})
 	form.SetFocus(0)
 
-	return modal(40, 10, form)
+	root.AddPage(windowName, popup(40, 10, form), true, true)
 }
 
-func keyGenWindow() (content *tview.Flex) {
+func showKeyGenWindow() {
+	windowName := "showKeyGenWindow"
 	text := tview.NewTextView().
 		SetTextAlign(tview.AlignLeft).
 		SetDynamicColors(true)
@@ -107,9 +71,8 @@ func keyGenWindow() (content *tview.Flex) {
 		SetFieldWidth(64)
 	form.AddFormItem(inputField)
 	form.AddButton("Save", func() {
-		addAndShowPopup("keygen", passwordPrompt(inputField.GetText()))
+		showKeyGenPasswordPrompt(inputField.GetText())
 	})
-	form.AddButton("Cancel", nil)
 	form.SetFocus(0)
 
 	flex := tview.NewFlex()
@@ -119,5 +82,5 @@ func keyGenWindow() (content *tview.Flex) {
 	flex.AddItem(text, 0, 1, false)
 	flex.AddItem(form, 0, 1, true)
 
-	return flex
+	root.AddPage(windowName, popup(80, 15, form), true, true)
 }

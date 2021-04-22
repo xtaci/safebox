@@ -11,7 +11,8 @@ import (
 var verString = "VER 1.0"
 var mainFrameTitle = fmt.Sprintf("- SAFEBOX KEY MANGEMENT SYSTEM %v -", verString)
 
-func exporterSelect(idx uint16) *tview.Flex {
+func showExporterSelect(idx uint16) {
+	windowName := "showExporterSelect"
 	exporterLabel := "Select an exporter (hit Enter):"
 	var exportorNames []string
 	for k := range exports {
@@ -32,7 +33,7 @@ func exporterSelect(idx uint16) *tview.Flex {
 		key, _ := masterKey.deriveKey(idx, exports[selected].KeySize())
 		bts, _ := exports[selected].Export(key)
 		outputBox.Write(bts)
-		addAndShowPopup("output", outputBox)
+		root.AddPage("output", outputBox, true, true)
 	})
 	form.SetFocus(0)
 
@@ -41,10 +42,11 @@ func exporterSelect(idx uint16) *tview.Flex {
 	view.SetDirection(tview.FlexRow).
 		AddItem(form, 0, 1, true)
 
-	return modal(100, 20, view)
+	root.AddPage(windowName, popup(100, 20, view), true, true)
 }
 
-func deriveKeyOperation(idx uint16) *tview.Flex {
+func showDeriveKeyOperation(idx uint16) {
+	windowName := "showDeriveKeyOperation"
 	form := tview.NewForm()
 	form.SetBorder(true)
 	form.SetTitle("SETTING KEY PROPERTIES")
@@ -53,16 +55,17 @@ func deriveKeyOperation(idx uint16) *tview.Flex {
 		//update key
 		masterKey.lables[idx] = form.GetFormItemByLabel("Label").(*tview.InputField).GetText()
 		masterKey.store(masterKey.password, masterKey.path)
+		// refresh main frame
 		mainFrame = mainFrameWindow()
-		updateView()
-		closePopup()
+		refreshBody()
+		root.RemovePage(windowName)
 	})
 	form.AddButton("Export", func() {
-		addAndShowPopup("export", exporterSelect(idx))
+		showExporterSelect(idx)
 	})
 	form.SetFocus(0)
 
-	return modal(40, 10, form)
+	root.AddPage(windowName, popup(40, 10, form), true, true)
 }
 
 // main operation frame
@@ -106,7 +109,7 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 
 	// key selection
 	list.SetSelectedFunc(func(idx int, mainText, secondaryText string, shortcut rune) {
-		addAndShowPopup("prompt", deriveKeyOperation(uint16(idx)))
+		showDeriveKeyOperation(uint16(idx))
 	})
 
 	flex := tview.NewFlex()
