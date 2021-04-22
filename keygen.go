@@ -18,7 +18,7 @@ func rawOutput(primitive tview.Primitive) *tview.Flex {
 			AddItem(nil, 0, 1, false), 1, 1, true)
 }
 
-func showKeyGenPasswordPrompt(path string) {
+func showKeyGenPasswordPrompt(parent string, path string) {
 	windowName := "showKeyGenPasswordPrompt"
 	form := tview.NewForm()
 	form.SetBorder(true)
@@ -34,8 +34,13 @@ func showKeyGenPasswordPrompt(path string) {
 			showFailWindow("FAILURE", err.Error())
 		} else {
 			masterKey.path = path
-			showSuccessWindow("SUCCESS", fmt.Sprint("Successfully Stored Master Key!!!\n", path), nil)
-			root.HidePage(windowName)
+			showSuccessWindow("SUCCESS", fmt.Sprint("Successfully Stored Master Key!!!\n", path), func() {
+				info = infoWindow()
+				mainFrame = mainFrameWindow()
+				refreshBody()
+				root.RemovePage(windowName)
+				root.RemovePage(parent)
+			})
 		}
 	})
 	form.SetFocus(0)
@@ -46,8 +51,9 @@ func showKeyGenPasswordPrompt(path string) {
 func showKeyGenWindow() {
 	windowName := "showKeyGenWindow"
 	text := tview.NewTextView().
+		SetDynamicColors(true).
 		SetTextAlign(tview.AlignLeft).
-		SetDynamicColors(true)
+		SetWrap(false)
 
 	// create a master key
 	masterKey = newMasterKey()
@@ -71,16 +77,16 @@ func showKeyGenWindow() {
 		SetFieldWidth(64)
 	form.AddFormItem(inputField)
 	form.AddButton("Save", func() {
-		showKeyGenPasswordPrompt(inputField.GetText())
+		showKeyGenPasswordPrompt(windowName, inputField.GetText())
 	})
 	form.SetFocus(0)
 
 	flex := tview.NewFlex()
 	flex.SetDirection(tview.FlexRow).
-		SetBorder(true).
-		SetTitle(keyGenWindowTitle)
+		SetTitle(keyGenWindowTitle).
+		SetBorder(true)
 	flex.AddItem(text, 0, 1, false)
 	flex.AddItem(form, 0, 1, true)
 
-	root.AddPage(windowName, popup(80, 15, form), true, true)
+	root.AddPage(windowName, popup(80, 15, flex), true, true)
 }

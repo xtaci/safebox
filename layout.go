@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -8,8 +10,9 @@ import (
 type windowState byte
 
 const (
-	pageCover = "COVER"
-	pageMain  = "MAIN"
+	pageBackground = "BACKGROUND"
+	pageCover      = "COVER"
+	pageMain       = "MAIN"
 )
 
 type popupWindow struct {
@@ -18,14 +21,13 @@ type popupWindow struct {
 }
 
 var (
-	root       *tview.Pages
-	cover      *tview.Flex
-	body       *tview.Flex
-	layout     *tview.Flex
-	background *tview.TextView
-	mainFrame  *tview.Flex
-	info       *tview.Flex
-	footer     tview.Primitive
+	root      *tview.Pages
+	cover     *tview.Flex
+	body      *tview.Flex
+	layout    *tview.Flex
+	mainFrame *tview.Flex
+	info      *tview.Flex
+	footer    *tview.TextView
 )
 
 // global shortcuts handling
@@ -41,12 +43,14 @@ func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 	case tcell.KeyF1:
 		if name, _ := root.GetFrontPage(); name == pageMain {
 			showKeyGenWindow()
+			footer.Highlight(fmt.Sprint(tcell.KeyF1))
 		}
 		return nil
 
 	case tcell.KeyF2:
 		if name, _ := root.GetFrontPage(); name == pageMain {
 			showLoadKeyWindow()
+			footer.Highlight(fmt.Sprint(tcell.KeyF2))
 		}
 		return nil
 
@@ -75,6 +79,8 @@ func initLayouts() {
 		SetDirection(tview.FlexColumn).
 		AddItem(info, 0, 20, false).
 		AddItem(mainFrame, 0, 80, true)
+
+	body.SetBorderPadding(1, 1, 1, 1)
 
 	// Create the layout.
 	layout = tview.NewFlex().

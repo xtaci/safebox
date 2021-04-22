@@ -19,10 +19,6 @@ func showExporterSelect(idx uint16) {
 		exportorNames = append(exportorNames, exports[k].Name())
 	}
 
-	outputBox := tview.NewTextView()
-	outputBox.SetScrollable(true)
-	outputBox.SetWrap(true)
-
 	selected := 0
 	form := tview.NewForm()
 	form.SetTitle("EXPORT KEY")
@@ -32,6 +28,11 @@ func showExporterSelect(idx uint16) {
 	form.AddButton("Export", func() {
 		key, _ := masterKey.deriveKey(idx, exports[selected].KeySize())
 		bts, _ := exports[selected].Export(key)
+
+		// output page
+		outputBox := tview.NewTextView()
+		outputBox.SetScrollable(true)
+		outputBox.SetWrap(true)
 		outputBox.Write(bts)
 		root.AddPage("output", outputBox, true, true)
 	})

@@ -14,19 +14,19 @@ var masterKey *MasterKey
 
 var (
 	keyNames = map[tcell.Key]string{
-		tcell.KeyF1:  "F1",
-		tcell.KeyF2:  "F2",
-		tcell.KeyF3:  "F3",
-		tcell.KeyF4:  "F4",
-		tcell.KeyESC: "ESC",
+		tcell.KeyF1:    "F1",
+		tcell.KeyF2:    "F2",
+		tcell.KeyF3:    "F3",
+		tcell.KeyF4:    "F4",
+		tcell.KeyEsc:   "ESC",
+		tcell.KeyCtrlC: "Ctrl-C",
 	}
 
 	shortCuts = map[tcell.Key]string{
-		tcell.KeyF1:  "Gen Master Key",
-		tcell.KeyF2:  "Load Master Key",
-		tcell.KeyF3:  "Derive Key",
-		tcell.KeyF4:  "Label Key",
-		tcell.KeyESC: "QUIT",
+		tcell.KeyF1:    "GENERATE MASTER KEY",
+		tcell.KeyF2:    "LOAD MASTER KEY",
+		tcell.KeyEsc:   "BACK",
+		tcell.KeyCtrlC: "QUIT",
 	}
 )
 
