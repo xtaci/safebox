@@ -33,7 +33,7 @@ func exporterSelect(idx uint16) *tview.Flex {
 		key, _ := masterKey.deriveKey(idx, exports[selected].KeySize())
 		bts, _ := exports[selected].Export(key)
 		outputBox.Write(bts)
-		root.AddAndSwitchToPage("output", outputBox, true)
+		addAndShowPopup("output", outputBox)
 	})
 	form.SetFocus(0)
 
@@ -55,10 +55,10 @@ func deriveKeyOperation(idx uint16) *tview.Flex {
 		masterKey.lables[idx] = form.GetFormItemByLabel("Label").(*tview.InputField).GetText()
 		fmt.Fprint(os.Stderr, "XX", idx, masterKey.lables[idx])
 		masterKey.store(masterKey.password, masterKey.path)
-		root.RemovePage("prompt")
+		closePopup()
 	})
 	form.AddButton("Export", func() {
-		root.AddAndSwitchToPage("export", exporterSelect(idx), true)
+		addAndShowPopup("export", exporterSelect(idx))
 	})
 	form.SetFocus(0)
 
@@ -106,7 +106,7 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 
 	// key selection
 	list.SetSelectedFunc(func(idx int, mainText, secondaryText string, shortcut rune) {
-		root.AddAndSwitchToPage("prompt", deriveKeyOperation(uint16(idx)), true)
+		addAndShowPopup("prompt", deriveKeyOperation(uint16(idx)))
 	})
 
 	flex := tview.NewFlex()

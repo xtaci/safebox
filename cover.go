@@ -8,8 +8,20 @@ import (
 	"github.com/rivo/tview"
 )
 
-// Cover returns the cover page.
-func Cover() (content tview.Primitive) {
+const logo = `
+
+   __|    \    __| __|  _ )   _ \ \ \  / 
+ \__ \   _ \   _|  _|   _ \  (   | >  <  
+ ____/ _/  _\ _|  ___| ___/ \___/  _/\_\ 
+`
+
+const (
+	subtitle   = `safebox - UNIFIED KEY MANAGEMENT SYSTEM`
+	navigation = `Press any key to continue...`
+)
+
+// coverPage returns the coverPage page.
+func coverPage() *tview.Flex {
 	// What's the size of the logo?
 	lines := strings.Split(logo, "\n")
 	logoWidth := 0
@@ -39,17 +51,6 @@ func Cover() (content tview.Primitive) {
 			AddItem(logoBox, logoWidth, 1, true).
 			AddItem(tview.NewBox(), 0, 1, false), logoHeight, 1, true).
 		AddItem(frame, 0, 10, false)
-
-	// Input capture
-	containerSet := false
-	flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if !containerSet {
-			initLayouts()
-			app.SetRoot(root, true)
-			containerSet = true
-		}
-		return event
-	})
 
 	return flex
 }

@@ -34,7 +34,7 @@ func failWindow(reason string) *tview.Modal {
 		SetText(reason).
 		AddButtons([]string{"OK"}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			root.RemovePage("prompt")
+			closePopup()
 		})
 
 	fail.SetBackgroundColor(tcell.ColorHotPink)
@@ -46,10 +46,11 @@ func successWindow(message string) *tview.Modal {
 		SetText(message).
 		AddButtons([]string{"OK"}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			mainFrame = mainFrameWindow()
+			// update info window & mainFrame window
 			info = infoWindow()
-			// refresh view
+			mainFrame = mainFrameWindow()
 			updateView()
+			root.SwitchToPage(pageMain)
 		})
 
 	wnd.SetBackgroundColor(tcell.ColorDarkGreen)
@@ -68,10 +69,10 @@ func passwordPrompt(path string) *tview.Flex {
 
 		// display message after store
 		if err != nil {
-			root.AddAndSwitchToPage("prompt", failWindow("Failed Storing Master Key!!!"), true)
+			addAndShowPopup("passwordPrompt", failWindow("Failed Storing Master Key!!!"))
 		} else {
 			masterKey.path = path
-			root.AddAndSwitchToPage("prompt", successWindow(fmt.Sprint("Successfully Stored Master Key!!!\n", path)), true)
+			addAndShowPopup("passwordPrompt", successWindow(fmt.Sprint("Successfully Stored Master Key!!!\n", path)))
 		}
 	})
 	form.SetFocus(0)
@@ -106,7 +107,7 @@ func keyGenWindow() (content *tview.Flex) {
 		SetFieldWidth(64)
 	form.AddFormItem(inputField)
 	form.AddButton("Save", func() {
-		root.AddAndSwitchToPage("prompt", passwordPrompt(inputField.GetText()), true)
+		addAndShowPopup("keygen", passwordPrompt(inputField.GetText()))
 	})
 	form.AddButton("Cancel", nil)
 	form.SetFocus(0)

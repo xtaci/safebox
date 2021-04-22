@@ -21,11 +21,12 @@ func passwordPromptLoad(path string) *tview.Flex {
 		masterKeyToLoad := newMasterKey()
 		err := masterKeyToLoad.load([]byte(passwordField.GetText()), path)
 		if err != nil {
-			root.AddAndSwitchToPage("prompt", failWindow(fmt.Sprintf("Failed Reading Master Key!!!\n%v", err)), true)
+			addAndShowPopup("msgbox", failWindow(fmt.Sprintf("Failed Reading Master Key!!!\n%v", err)))
 		} else {
 			masterKey = masterKeyToLoad
 			masterKey.path = path
-			root.AddAndSwitchToPage("prompt", successWindow(fmt.Sprintf("Successfully Loaded Master Key!!!\n%v", path)), true)
+
+			addAndShowPopup("msgbox", successWindow(fmt.Sprintf("Successfully Loaded Master Key!!!\n%v", path)))
 		}
 	})
 	form.SetFocus(0)
@@ -51,7 +52,7 @@ func loadKeyWindow() (content *tview.Flex) {
 		SetFieldWidth(64)
 	form.AddFormItem(inputField)
 	form.AddButton("Load", func() {
-		root.AddAndSwitchToPage("prompt", passwordPromptLoad(inputField.GetText()), true)
+		addAndShowPopup("load password promopt", passwordPromptLoad(inputField.GetText()))
 	})
 	form.AddButton("Cancel", nil)
 	form.SetFocus(0)

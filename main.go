@@ -6,23 +6,11 @@ import (
 	"github.com/rivo/tview"
 )
 
-const logo = `
-
-   __|    \    __| __|  _ )   _ \ \ \  / 
- \__ \   _ \   _|  _|   _ \  (   | >  <  
- ____/ _/  _\ _|  ___| ___/ \___/  _/\_\ 
-`
-
 // The application.
 var app = tview.NewApplication()
 
 // The master key
 var masterKey *MasterKey
-
-const (
-	subtitle   = `safebox - UNIFIED KEY MANAGEMENT SYSTEM`
-	navigation = `Press any key to continue...`
-)
 
 var (
 	keyNames = map[tcell.Key]string{
@@ -43,8 +31,9 @@ var (
 )
 
 func main() {
+	initLayouts()
 	// Start the application and set root to Cover
-	if err := app.SetRoot(Cover(), true).Run(); err != nil {
+	if err := app.SetRoot(root, true).Run(); err != nil {
 		panic(err)
 	}
 }
