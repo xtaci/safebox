@@ -118,7 +118,6 @@ func keyGenWindow() (content *tview.Flex) {
 		SetTitle(keyGenWindowTitle)
 	flex.AddItem(text, 0, 1, false)
 	flex.AddItem(form, 0, 1, true)
-	flex.AddItem(tview.NewBox(), 0, 8, false)
 
 	return flex
 }

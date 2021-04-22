@@ -8,10 +8,8 @@ import (
 type windowState byte
 
 const (
-	pageCover   = "COVER"
-	pageMain    = "MAIN"
-	pageKeyGen  = "KEYGEN"
-	pageKeyLoad = "KEYLOAD"
+	pageCover = "COVER"
+	pageMain  = "MAIN"
 )
 
 type popupWindow struct {
@@ -30,7 +28,7 @@ var (
 )
 
 func addAndShowPopup(name string, primitive tview.Primitive) {
-	root.AddAndSwitchToPage(name, primitive, true)
+	root.AddPage(name, primitive, true, true)
 	popupStack = append(popupStack, popupWindow{name, primitive})
 }
 func closePopup() {
@@ -51,15 +49,15 @@ func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 
 	switch event.Key() {
 	case tcell.KeyF1:
-		if name, _ := root.GetFrontPage(); name != pageKeyGen {
-			primitive := keyGenWindow()
-			addAndShowPopup(pageKeyGen, primitive)
+		if name, _ := root.GetFrontPage(); name == pageMain {
+			primitive := modal(80, 15, keyGenWindow())
+			addAndShowPopup("pageKeyGen", primitive)
 		}
 		return nil
 	case tcell.KeyF2:
-		if name, _ := root.GetFrontPage(); name != pageKeyGen {
-			primitive := loadKeyWindow()
-			addAndShowPopup(pageKeyLoad, primitive)
+		if name, _ := root.GetFrontPage(); name == pageMain {
+			primitive := modal(80, 10, loadKeyWindow())
+			addAndShowPopup("pageKeyLoad", primitive)
 		}
 		return nil
 	case tcell.KeyESC:

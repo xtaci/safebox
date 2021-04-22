@@ -7,11 +7,13 @@ import (
 	"github.com/rivo/tview"
 )
 
-var loadKeyWindowTitle = "-=- LOAD KEY -=-"
+var loadKeyWindowTitle = "-=- LOAD MASTER KEY -=-"
+var loadKeyPasswordTitle = "-=- PASSWORD TO DECRYPT MASTER KEY -=-"
 
 func passwordPromptLoad(path string) *tview.Flex {
 	form := tview.NewForm()
 	form.SetBorder(true)
+	form.SetTitle(loadKeyPasswordTitle)
 	passwordField := tview.NewInputField().SetLabel("Password").
 		SetFieldWidth(64).
 		SetMaskCharacter('*')
@@ -34,11 +36,7 @@ func passwordPromptLoad(path string) *tview.Flex {
 	return modal(40, 10, form)
 }
 
-func loadKeyWindow() (content *tview.Flex) {
-	text := tview.NewTextView().
-		SetTextAlign(tview.AlignLeft).
-		SetDynamicColors(true)
-
+func loadKeyWindow() (content tview.Primitive) {
 	// path input field
 	path, err := os.Getwd()
 	if err != nil {
@@ -55,14 +53,9 @@ func loadKeyWindow() (content *tview.Flex) {
 		addAndShowPopup("load password promopt", passwordPromptLoad(inputField.GetText()))
 	})
 	form.AddButton("Cancel", nil)
+	form.SetBorder(true)
+	form.SetTitle(loadKeyWindowTitle)
 	form.SetFocus(0)
 
-	flex := tview.NewFlex()
-	flex.SetDirection(tview.FlexRow).
-		SetBorder(true).
-		SetTitle(loadKeyWindowTitle)
-	flex.AddItem(text, 10, 1, false)
-	flex.AddItem(form, 10, 1, true)
-
-	return flex
+	return form
 }

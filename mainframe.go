@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/rivo/tview"
 )
@@ -53,8 +52,9 @@ func deriveKeyOperation(idx uint16) *tview.Flex {
 	form.AddButton("Update", func() {
 		//update key
 		masterKey.lables[idx] = form.GetFormItemByLabel("Label").(*tview.InputField).GetText()
-		fmt.Fprint(os.Stderr, "XX", idx, masterKey.lables[idx])
 		masterKey.store(masterKey.password, masterKey.path)
+		mainFrame = mainFrameWindow()
+		updateView()
 		closePopup()
 	})
 	form.AddButton("Export", func() {
