@@ -7,7 +7,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-var loadKeyWindowTitle = "- Load Key -"
+var loadKeyWindowTitle = "-=- LOAD KEY -=-"
 
 func passwordPromptLoad(path string) *tview.Flex {
 	form := tview.NewForm()
@@ -60,9 +60,8 @@ func loadKeyWindow() (content *tview.Flex) {
 	flex.SetDirection(tview.FlexRow).
 		SetBorder(true).
 		SetTitle(loadKeyWindowTitle)
-	flex.AddItem(text, 0, 1, false)
-	flex.AddItem(form, 0, 1, true)
-	flex.AddItem(tview.NewBox(), 0, 8, false)
+	flex.AddItem(text, 10, 1, false)
+	flex.AddItem(form, 10, 1, true)
 
 	return flex
 }
