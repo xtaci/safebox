@@ -92,21 +92,33 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 
 	// key list
 	list := tview.NewList()
-	for i := uint16(0); i < 100; i++ {
-		// we derive and show the part of the key
-		key, err := masterKey.deriveKey(i, 32)
-		if err != nil {
-			log.Fatal(err)
-		}
+	list.SetWrapAround(false)
 
-		var label string
-		if masterKey.lables[i] != "" {
-			label = masterKey.lables[i]
-		} else {
-			label = hex.EncodeToString(key[:8])
+	addDerivedKeys := func(start uint16) {
+		for i := uint16(0); i < 64; i++ {
+			idx := start + i
+			if idx >= MaxKeys {
+				return
+			}
+			// we derive and show the part of the key
+			key, err := masterKey.deriveKey(idx, 32)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			list.AddItem(hex.EncodeToString(key[:8])+"...", masterKey.lables[idx], 0, nil)
 		}
-		list.AddItem(fmt.Sprintf("KEY%v", i), label, 0, nil)
 	}
+
+	// add initial derived keys
+	addDerivedKeys(0)
+
+	list.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
+		// moved to last
+		if index == list.GetItemCount()-1 {
+			addDerivedKeys(uint16(index))
+		}
+	})
 
 	// key selection
 	list.SetSelectedFunc(func(idx int, mainText, secondaryText string, shortcut rune) {

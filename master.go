@@ -23,14 +23,15 @@ var (
 	ErrPasswordIncorrect = errors.New("incorrect password to decrypt the master key")
 )
 var (
-	IV          = []byte{167, 79, 156, 18, 172, 27, 1, 164, 21, 242, 193, 252, 120, 230, 107, 115}
-	SALT        = "safebox"
-	PBKDF2_ITER = 4096
+	IV               = []byte{167, 79, 156, 18, 172, 27, 1, 164, 21, 242, 193, 252, 120, 230, 107, 115}
+	SALT             = "safebox"
+	Pbkdf2Iterations = 4096
 )
 
 const (
 	MasterKeyLength = 256 * 1024 // 256 KB
-	LABEL_SIZE      = 16
+	LabelSize       = 16
+	MaxKeys         = MasterKeyLength / aes.BlockSize
 )
 
 type MasterKey struct {
@@ -78,7 +79,7 @@ func (mkey *MasterKey) deriveKey(id uint16, keySize int) (key []byte, err error)
 
 	// 3. use pbkdf2 to suit the key size
 	if len(md) != keySize {
-		key = pbkdf2.Key(md[:], []byte(SALT), PBKDF2_ITER, keySize, sha1.New)
+		key = pbkdf2.Key(md[:], []byte(SALT), Pbkdf2Iterations, keySize, sha1.New)
 	} else {
 		key = md[:]
 	}
@@ -128,7 +129,7 @@ func (mkey *MasterKey) store(password []byte, path string) (err error) {
 
 	// write encrypted(AES-256) master key
 	// expand the password to create AES-256 key
-	key := pbkdf2.Key(password, []byte(SALT), PBKDF2_ITER, 32, sha1.New)
+	key := pbkdf2.Key(password, []byte(SALT), Pbkdf2Iterations, 32, sha1.New)
 	var encryptedMasterKey [MasterKeyLength]byte
 	aesBlock, err := NewAESBlockCrypt(key)
 	if err != nil {
@@ -144,7 +145,7 @@ func (mkey *MasterKey) store(password []byte, path string) (err error) {
 
 	// write labels with 0 ending
 	for id, label := range mkey.lables {
-		var labelBytes [LABEL_SIZE]byte
+		var labelBytes [LabelSize]byte
 		// write id
 		err = binary.Write(file, binary.LittleEndian, id)
 		if err != nil {
@@ -198,7 +199,7 @@ func (mkey *MasterKey) load(password []byte, path string) (err error) {
 	}
 
 	// expand the password to create AES-256 key
-	key := pbkdf2.Key(password, []byte(SALT), PBKDF2_ITER, 32, sha1.New)
+	key := pbkdf2.Key(password, []byte(SALT), Pbkdf2Iterations, 32, sha1.New)
 	aesBlock, err := NewAESBlockCrypt(key)
 	if err != nil {
 		return err
@@ -215,7 +216,7 @@ func (mkey *MasterKey) load(password []byte, path string) (err error) {
 
 	// read lables
 	for i := uint16(0); i < numLables; i++ {
-		var lableBytes [LABEL_SIZE]byte
+		var lableBytes [LabelSize]byte
 		var id uint16
 
 		// read id

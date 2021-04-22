@@ -40,7 +40,7 @@ func showLoadPassword(parent string, path string) {
 	})
 	form.SetFocus(0)
 
-	root.AddPage(windowName, popup(40, 10, form), true, true)
+	root.AddPage(windowName, popup(40, 7, form), true, true)
 }
 
 func showLoadKeyWindow() {
@@ -65,5 +65,5 @@ func showLoadKeyWindow() {
 	form.SetTitle(loadKeyWindowTitle)
 	form.SetFocus(0)
 
-	root.AddPage(windowName, popup(80, 15, form), true, true)
+	root.AddPage(windowName, popup(80, 7, form), true, true)
 }
