@@ -67,6 +67,7 @@ func showSetLabelWindow(row int, col int) {
 				SetSelectable(true))
 
 		root.RemovePage(windowName)
+		refreshInfo()
 	})
 	form.SetFocus(0)
 
@@ -101,19 +102,19 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 	// table header
 	table.SetCell(0, 0,
 		tview.NewTableCell("ID").
-			SetTextColor(tcell.ColorRed).
+			SetTextColor(tcell.ColorYellow).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
 	table.SetCell(0, 1,
-		tview.NewTableCell("KEY NAME").
-			SetTextColor(tcell.ColorRed).
+		tview.NewTableCell("NAME").
+			SetTextColor(tcell.ColorYellow).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
 	table.SetCell(0, 2,
-		tview.NewTableCell("KEY PREFIX").
-			SetTextColor(tcell.ColorRed).
+		tview.NewTableCell("DERIVED KEY").
+			SetTextColor(tcell.ColorYellow).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
@@ -141,13 +142,13 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 
 			table.SetCell(int(idx)+1, 1,
 				tview.NewTableCell(masterKey.lables[idx]).
-					SetTextColor(tcell.ColorRed).
+					SetTextColor(tcell.ColorWhiteSmoke).
 					SetAlign(tview.AlignLeft).
 					SetSelectable(true))
 
 			table.SetCell(int(idx)+1, 2,
 				tview.NewTableCell(hex.EncodeToString(key)).
-					SetTextColor(tcell.ColorRed).
+					SetTextColor(tcell.ColorDarkCyan).
 					SetAlign(tview.AlignLeft))
 		}
 	}

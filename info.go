@@ -8,24 +8,37 @@ import (
 )
 
 var infoString = `
-MASTER KEY CREATED:%v
-NUM LABLED KEYS:%v
+[lightgray]MASTER KEY CREATED:
+%v
+
+NUM LABLED KEYS:
+%v
 `
 
 func infoWindow() (content *tview.Flex) {
-	info := tview.NewTextView()
-	if masterKey != nil {
-		fmt.Fprintf(info, infoString,
-			time.Unix(masterKey.createdAt, 0),
-			len(masterKey.lables),
-		)
-	}
-
 	flex := tview.NewFlex()
 	flex.SetDirection(tview.FlexRow).
-		AddItem(info, 0, 8, false).
+		AddItem(infoText(), 0, 1, false).
 		SetTitle("- KEY INFO -").
 		SetBorder(true)
 
 	return flex
+}
+
+func refreshInfo() {
+	info.Clear()
+	info.AddItem(infoText(), 0, 1, false)
+}
+
+func infoText() *tview.TextView {
+	textview := tview.NewTextView()
+	textview.SetDynamicColors(true)
+
+	if masterKey != nil {
+		fmt.Fprintf(textview, infoString,
+			time.Unix(masterKey.createdAt, 0).Local().Format(time.RFC822),
+			len(masterKey.lables),
+		)
+	}
+	return textview
 }
