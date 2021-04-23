@@ -76,9 +76,6 @@ func showKeyGenWindow() {
 		SetText(path + "/.safebox.key").
 		SetFieldWidth(64)
 	form.AddFormItem(inputField)
-	form.AddButton("...", func() {
-		showDirWindow(inputField)
-	})
 	form.AddButton("Save", func() {
 		// check file existence
 		if _, err := os.Stat(inputField.GetText()); os.IsNotExist(err) {
@@ -87,6 +84,10 @@ func showKeyGenWindow() {
 			showFailWindow("FAILURE", "MASTER KEY FILE EXISTS, IF YOU WANT TO OVERWRITE, PLEASE DELETE THIS FILE BY YOURSELF.")
 		}
 	})
+	form.AddButton("...", func() {
+		showDirWindow(inputField)
+	})
+
 	form.SetFocus(0)
 
 	flex := tview.NewFlex()

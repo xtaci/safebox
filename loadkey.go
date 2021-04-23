@@ -18,7 +18,7 @@ func showLoadPassword(parent string, path string) {
 	passwordField := tview.NewInputField().SetLabel("Password").
 		SetFieldWidth(64).
 		SetMaskCharacter('*')
-	form.AddFormItem(passwordField)
+
 	form.AddButton("OK", func() {
 		// create a master key
 		masterKeyToLoad := newMasterKey()
@@ -38,6 +38,8 @@ func showLoadPassword(parent string, path string) {
 			})
 		}
 	})
+
+	form.AddFormItem(passwordField)
 	form.SetFocus(0)
 
 	root.AddPage(windowName, popup(40, 7, form), true, true)
@@ -53,14 +55,20 @@ func showLoadKeyWindow() {
 	}
 
 	form := tview.NewForm()
+	// input field setting
 	inputField := tview.NewInputField().
 		SetLabel("Path: ").
 		SetText(path + "/.safebox.key").
 		SetFieldWidth(64)
+
 	form.AddFormItem(inputField)
 	form.AddButton("Load", func() {
 		showLoadPassword(windowName, inputField.GetText())
 	})
+	form.AddButton("...", func() {
+		showDirWindow(inputField)
+	})
+
 	form.SetBorder(true)
 	form.SetTitle(loadKeyWindowTitle)
 	form.SetFocus(0)

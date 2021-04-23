@@ -45,6 +45,9 @@ func showDirWindow(inputField *tview.InputField) {
 	// recursive to root
 	dir := inputField.GetText()
 
+	// get file info
+	fi, _ := os.Stat(dir)
+
 	for dir != rootDir {
 		if dir == "." {
 			wd, err := os.Getwd()
@@ -74,9 +77,14 @@ func showDirWindow(inputField *tview.InputField) {
 				for _, file := range files {
 					node := tview.NewTreeNode(file.Name()).
 						SetReference(filepath.Join(route[i], file.Name())).
-						SetSelectable(file.IsDir())
+						SetSelectable(true)
 					if file.IsDir() {
 						node.SetColor(tcell.ColorGreen)
+					} else {
+						// select the given file
+						if os.SameFile(fi, file) {
+							tree.SetCurrentNode(node)
+						}
 					}
 					children.AddChild(node)
 				}
@@ -88,6 +96,17 @@ func showDirWindow(inputField *tview.InputField) {
 		}
 	}
 
+	// Change input text based on tree selection
+	tree.SetChangedFunc(func(node *tview.TreeNode) {
+		reference := node.GetReference()
+		if reference == nil {
+			return // Selecting the root node does nothing.
+		}
+		path := reference.(string)
+		// set this path to input text
+		inputField.SetText(path)
+	})
+
 	// If a directory was selected, open it.
 	tree.SetSelectedFunc(func(node *tview.TreeNode) {
 		reference := node.GetReference()
@@ -96,14 +115,24 @@ func showDirWindow(inputField *tview.InputField) {
 		}
 		children := node.GetChildren()
 		path := reference.(string)
-		inputField.SetText(path + "/.safebox.key")
 
-		if len(children) == 0 {
-			// Load and show files in this directory.
-			add(node, path)
+		// check if the selected path is dir
+		fi, err := os.Stat(inputField.GetText())
+		if err != nil {
+			panic(err)
+		}
+
+		if fi.IsDir() {
+			if len(children) == 0 {
+				// Load and show files in this directory.
+				add(node, path)
+			} else {
+				// Collapse if visible, expand if collapsed.
+				node.SetExpanded(!node.IsExpanded())
+			}
 		} else {
-			// Collapse if visible, expand if collapsed.
-			node.SetExpanded(!node.IsExpanded())
+			// file selected, close window
+			root.RemovePage(windowName)
 		}
 	})
 

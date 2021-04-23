@@ -6,13 +6,15 @@ import (
 )
 
 func popup(width int, height int, primitive tview.Primitive) *tview.Flex {
-	return tview.NewFlex().
+	flex := tview.NewFlex().
 		AddItem(nil, 0, 1, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 			AddItem(nil, 0, 1, false).
 			AddItem(primitive, height, 1, true).
 			AddItem(nil, 0, 1, false), width, 1, true).
 		AddItem(nil, 0, 1, false)
+
+	return flex
 }
 
 func showFailWindow(title string, msg string) {
