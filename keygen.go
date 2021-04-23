@@ -76,6 +76,9 @@ func showKeyGenWindow() {
 		SetText(path + "/.safebox.key").
 		SetFieldWidth(64)
 	form.AddFormItem(inputField)
+	form.AddButton("...", func() {
+		showDirWindow(inputField)
+	})
 	form.AddButton("Save", func() {
 		// check file existence
 		if _, err := os.Stat(inputField.GetText()); os.IsNotExist(err) {
@@ -93,5 +96,5 @@ func showKeyGenWindow() {
 	flex.AddItem(text, 0, 1, false)
 	flex.AddItem(form, 0, 1, true)
 
-	root.AddPage(windowName, popup(80, 15, flex), true, true)
+	root.AddPage(windowName, popup(100, 15, flex), true, true)
 }
