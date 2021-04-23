@@ -68,7 +68,8 @@ func (mkey *MasterKey) deriveKey(id uint16, keySize int) (key []byte, err error)
 	// Approcach:
 	// 1. take the N-th 16Byte as the key to encrypt the whole master key in CFB
 	var encryptedKey [MasterKeyLength]byte
-	aesBlock, err := NewAESBlockCrypt(mkey.masterKey[id*aes.BlockSize : (id+1)*aes.BlockSize])
+	aesKey := mkey.masterKey[int(id)*aes.BlockSize : (int(id)+1)*aes.BlockSize]
+	aesBlock, err := NewAESBlockCrypt(aesKey)
 	if err != nil {
 		return nil, err
 	}

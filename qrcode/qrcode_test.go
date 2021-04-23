@@ -6,5 +6,5 @@ import (
 )
 
 func TestQRCode(t *testing.T) {
-	fmt.Print(generateQRCode("hello world"))
+	fmt.Print(GenerateQRCode("hello world"))
 }

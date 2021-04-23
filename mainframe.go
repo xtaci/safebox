@@ -97,19 +97,25 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 
 	// table header
 	table.SetCell(0, 0,
-		tview.NewTableCell("KEY NAME").
+		tview.NewTableCell("ID").
 			SetTextColor(tcell.ColorRed).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
 	table.SetCell(0, 1,
+		tview.NewTableCell("KEY NAME").
+			SetTextColor(tcell.ColorRed).
+			SetSelectable(false).
+			SetAlign(tview.AlignLeft))
+
+	table.SetCell(0, 2,
 		tview.NewTableCell("KEY PREFIX").
 			SetTextColor(tcell.ColorRed).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
-	// fix table header
-	table.SetFixed(1, 0)
+	// fix table header & first column
+	table.SetFixed(1, 1)
 	table.SetSelectable(true, true)
 
 	addDerivedKeys := func(start uint16) {
@@ -125,11 +131,18 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 			}
 
 			table.SetCell(int(idx)+1, 0,
-				tview.NewTableCell(masterKey.lables[idx]).
-					SetTextColor(tcell.ColorRed).
-					SetAlign(tview.AlignLeft))
+				tview.NewTableCell(fmt.Sprint(idx)).
+					SetTextColor(tcell.ColorWhite).
+					SetAlign(tview.AlignLeft).
+					SetSelectable(false))
 
 			table.SetCell(int(idx)+1, 1,
+				tview.NewTableCell(masterKey.lables[idx]).
+					SetTextColor(tcell.ColorRed).
+					SetAlign(tview.AlignLeft).
+					SetSelectable(true))
+
+			table.SetCell(int(idx)+1, 2,
 				tview.NewTableCell(hex.EncodeToString(key)).
 					SetTextColor(tcell.ColorRed).
 					SetAlign(tview.AlignLeft))
