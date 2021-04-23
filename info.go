@@ -15,6 +15,12 @@ NUM LABLED KEYS:
 %v
 `
 
+var keyLoadedString = `
+Use ArrowKeys ← ↑ → ↓ To Select Keys
+
+Derived keys will be uncovered when selected.
+`
+
 func infoWindow() (content *tview.Flex) {
 	flex := tview.NewFlex()
 	flex.SetDirection(tview.FlexRow).
@@ -39,6 +45,8 @@ func infoText() *tview.TextView {
 			time.Unix(masterKey.createdAt, 0).Local().Format(time.RFC822),
 			len(masterKey.lables),
 		)
+
+		fmt.Fprintf(textview, keyLoadedString)
 	}
 	return textview
 }

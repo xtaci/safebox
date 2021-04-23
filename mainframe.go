@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
-	"log"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -131,7 +130,7 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 			// we derive and show the part of the key
 			key, err := masterKey.deriveKey(idx, 32)
 			if err != nil {
-				log.Fatal(err)
+				panic(err)
 			}
 
 			table.SetCell(int(idx)+1, 0,
@@ -147,7 +146,7 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 					SetSelectable(true))
 
 			table.SetCell(int(idx)+1, 2,
-				tview.NewTableCell(hex.EncodeToString(key)).
+				tview.NewTableCell(mask(hex.EncodeToString(key), 4, '*')).
 					SetTextColor(tcell.ColorDarkCyan).
 					SetAlign(tview.AlignLeft))
 		}
@@ -156,10 +155,45 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 	// add initial derived keys
 	addDerivedKeys(0)
 
+	var lastRow int
+	var lastCol int
 	table.SetSelectionChangedFunc(func(row, column int) {
 		// moved to last
+		idx := uint16(row) - 1
 		if row == table.GetRowCount()-1 {
-			addDerivedKeys(uint16(row) - 1)
+			addDerivedKeys(idx)
+		}
+
+		// mask previous key again
+		// derive key again
+		if lastRow > 0 {
+			key, err := masterKey.deriveKey(uint16(lastRow)-1, 32)
+			if err != nil {
+				panic(err)
+			}
+
+			table.SetCell(lastRow, lastCol,
+				tview.NewTableCell(mask(hex.EncodeToString(key), 4, '*')).
+					SetTextColor(tcell.ColorDarkCyan).
+					SetAlign(tview.AlignLeft))
+		}
+
+		// mask previous selection
+		if column == 2 && row > 0 {
+			// derive key again
+			key, err := masterKey.deriveKey(idx, 32)
+			if err != nil {
+				panic(err)
+			}
+
+			// uncover mask
+			table.SetCell(row, column,
+				tview.NewTableCell(hex.EncodeToString(key)).
+					SetTextColor(tcell.ColorDarkCyan).
+					SetAlign(tview.AlignLeft))
+			// remember last selection
+			lastRow = row
+			lastCol = column
 		}
 	})
 
