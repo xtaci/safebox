@@ -35,6 +35,7 @@ func showExporterSelect(idx uint16) {
 		outputBox.SetScrollable(true)
 		outputBox.SetWrap(true)
 		outputBox.Write(bts)
+		outputBox.Write([]byte(generateQRCode(string(bts))))
 		root.AddPage("output", outputBox, true, true)
 	})
 	form.SetFocus(0)
