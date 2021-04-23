@@ -1,4 +1,4 @@
-package main
+package qrcode
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
-func generateQRCode(text string) string {
+func GenerateQRCode(text string) string {
 	qr, err := qrcode.New(text, qrcode.Medium)
 	if err != nil {
 		panic(err)

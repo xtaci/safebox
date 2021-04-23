@@ -1,6 +1,7 @@
 package eth
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"crypto/sha1"
 	"encoding/hex"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
+	"github.com/xtaci/safebox/qrcode"
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -53,12 +55,22 @@ func (exp *EthereumExporter) Export(key []byte) ([]byte, error) {
 	if priv.D.Sign() <= 0 {
 		return nil, fmt.Errorf("invalid private key, zero or negative")
 	}
-	ret := fmt.Sprintf(
-		`Account Address: %v
-Private Key: %v`,
-		crypto.PubkeyToAddress(priv.PublicKey),
-		hex.EncodeToString(crypto.FromECDSA(&priv)))
 
-	return []byte(ret), nil
+	var out bytes.Buffer
+	fmt.Fprintf(&out,
+		`Account Address: %v
+Public Key QR Code:
+%v
+Private Key: %v
+Private Key QR Code :
+%v`,
+		crypto.PubkeyToAddress(priv.PublicKey),
+		qrcode.GenerateQRCode(crypto.PubkeyToAddress(priv.PublicKey).String()),
+
+		hex.EncodeToString(crypto.FromECDSA(&priv)),
+		qrcode.GenerateQRCode(hex.EncodeToString(crypto.FromECDSA(&priv))),
+	)
+
+	return out.Bytes(), nil
 
 }
