@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/btcsuite/btcd/btcec"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"github.com/xtaci/safebox/qrcode"
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -31,7 +31,7 @@ func (exp *EthereumExporter) KeySize() int {
 }
 
 func (exp *EthereumExporter) Export(key []byte) ([]byte, error) {
-	curve := secp256k1.S256()
+	curve := btcec.S256()
 
 	// use pbkdf to extend the key
 	if len(key) != curve.Params().BitSize/8 {
