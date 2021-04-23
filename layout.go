@@ -26,6 +26,7 @@ var (
 	body      *tview.Flex
 	layout    *tview.Flex
 	mainFrame *tview.Flex
+	table     *tview.Table
 	info      *tview.Flex
 	footer    *tview.TextView
 )

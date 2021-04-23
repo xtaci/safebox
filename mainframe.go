@@ -12,14 +12,15 @@ import (
 var verString = "VER 1.0"
 var mainFrameTitle = fmt.Sprintf("- SAFEBOX KEY MANGEMENT SYSTEM %v -", verString)
 
-func showExporterSelect(idx uint16) {
-	windowName := "showExporterSelect"
+func showExporterWindow(row int, col int) {
+	windowName := "showExporterWindow"
 	exporterLabel := "Select an exporter (hit Enter):"
 	var exportorNames []string
 	for k := range exports {
 		exportorNames = append(exportorNames, exports[k].Name())
 	}
 
+	idx := uint16(row - 1)
 	selected := 0
 	form := tview.NewForm()
 	form.SetTitle("EXPORT KEY")
@@ -44,26 +45,28 @@ func showExporterSelect(idx uint16) {
 	view.SetDirection(tview.FlexRow).
 		AddItem(form, 0, 1, true)
 
-	root.AddPage(windowName, popup(100, 20, view), true, true)
+	root.AddPage(windowName, popup(80, 10, view), true, true)
 }
 
-func showDeriveKeyOperation(idx uint16) {
-	windowName := "showDeriveKeyOperation"
+func showSetLabelWindow(row int, col int) {
+	windowName := "showSetLabelWindow"
+	idx := uint16(row - 1)
+
 	form := tview.NewForm()
 	form.SetBorder(true)
-	form.SetTitle("SETTING KEY PROPERTIES")
+	form.SetTitle("SETTING KEY LABEL")
 	form.AddInputField("Label", masterKey.lables[idx], 16, nil, nil)
 	form.AddButton("Update", func() {
 		//update key
 		masterKey.lables[idx] = form.GetFormItemByLabel("Label").(*tview.InputField).GetText()
 		masterKey.store(masterKey.password, masterKey.path)
-		// refresh main frame
-		mainFrame = mainFrameWindow()
-		refreshBody()
+		table.SetCell(int(idx)+1, 1,
+			tview.NewTableCell(masterKey.lables[idx]).
+				SetTextColor(tcell.ColorRed).
+				SetAlign(tview.AlignLeft).
+				SetSelectable(true))
+
 		root.RemovePage(windowName)
-	})
-	form.AddButton("Export", func() {
-		showExporterSelect(idx)
 	})
 	form.SetFocus(0)
 
@@ -92,7 +95,7 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 	}
 
 	// key table
-	table := tview.NewTable().SetBorders(true)
+	table = tview.NewTable().SetBorders(true)
 	table.SetTitle(mainFrameTitle)
 
 	// table header
@@ -161,7 +164,11 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 
 	// key selection
 	table.SetSelectedFunc(func(row, column int) {
-		showDeriveKeyOperation(uint16(row) - 1)
+		if column == 1 {
+			showSetLabelWindow(row, column)
+		} else if column == 2 {
+			showExporterWindow(row, column)
+		}
 	})
 
 	flex := tview.NewFlex()
