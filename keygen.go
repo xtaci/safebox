@@ -78,7 +78,7 @@ func showKeyGenWindow() {
 	form.AddFormItem(inputField)
 	form.AddButton("Save", func() {
 		// check file existence
-		if _, err := os.Stat(path); os.IsNotExist(err) {
+		if _, err := os.Stat(inputField.GetText()); os.IsNotExist(err) {
 			showKeyGenPasswordPrompt(windowName, inputField.GetText())
 		} else {
 			showFailWindow("FAILURE", "MASTER KEY FILE EXISTS, IF YOU WANT TO OVERWRITE, PLEASE DELETE THIS FILE BY YOURSELF.")
