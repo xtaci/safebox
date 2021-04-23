@@ -58,7 +58,7 @@ func (exp *EthereumExporter) Export(key []byte) ([]byte, error) {
 
 	var out bytes.Buffer
 	fmt.Fprintf(&out,
-		`Account Address: %v
+		`Ethereum Account: %v
 Public Key QR Code:
 %v
 Private Key: %v

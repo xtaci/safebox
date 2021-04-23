@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/xtaci/safebox/btc"
 	"github.com/xtaci/safebox/eth"
 	"github.com/xtaci/safebox/ssh"
 )
@@ -16,4 +17,5 @@ var exports []IKeyExport
 func init() {
 	exports = append(exports, new(eth.EthereumExporter))
 	exports = append(exports, new(ssh.SSHExporter))
+	exports = append(exports, new(btc.BitcoinExporter))
 }

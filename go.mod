@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/btcsuite/btcd v0.20.1-beta
+	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 	github.com/ethereum/go-ethereum v1.10.2
 	github.com/gdamore/tcell/v2 v2.2.0
 	github.com/rivo/tview v0.0.0-20210312174852-ae9464cc3598
