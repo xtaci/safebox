@@ -51,11 +51,11 @@ var (
 	}
 
 	shortCuts = map[tcell.Key]string{
-		tcell.KeyF1:    "GENERATE MASTER KEY",
-		tcell.KeyF2:    "LOAD MASTER KEY",
-		tcell.KeyF3:    "CHANGE MASTER PASSWORD",
-		tcell.KeyEsc:   "BACK",
-		tcell.KeyCtrlC: "QUIT",
+		tcell.KeyF1:    "Generate master key",
+		tcell.KeyF2:    "Load master key",
+		tcell.KeyF3:    "Change password",
+		tcell.KeyEsc:   "Back",
+		tcell.KeyCtrlC: "Quit",
 	}
 )
 

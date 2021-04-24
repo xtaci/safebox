@@ -26,9 +26,9 @@ Instructions
 
 1) Use ArrowKeys ← ↑ → ↓ To Select Keys, masks on derived keys will be uncovered when selected.
 
-2) Press Enter on 'DERIVED KEY' column to export.
+2) Press <Enter> on 'DERIVED KEY' column to export.
 
-3) Press Enter on 'NAME' column to set label.
+3) Press <Enter> on 'NAME' column to set label.
 `
 
 func infoWindow() (content *tview.Flex) {
