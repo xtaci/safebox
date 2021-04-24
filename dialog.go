@@ -44,7 +44,7 @@ func showSuccessWindow(title string, msg string, callback func()) {
 		})
 
 	succ.SetTitle(title)
-	succ.SetBackgroundColor(tcell.ColorDarkGreen)
+	succ.SetBackgroundColor(tcell.ColorLightGreen)
 
 	root.AddPage("success", succ, true, true)
 }

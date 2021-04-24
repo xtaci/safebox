@@ -20,7 +20,7 @@ const logo = `
 `
 
 const (
-	subtitle   = `[::u]UNIFIED KEY MANAGEMENT SYSTEM`
+	subtitle   = `[::u]AN UNIFIED KEY MANAGEMENT SYSTEM`
 	navigation = `[::bl]Press any key to continue...[-:-:-]`
 )
 
@@ -36,15 +36,15 @@ func coverPage() *tview.Flex {
 		}
 	}
 	logoBox := tview.NewTextView().
-		SetTextColor(tcell.ColorGreen)
+		SetTextColor(tcell.ColorDarkCyan)
 	fmt.Fprint(logoBox, logo)
 
 	// Create a frame for the subtitle and navigation infos.
 	frame := tview.NewFrame(tview.NewBox()).
 		SetBorders(0, 0, 0, 0, 0, 0).
-		AddText(subtitle, true, tview.AlignCenter, tcell.ColorGold).
+		AddText(subtitle, true, tview.AlignCenter, tcell.ColorDarkOrange).
 		AddText("", true, tview.AlignCenter, tcell.ColorGold).
-		AddText(navigation, true, tview.AlignCenter, tcell.ColorLightGray)
+		AddText(navigation, true, tview.AlignCenter, tcell.ColorWhite)
 
 	// Create a Flex layout that centers the logo and subtitle.
 	flex := tview.NewFlex().

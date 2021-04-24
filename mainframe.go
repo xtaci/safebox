@@ -101,19 +101,19 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 	// table header
 	table.SetCell(0, 0,
 		tview.NewTableCell("ID").
-			SetTextColor(tcell.ColorYellow).
+			SetTextColor(tcell.ColorDarkOrange).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
 	table.SetCell(0, 1,
 		tview.NewTableCell("NAME").
-			SetTextColor(tcell.ColorYellow).
+			SetTextColor(tcell.ColorDarkOrange).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
 	table.SetCell(0, 2,
 		tview.NewTableCell("DERIVED KEY").
-			SetTextColor(tcell.ColorYellow).
+			SetTextColor(tcell.ColorDarkOrange).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
@@ -135,13 +135,11 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 
 			table.SetCell(int(idx)+1, 0,
 				tview.NewTableCell(fmt.Sprint(idx)).
-					SetTextColor(tcell.ColorWhite).
 					SetAlign(tview.AlignLeft).
 					SetSelectable(false))
 
 			table.SetCell(int(idx)+1, 1,
 				tview.NewTableCell(masterKey.lables[idx]).
-					SetTextColor(tcell.ColorWhiteSmoke).
 					SetAlign(tview.AlignLeft).
 					SetSelectable(true))
 

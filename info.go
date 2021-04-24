@@ -8,11 +8,12 @@ import (
 )
 
 var infoString = `
-[lightgray]MASTER KEY CREATED:
-%v
+MASTER KEY CREATED:
+[green]%v
 
+[-:-:-]
 NUM LABLED KEYS:
-%v
+[green]%v
 `
 
 var keyLoadedString = `
@@ -22,18 +23,21 @@ Derived keys will be uncovered when selected.
 `
 
 func infoWindow() (content *tview.Flex) {
-	flex := tview.NewFlex()
-	flex.SetDirection(tview.FlexRow).
-		AddItem(infoText(), 0, 1, false).
-		SetTitle("- KEY INFO -").
-		SetBorder(true)
-
-	return flex
+	info = tview.NewFlex()
+	info.SetDirection(tview.FlexRow)
+	info.SetBorder(true)
+	refreshInfo()
+	return info
 }
 
 func refreshInfo() {
 	info.Clear()
-	info.AddItem(infoText(), 0, 1, false)
+	info.AddItem(infoText(), 0, 8, false)
+
+	// scroll to end to align text to bottom
+	keyloadtv := keyLoadedText()
+	info.AddItem(keyloadtv, 0, 2, false)
+	keyloadtv.ScrollToEnd()
 }
 
 func infoText() *tview.TextView {
@@ -45,8 +49,16 @@ func infoText() *tview.TextView {
 			time.Unix(masterKey.createdAt, 0).Local().Format(time.RFC822),
 			len(masterKey.lables),
 		)
+	}
+	return textview
+}
 
-		fmt.Fprintf(textview, keyLoadedString)
+func keyLoadedText() *tview.TextView {
+	textview := tview.NewTextView()
+	textview.SetDynamicColors(true)
+	if masterKey != nil {
+		fmt.Fprint(textview, "\n\n\n\n\n\n\n\n\n")
+		fmt.Fprint(textview, keyLoadedString)
 	}
 	return textview
 }

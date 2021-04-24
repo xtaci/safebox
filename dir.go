@@ -136,5 +136,5 @@ func showDirWindow(inputField *tview.InputField) {
 		}
 	})
 
-	root.AddPage(windowName, popup(40, 40, tree), true, true)
+	root.AddPage(windowName, popup(80, 30, tree), true, true)
 }

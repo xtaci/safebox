@@ -18,7 +18,7 @@ func footerWindow() *tview.TextView {
 	//keys := []tcell.Key{tcell.KeyF1, tcell.KeyF2, tcell.KeyEsc}
 	keys := []tcell.Key{tcell.KeyF1, tcell.KeyF2, tcell.KeyEsc, tcell.KeyCtrlC}
 	for _, key := range keys {
-		fmt.Fprintf(info, `[yellow]%v ["%d"][white]%s[""] `, tview.Escape("["+keyNames[key]+"]"), key, shortCuts[key])
+		fmt.Fprintf(info, `[darkorange]%v ["%d"][black]%s[""] `, tview.Escape("["+keyNames[key]+"]"), key, shortCuts[key])
 	}
 	return info
 }

@@ -59,10 +59,9 @@ func showKeyGenWindow() {
 	masterKey = newMasterKey()
 	masterKey.generateMasterKey(nil)
 
-	fmt.Fprint(text, "[red]Generate Master Key\n\n")
-	fmt.Fprintf(text, "[blue::bl]%v...\n\n", hex.EncodeToString(masterKey.masterKey[:16]))
-	fmt.Fprint(text, "[red::b]MAKE SURE YOU BACKUP THIS FILE CORRECTLY\n")
-	fmt.Fprint(text, "[gray::]This file will be save to:")
+	fmt.Fprint(text, "GENERATED MASTER KEY:\n\n")
+	fmt.Fprintf(text, "[darkorange::bl]%v...\n\n", hex.EncodeToString(masterKey.masterKey[:32]))
+	fmt.Fprint(text, "[darkorange::bu]MAKE SURE YOU BACKUP THIS FILE CORRECTLY\n")
 
 	// path input field
 	path, err := os.Getwd()
@@ -72,7 +71,7 @@ func showKeyGenWindow() {
 
 	form := tview.NewForm()
 	inputField := tview.NewInputField().
-		SetLabel("Path: ").
+		SetLabel("Save To:").
 		SetText(path + "/.safebox.key").
 		SetFieldWidth(64)
 	form.AddFormItem(inputField)
@@ -97,5 +96,5 @@ func showKeyGenWindow() {
 	flex.AddItem(text, 0, 1, false)
 	flex.AddItem(form, 0, 1, true)
 
-	root.AddPage(windowName, popup(100, 15, flex), true, true)
+	root.AddPage(windowName, popup(100, 12, flex), true, true)
 }

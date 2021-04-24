@@ -1,4 +1,3 @@
-// Demo code for the List primitive.
 package main
 
 import (
@@ -30,7 +29,22 @@ var (
 	}
 )
 
+var theme = tview.Theme{
+	PrimitiveBackgroundColor:    tcell.ColorWhite,
+	ContrastBackgroundColor:     tcell.ColorBlue,
+	MoreContrastBackgroundColor: tcell.ColorGreen,
+	BorderColor:                 tcell.ColorBlack,
+	TitleColor:                  tcell.ColorRed,
+	GraphicsColor:               tcell.ColorBlack,
+	PrimaryTextColor:            tcell.ColorBlack,
+	SecondaryTextColor:          tcell.ColorBlack,
+	TertiaryTextColor:           tcell.ColorGreen,
+	InverseTextColor:            tcell.ColorBlue,
+	ContrastSecondaryTextColor:  tcell.ColorDarkCyan,
+}
+
 func main() {
+	tview.Styles = theme
 	initLayouts()
 	// Start the application and set root to Cover
 	if err := app.SetRoot(root, true).Run(); err != nil {
