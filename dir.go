@@ -10,7 +10,13 @@ import (
 )
 
 func showDirWindow(inputField *tview.InputField) {
-	windowName := "showDirWindow"
+	const (
+		windowName   = "showDirWindow"
+		windowWidth  = 80
+		windowHeight = 30
+		windowTitle  = "- DIRECTORY TREE -"
+	)
+
 	rootDir := "/"
 
 	node := tview.NewTreeNode(rootDir).SetColor(tcell.ColorRed)
@@ -18,7 +24,7 @@ func showDirWindow(inputField *tview.InputField) {
 		SetRoot(node).
 		SetCurrentNode(node)
 
-	tree.SetBorder(true).SetTitle("Directory")
+	tree.SetBorder(true).SetTitle(windowTitle)
 
 	// A helper function which adds the files and directories of the given path
 	// to the given target node.
@@ -61,7 +67,7 @@ func showDirWindow(inputField *tview.InputField) {
 		route = append(route, dir)
 	}
 
-	// create a path to inputfield
+	// expand the tree to path the inputfield
 	prevNode := node
 	for i := len(route) - 1; i >= 0; i-- {
 		children := prevNode.GetChildren()
@@ -81,8 +87,7 @@ func showDirWindow(inputField *tview.InputField) {
 					if file.IsDir() {
 						node.SetColor(tcell.ColorGreen)
 					} else {
-						// select the given file
-						if os.SameFile(fi, file) {
+						if os.SameFile(fi, file) { // select the given file if match
 							tree.SetCurrentNode(node)
 						}
 					}
@@ -96,7 +101,7 @@ func showDirWindow(inputField *tview.InputField) {
 		}
 	}
 
-	// Change input text based on tree selection
+	// Change input field text based on tree selection
 	tree.SetChangedFunc(func(node *tview.TreeNode) {
 		reference := node.GetReference()
 		if reference == nil {
@@ -108,6 +113,7 @@ func showDirWindow(inputField *tview.InputField) {
 	})
 
 	// If a directory was selected, open it.
+	// If a file was selected, close the page
 	tree.SetSelectedFunc(func(node *tview.TreeNode) {
 		reference := node.GetReference()
 		if reference == nil {
@@ -116,13 +122,12 @@ func showDirWindow(inputField *tview.InputField) {
 		children := node.GetChildren()
 		path := reference.(string)
 
-		// check if the selected path is dir
 		fi, err := os.Stat(inputField.GetText())
 		if err != nil {
 			panic(err)
 		}
 
-		if fi.IsDir() {
+		if fi.IsDir() { // check if the selected path is dir
 			if len(children) == 0 {
 				// Load and show files in this directory.
 				add(node, path)
@@ -130,11 +135,10 @@ func showDirWindow(inputField *tview.InputField) {
 				// Collapse if visible, expand if collapsed.
 				node.SetExpanded(!node.IsExpanded())
 			}
-		} else {
-			// file selected, close window
+		} else { // file selected, close this page
 			layoutRoot.RemovePage(windowName)
 		}
 	})
 
-	layoutRoot.AddPage(windowName, popup(80, 30, tree), true, true)
+	layoutRoot.AddPage(windowName, popup(windowWidth, windowHeight, tree), true, true)
 }
