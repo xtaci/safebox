@@ -94,7 +94,7 @@ func (mkey *MasterKey) deriveKey(id uint16, keySize int) (key []byte, err error)
 // CREATED DATE (64bit unix timestamp)
 // SHA256 of raw key(256 bit)
 // Num Labels(16bit)
-// ENCRYPTED MASTER KEY DATA(16KB)
+// ENCRYPTED MASTER KEY DATA(256KB)
 // |Lable 1(uint16 little endian) | Label(16Byte 0 ending) |
 // ...
 // |Lable N(uint16 little endian) | Label(16Byte 0 ending) |

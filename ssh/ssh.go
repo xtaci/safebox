@@ -17,7 +17,7 @@ import (
 type SSHExporter struct{}
 
 func (exp *SSHExporter) Name() string {
-	return "SSH(EllipticCurve)"
+	return "SSH(ECDSA)"
 }
 func (exp *SSHExporter) KeySize() int {
 	return 32
