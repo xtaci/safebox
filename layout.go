@@ -7,8 +7,6 @@ import (
 	"github.com/rivo/tview"
 )
 
-type windowState byte
-
 const (
 	pageBackground = "BACKGROUND"
 	pageCover      = "COVER"
@@ -42,7 +40,7 @@ var (
 	layoutFooter        *tview.TextView
 )
 
-// global shortcuts handling
+// global function keys handling
 func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 	// check cover page
 	name, _ := layoutRoot.GetFrontPage()
@@ -51,6 +49,7 @@ func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 		return nil
 	}
 
+	// non cover page
 	switch event.Key() {
 	case tcell.KeyF1:
 		if name, _ := layoutRoot.GetFrontPage(); name == pageMain {
