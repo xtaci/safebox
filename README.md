@@ -14,9 +14,11 @@ up to 16384 keys can be derived with a single main key.
 # TUI
 
 Safebox is designed with a DOS style text-based user interface(tui), so a box such as Raspberry Pi will be able to act as key mangement box for offline storage.
+![image](https://user-images.githubusercontent.com/2346725/115947888-45395b00-a4fd-11eb-8189-06b776771542.png)
 
-![image](https://user-images.githubusercontent.com/2346725/115851951-1d44eb80-a45a-11eb-8739-721f317827e5.png)
-![image](https://user-images.githubusercontent.com/2346725/115852718-f4712600-a45a-11eb-9061-2c45e50437a6.png)
+![image](https://user-images.githubusercontent.com/2346725/115947871-2fc43100-a4fd-11eb-9f1e-6d2b5e8a005a.png)
+
+![image](https://user-images.githubusercontent.com/2346725/115947920-6bf79180-a4fd-11eb-986a-b84159585a22.png)
 
 
 
