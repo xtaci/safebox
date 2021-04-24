@@ -9,8 +9,10 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"time"
 	"unsafe"
 
@@ -22,39 +24,67 @@ var (
 	ErrInvalidKeyId      = errors.New("invalid key id")
 	ErrPasswordIncorrect = errors.New("incorrect password to decrypt the master key")
 )
+
+// common cryptograph settings in safebox
 var (
 	IV               = []byte{167, 79, 156, 18, 172, 27, 1, 164, 21, 242, 193, 252, 120, 230, 107, 115}
 	SALT             = "safebox"
-	Pbkdf2Iterations = 4096
+	pbkdf2Iterations = 4096
 )
 
 const (
-	MasterKeyLength = 256 * 1024 // 256 KB
-	LabelSize       = 16
-	MaxKeys         = MasterKeyLength / aes.BlockSize
+	MasterKeyLength = 256 * 1024                      // 256 KB
+	LabelSize       = 16                              // Maximum Label Size
+	MaxKeys         = MasterKeyLength / aes.BlockSize // A const 16K
 )
 
+// MasterKey defines the master key memory structure
 type MasterKey struct {
-	password  []byte
-	createdAt int64
-	path      string
-	masterKey [MasterKeyLength]byte
-	lables    map[uint16]string
+	password  []byte                // the password to encrypt storage masterkey
+	createdAt int64                 // the date for masterkey creation
+	path      string                // the path where the master key located
+	masterKey [MasterKeyLength]byte // the mster key memory data(decrypted)
+	lables    map[uint16]string     // labels of derived keys
 }
 
-type DerivedKey [24]byte
-
+// newMasterKey creates
 func newMasterKey() *MasterKey {
 	mkey := new(MasterKey)
 	mkey.lables = make(map[uint16]string)
 	return mkey
 }
 
+// generate master key with give entropy
 func (mkey *MasterKey) generateMasterKey(entropy []byte) error {
 	_, err := io.ReadFull(rand.Reader, mkey.masterKey[:])
 	if err != nil {
 		return err
 	}
+
+	// entropy often comes from key strokes
+	// overall entropys includes:
+	//
+	// 1. current unix time
+	// 2. current process pid
+	// 3. current os name
+	// 4. given entropy
+	// 5. current uid
+	// 6. hostname
+	// 7. workding dir
+
+	var overallEntropy bytes.Buffer
+	hostname, _ := os.Hostname()
+	wd, _ := os.Getwd()
+	fmt.Fprintf(&overallEntropy, "%v%v%v%v%v%v%v%v", time.Now().Unix(), time.Now().UnixNano(), os.Getpid(), runtime.GOOS, hostname, entropy, os.Getuid(), wd)
+
+	// we use all the entropy above to encrypt the master key again
+	aesKey := sha256.Sum256(overallEntropy.Bytes())
+	aesBlock, err := NewAESBlockCrypt(aesKey[:])
+	if err != nil {
+		return err
+	}
+	aesBlock.Encrypt(mkey.masterKey[:], mkey.masterKey[:])
+
 	mkey.createdAt = time.Now().Unix()
 	return nil
 }
@@ -80,7 +110,7 @@ func (mkey *MasterKey) deriveKey(id uint16, keySize int) (key []byte, err error)
 
 	// 3. use pbkdf2 to suit the key size
 	if len(md) != keySize {
-		key = pbkdf2.Key(md[:], []byte(SALT), Pbkdf2Iterations, keySize, sha1.New)
+		key = pbkdf2.Key(md[:], []byte(SALT), pbkdf2Iterations, keySize, sha1.New)
 	} else {
 		key = md[:]
 	}
@@ -130,7 +160,7 @@ func (mkey *MasterKey) store(password []byte, path string) (err error) {
 
 	// write encrypted(AES-256) master key
 	// expand the password to create AES-256 key
-	key := pbkdf2.Key(password, []byte(SALT), Pbkdf2Iterations, 32, sha1.New)
+	key := pbkdf2.Key(password, []byte(SALT), pbkdf2Iterations, 32, sha1.New)
 	var encryptedMasterKey [MasterKeyLength]byte
 	aesBlock, err := NewAESBlockCrypt(key)
 	if err != nil {
@@ -200,7 +230,7 @@ func (mkey *MasterKey) load(password []byte, path string) (err error) {
 	}
 
 	// expand the password to create AES-256 key
-	key := pbkdf2.Key(password, []byte(SALT), Pbkdf2Iterations, 32, sha1.New)
+	key := pbkdf2.Key(password, []byte(SALT), pbkdf2Iterations, 32, sha1.New)
 	aesBlock, err := NewAESBlockCrypt(key)
 	if err != nil {
 		return err
