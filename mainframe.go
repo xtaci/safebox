@@ -54,13 +54,13 @@ func showSetLabelWindow(row int, col int) {
 	form := tview.NewForm()
 	form.SetBorder(true)
 	form.SetTitle("SETTING KEY LABEL")
-	form.AddInputField("Label", masterKey.lables[idx], 16, nil, nil)
+	form.AddInputField("Label", masterKey.labels[idx], 16, nil, nil)
 	form.AddButton("Update", func() {
 		//update key
-		masterKey.lables[idx] = form.GetFormItemByLabel("Label").(*tview.InputField).GetText()
+		masterKey.setLabel(idx, form.GetFormItemByLabel("Label").(*tview.InputField).GetText())
 		masterKey.store(masterKey.password, masterKey.path)
 		table.SetCell(int(idx)+1, 1,
-			tview.NewTableCell(masterKey.lables[idx]).
+			tview.NewTableCell(masterKey.labels[idx]).
 				SetTextColor(tcell.ColorRed).
 				SetAlign(tview.AlignLeft).
 				SetSelectable(true))
@@ -139,7 +139,7 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 					SetSelectable(false))
 
 			table.SetCell(int(idx)+1, 1,
-				tview.NewTableCell(masterKey.lables[idx]).
+				tview.NewTableCell(masterKey.labels[idx]).
 					SetAlign(tview.AlignLeft).
 					SetSelectable(true))
 

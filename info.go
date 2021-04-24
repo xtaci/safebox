@@ -47,7 +47,7 @@ func infoText() *tview.TextView {
 	if masterKey != nil {
 		fmt.Fprintf(textview, infoString,
 			time.Unix(masterKey.createdAt, 0).Local().Format(time.RFC822),
-			len(masterKey.lables),
+			len(masterKey.labels),
 		)
 	}
 	return textview

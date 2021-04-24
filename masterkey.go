@@ -51,13 +51,13 @@ type MasterKey struct {
 	createdAt int64                 // the date for masterkey creation
 	path      string                // the path where the master key located
 	masterKey [MasterKeyLength]byte // the mster key memory data(decrypted)
-	lables    map[uint16]string     // labels of derived keys
+	labels    map[uint16]string     // labels of derived keys
 }
 
 // newMasterKey creates
 func newMasterKey() *MasterKey {
 	mkey := new(MasterKey)
-	mkey.lables = make(map[uint16]string)
+	mkey.labels = make(map[uint16]string)
 	return mkey
 }
 
@@ -161,7 +161,7 @@ func (mkey *MasterKey) store(password []byte, path string) (err error) {
 	}
 
 	// num labels
-	err = binary.Write(file, binary.LittleEndian, uint16(len(mkey.lables)))
+	err = binary.Write(file, binary.LittleEndian, uint16(len(mkey.labels)))
 	if err != nil {
 		return err
 	}
@@ -183,7 +183,7 @@ func (mkey *MasterKey) store(password []byte, path string) (err error) {
 	}
 
 	// write labels with 0 ending
-	for id, label := range mkey.lables {
+	for id, label := range mkey.labels {
 		var labelBytes [LabelSize]byte
 		// write id
 		err = binary.Write(file, binary.LittleEndian, id)
@@ -278,9 +278,23 @@ func (mkey *MasterKey) load(password []byte, path string) (err error) {
 			label = string(lableBytes[:idx])
 		}
 
-		mkey.lables[id] = label
+		mkey.labels[id] = label
 	}
 
+	return nil
+}
+
+// set label
+func (mkey *MasterKey) setLabel(idx uint16, label string) error {
+	if idx >= MaxKeys || idx < 0 {
+		return ErrInvalidKeyId
+	}
+
+	if label == "" {
+		delete(mkey.labels, idx)
+	} else {
+		mkey.labels[idx] = label
+	}
 	return nil
 }
 
