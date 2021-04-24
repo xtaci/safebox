@@ -47,7 +47,7 @@ func main() {
 	tview.Styles = theme
 	initLayouts()
 	// Start the application and set root to Cover
-	if err := app.SetRoot(root, true).Run(); err != nil {
+	if err := app.SetRoot(layoutRoot, true).Run(); err != nil {
 		panic(err)
 	}
 }

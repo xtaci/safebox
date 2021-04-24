@@ -21,45 +21,56 @@ type popupWindow struct {
 }
 
 var (
-	root      *tview.Pages
-	cover     *tview.Flex
-	body      *tview.Flex
-	layout    *tview.Flex
-	mainFrame *tview.Flex
-	table     *tview.Table
-	info      *tview.Flex
-	footer    *tview.TextView
+
+	// structure of safebox windows
+	// layoutRoot
+	//    |______layoutCover
+	//    |______layoutMain
+	//              |______layoutFooter
+	//              |______layoutBody
+	//                      |______layoutMainBody
+	//                      |            |______layoutMainBodyTable
+	//                      |______layoutInfo
+
+	layoutRoot          *tview.Pages
+	layoutCover         *tview.Flex
+	layoutBody          *tview.Flex
+	layoutMain          *tview.Flex
+	layoutMainBody      *tview.Flex
+	layoutMainBodyTable *tview.Table
+	layoutInfo          *tview.Flex
+	layoutFooter        *tview.TextView
 )
 
 // global shortcuts handling
 func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 	// check cover page
-	name, _ := root.GetFrontPage()
+	name, _ := layoutRoot.GetFrontPage()
 	if name == pageCover {
-		root.SwitchToPage(pageMain)
+		layoutRoot.SwitchToPage(pageMain)
 		return nil
 	}
 
 	switch event.Key() {
 	case tcell.KeyF1:
-		if name, _ := root.GetFrontPage(); name == pageMain {
+		if name, _ := layoutRoot.GetFrontPage(); name == pageMain {
 			showKeyGenWindow()
-			footer.Highlight(fmt.Sprint(tcell.KeyF1))
+			layoutFooter.Highlight(fmt.Sprint(tcell.KeyF1))
 		}
 		return nil
 
 	case tcell.KeyF2:
-		if name, _ := root.GetFrontPage(); name == pageMain {
+		if name, _ := layoutRoot.GetFrontPage(); name == pageMain {
 			showLoadKeyWindow()
-			footer.Highlight(fmt.Sprint(tcell.KeyF2))
+			layoutFooter.Highlight(fmt.Sprint(tcell.KeyF2))
 		}
 		return nil
 
 	case tcell.KeyEsc:
-		if name, _ := root.GetFrontPage(); name != pageMain {
-			root.RemovePage(name)
-			if name, _ := root.GetFrontPage(); name == pageMain {
-				footer.Highlight(footer.GetHighlights()...)
+		if name, _ := layoutRoot.GetFrontPage(); name != pageMain {
+			layoutRoot.RemovePage(name)
+			if name, _ := layoutRoot.GetFrontPage(); name == pageMain {
+				layoutFooter.Highlight(layoutFooter.GetHighlights()...)
 			}
 		}
 		return nil
@@ -75,35 +86,35 @@ func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 // init pages
 func initLayouts() {
 	// Main frame
-	mainFrame = mainFrameWindow()
-	cover = coverPage()
-	info = infoWindow()
-	footer = footerWindow()
-	body = tview.NewFlex().
+	layoutMainBody = mainFrameWindow()
+	layoutCover = coverPage()
+	layoutInfo = infoWindow()
+	layoutFooter = footerWindow()
+	layoutBody = tview.NewFlex().
 		SetDirection(tview.FlexColumn).
-		AddItem(info, 0, 20, false).
-		AddItem(mainFrame, 0, 80, true)
+		AddItem(layoutInfo, 0, 20, false).
+		AddItem(layoutMainBody, 0, 80, true)
 
-	body.SetBorderPadding(1, 1, 1, 1)
+	layoutBody.SetBorderPadding(1, 1, 1, 1)
 
 	// Create the layout.
-	layout = tview.NewFlex().
+	layoutMain = tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(body, 0, 1, true).
-		AddItem(footer, 1, 1, false)
+		AddItem(layoutBody, 0, 1, true).
+		AddItem(layoutFooter, 1, 1, false)
 
-	root = tview.NewPages().
-		AddPage(pageMain, layout, true, false).
-		AddPage(pageCover, cover, true, true)
+	layoutRoot = tview.NewPages().
+		AddPage(pageMain, layoutMain, true, false).
+		AddPage(pageCover, layoutCover, true, true)
 
-	root.SwitchToPage(pageCover)
+	layoutRoot.SwitchToPage(pageCover)
 
 	// Input capture
 	app.SetInputCapture(globalInputCapture)
 }
 
 func refreshBody() {
-	body.Clear()
-	body.AddItem(info, 0, 20, false).
-		AddItem(mainFrame, 0, 80, true)
+	layoutBody.Clear()
+	layoutBody.AddItem(layoutInfo, 0, 20, false).
+		AddItem(layoutMainBody, 0, 80, true)
 }

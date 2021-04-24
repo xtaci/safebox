@@ -23,20 +23,20 @@ Derived keys will be uncovered when selected.
 `
 
 func infoWindow() (content *tview.Flex) {
-	info = tview.NewFlex()
-	info.SetDirection(tview.FlexRow)
-	info.SetBorder(true)
+	layoutInfo = tview.NewFlex()
+	layoutInfo.SetDirection(tview.FlexRow)
+	layoutInfo.SetBorder(true)
 	refreshInfo()
-	return info
+	return layoutInfo
 }
 
 func refreshInfo() {
-	info.Clear()
-	info.AddItem(infoText(), 0, 8, false)
+	layoutInfo.Clear()
+	layoutInfo.AddItem(infoText(), 0, 8, false)
 
 	// scroll to end to align text to bottom
 	keyloadtv := keyLoadedText()
-	info.AddItem(keyloadtv, 0, 2, false)
+	layoutInfo.AddItem(keyloadtv, 0, 2, false)
 	keyloadtv.ScrollToEnd()
 }
 

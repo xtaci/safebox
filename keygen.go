@@ -38,17 +38,17 @@ func showKeyGenPasswordPrompt(newkey *MasterKey, parent string, path string) {
 			showSuccessWindow("SUCCESS", fmt.Sprint("Successfully Stored Master Key!!!\n", path), func() {
 				// set masterkey to newkey and update view
 				masterKey = newkey
-				info = infoWindow()
-				mainFrame = mainFrameWindow()
+				layoutInfo = infoWindow()
+				layoutMainBody = mainFrameWindow()
 				refreshBody()
-				root.RemovePage(windowName)
-				root.RemovePage(parent)
+				layoutRoot.RemovePage(windowName)
+				layoutRoot.RemovePage(parent)
 			})
 		}
 	})
 	form.SetFocus(0)
 
-	root.AddPage(windowName, popup(40, 10, form), true, true)
+	layoutRoot.AddPage(windowName, popup(40, 10, form), true, true)
 }
 
 func showKeyGenWindow() {
@@ -99,5 +99,5 @@ func showKeyGenWindow() {
 	flex.AddItem(text, 0, 1, false)
 	flex.AddItem(form, 0, 1, true)
 
-	root.AddPage(windowName, popup(100, 12, flex), true, true)
+	layoutRoot.AddPage(windowName, popup(100, 12, flex), true, true)
 }

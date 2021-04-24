@@ -25,16 +25,16 @@ func showLoadPassword(parent string, path string) {
 		err := masterKeyToLoad.load([]byte(passwordField.GetText()), path)
 		if err != nil {
 			showFailWindow("FAILURE", err.Error())
-			root.RemovePage(windowName)
+			layoutRoot.RemovePage(windowName)
 		} else {
 			showSuccessWindow("SUCCESS", fmt.Sprintf("Successfully Loaded Master Key!!!\n%v", path), func() {
 				masterKey = masterKeyToLoad
 				masterKey.path = path
-				info = infoWindow()
-				mainFrame = mainFrameWindow()
+				layoutInfo = infoWindow()
+				layoutMainBody = mainFrameWindow()
 				refreshBody()
-				root.RemovePage(windowName)
-				root.RemovePage(parent)
+				layoutRoot.RemovePage(windowName)
+				layoutRoot.RemovePage(parent)
 			})
 		}
 	})
@@ -42,7 +42,7 @@ func showLoadPassword(parent string, path string) {
 	form.AddFormItem(passwordField)
 	form.SetFocus(0)
 
-	root.AddPage(windowName, popup(40, 7, form), true, true)
+	layoutRoot.AddPage(windowName, popup(40, 7, form), true, true)
 }
 
 func showLoadKeyWindow() {
@@ -73,5 +73,5 @@ func showLoadKeyWindow() {
 	form.SetTitle(loadKeyWindowTitle)
 	form.SetFocus(0)
 
-	root.AddPage(windowName, popup(80, 7, form), true, true)
+	layoutRoot.AddPage(windowName, popup(80, 7, form), true, true)
 }

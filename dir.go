@@ -132,9 +132,9 @@ func showDirWindow(inputField *tview.InputField) {
 			}
 		} else {
 			// file selected, close window
-			root.RemovePage(windowName)
+			layoutRoot.RemovePage(windowName)
 		}
 	})
 
-	root.AddPage(windowName, popup(80, 30, tree), true, true)
+	layoutRoot.AddPage(windowName, popup(80, 30, tree), true, true)
 }

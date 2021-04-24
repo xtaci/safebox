@@ -22,13 +22,13 @@ func showFailWindow(title string, msg string) {
 		SetText(msg).
 		AddButtons([]string{"OK"}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			root.HidePage("fail")
+			layoutRoot.HidePage("fail")
 		})
 
 	fail.SetTitle(title)
 	fail.SetBackgroundColor(tcell.ColorHotPink)
 
-	root.AddPage("fail", fail, true, true)
+	layoutRoot.AddPage("fail", fail, true, true)
 }
 
 func showSuccessWindow(title string, msg string, callback func()) {
@@ -37,7 +37,7 @@ func showSuccessWindow(title string, msg string, callback func()) {
 		AddButtons([]string{"OK"}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 			// update info window & mainFrame window
-			root.RemovePage("success")
+			layoutRoot.RemovePage("success")
 			if callback != nil {
 				callback()
 			}
@@ -46,5 +46,5 @@ func showSuccessWindow(title string, msg string, callback func()) {
 	succ.SetTitle(title)
 	succ.SetBackgroundColor(tcell.ColorLightGreen)
 
-	root.AddPage("success", succ, true, true)
+	layoutRoot.AddPage("success", succ, true, true)
 }

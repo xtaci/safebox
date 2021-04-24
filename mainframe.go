@@ -35,7 +35,7 @@ func showExporterWindow(row int, col int) {
 		outputBox.SetScrollable(true)
 		outputBox.SetWrap(true)
 		outputBox.Write(bts)
-		root.AddPage("output", outputBox, true, true)
+		layoutRoot.AddPage("output", outputBox, true, true)
 	})
 	form.SetFocus(0)
 
@@ -44,7 +44,7 @@ func showExporterWindow(row int, col int) {
 	view.SetDirection(tview.FlexRow).
 		AddItem(form, 0, 1, true)
 
-	root.AddPage(windowName, popup(80, 10, view), true, true)
+	layoutRoot.AddPage(windowName, popup(80, 10, view), true, true)
 }
 
 func showSetLabelWindow(row int, col int) {
@@ -59,18 +59,18 @@ func showSetLabelWindow(row int, col int) {
 		//update key
 		masterKey.setLabel(idx, form.GetFormItemByLabel("Label").(*tview.InputField).GetText())
 		masterKey.store(masterKey.path)
-		table.SetCell(int(idx)+1, 1,
+		layoutMainBodyTable.SetCell(int(idx)+1, 1,
 			tview.NewTableCell(masterKey.labels[idx]).
 				SetTextColor(tcell.ColorRed).
 				SetAlign(tview.AlignLeft).
 				SetSelectable(true))
 
-		root.RemovePage(windowName)
+		layoutRoot.RemovePage(windowName)
 		refreshInfo()
 	})
 	form.SetFocus(0)
 
-	root.AddPage(windowName, popup(40, 10, form), true, true)
+	layoutRoot.AddPage(windowName, popup(40, 10, form), true, true)
 }
 
 // main operation frame
@@ -95,31 +95,31 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 	}
 
 	// key table
-	table = tview.NewTable().SetBorders(true)
-	table.SetTitle(mainFrameTitle)
+	layoutMainBodyTable = tview.NewTable().SetBorders(true)
+	layoutMainBodyTable.SetTitle(mainFrameTitle)
 
 	// table header
-	table.SetCell(0, 0,
+	layoutMainBodyTable.SetCell(0, 0,
 		tview.NewTableCell("ID").
 			SetTextColor(tcell.ColorDarkOrange).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
-	table.SetCell(0, 1,
+	layoutMainBodyTable.SetCell(0, 1,
 		tview.NewTableCell("NAME").
 			SetTextColor(tcell.ColorDarkOrange).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
-	table.SetCell(0, 2,
+	layoutMainBodyTable.SetCell(0, 2,
 		tview.NewTableCell("DERIVED KEY").
 			SetTextColor(tcell.ColorDarkOrange).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
 	// fix table header & first column
-	table.SetFixed(1, 1)
-	table.SetSelectable(true, true)
+	layoutMainBodyTable.SetFixed(1, 1)
+	layoutMainBodyTable.SetSelectable(true, true)
 
 	addDerivedKeys := func(start uint16) {
 		for i := uint16(0); i < 64; i++ {
@@ -133,17 +133,17 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 				panic(err)
 			}
 
-			table.SetCell(int(idx)+1, 0,
+			layoutMainBodyTable.SetCell(int(idx)+1, 0,
 				tview.NewTableCell(fmt.Sprint(idx)).
 					SetAlign(tview.AlignLeft).
 					SetSelectable(false))
 
-			table.SetCell(int(idx)+1, 1,
+			layoutMainBodyTable.SetCell(int(idx)+1, 1,
 				tview.NewTableCell(masterKey.labels[idx]).
 					SetAlign(tview.AlignLeft).
 					SetSelectable(true))
 
-			table.SetCell(int(idx)+1, 2,
+			layoutMainBodyTable.SetCell(int(idx)+1, 2,
 				tview.NewTableCell(mask(hex.EncodeToString(key), 4, '*')).
 					SetTextColor(tcell.ColorDarkCyan).
 					SetAlign(tview.AlignLeft))
@@ -155,10 +155,10 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 
 	var lastRow int
 	var lastCol int
-	table.SetSelectionChangedFunc(func(row, column int) {
+	layoutMainBodyTable.SetSelectionChangedFunc(func(row, column int) {
 		// moved to last
 		idx := uint16(row) - 1
-		if row == table.GetRowCount()-1 {
+		if row == layoutMainBodyTable.GetRowCount()-1 {
 			addDerivedKeys(idx)
 		}
 
@@ -170,7 +170,7 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 				panic(err)
 			}
 
-			table.SetCell(lastRow, lastCol,
+			layoutMainBodyTable.SetCell(lastRow, lastCol,
 				tview.NewTableCell(mask(hex.EncodeToString(key), 4, '*')).
 					SetTextColor(tcell.ColorDarkCyan).
 					SetAlign(tview.AlignLeft))
@@ -185,7 +185,7 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 			}
 
 			// uncover mask
-			table.SetCell(row, column,
+			layoutMainBodyTable.SetCell(row, column,
 				tview.NewTableCell(hex.EncodeToString(key)).
 					SetTextColor(tcell.ColorDarkCyan).
 					SetAlign(tview.AlignLeft))
@@ -196,7 +196,7 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 	})
 
 	// key selection
-	table.SetSelectedFunc(func(row, column int) {
+	layoutMainBodyTable.SetSelectedFunc(func(row, column int) {
 		if column == 1 {
 			showSetLabelWindow(row, column)
 		} else if column == 2 {
@@ -209,6 +209,6 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 		SetBorder(true).
 		SetTitle(mainFrameTitle)
 
-	flex.AddItem(table, 0, 1, true)
+	flex.AddItem(layoutMainBodyTable, 0, 1, true)
 	return flex
 }
