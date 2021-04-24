@@ -17,21 +17,20 @@ func popup(width int, height int, primitive tview.Primitive) *tview.Flex {
 	return flex
 }
 
-func showFailWindow(title string, msg string) {
+func showFailWindow(msg string) {
 	fail := tview.NewModal().
 		SetText(msg).
 		AddButtons([]string{"OK"}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			layoutRoot.HidePage("fail")
+			layoutRoot.RemovePage("fail")
 		})
 
-	fail.SetTitle(title)
 	fail.SetBackgroundColor(tcell.ColorHotPink)
 
 	layoutRoot.AddPage("fail", fail, true, true)
 }
 
-func showSuccessWindow(title string, msg string, callback func()) {
+func showSuccessWindow(msg string, callback func()) {
 	succ := tview.NewModal().
 		SetText(msg).
 		AddButtons([]string{"OK"}).
@@ -43,7 +42,6 @@ func showSuccessWindow(title string, msg string, callback func()) {
 			}
 		})
 
-	succ.SetTitle(title)
 	succ.SetBackgroundColor(tcell.ColorLightGreen)
 
 	layoutRoot.AddPage("success", succ, true, true)

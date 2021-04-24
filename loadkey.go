@@ -7,14 +7,17 @@ import (
 	"github.com/rivo/tview"
 )
 
-var loadKeyWindowTitle = "-=- LOAD MASTER KEY -=-"
-var loadKeyPasswordTitle = "-=- PASSWORD TO DECRYPT MASTER KEY -=-"
-
 func showLoadPassword(parent string, path string) {
-	windowName := "showLoadPassword"
+	const (
+		windowName   = "showLoadPassword"
+		windowWidth  = 40
+		windowHeight = 7
+		windowTitle  = "- MASTERKEY DECRYPTION PASSWORD -"
+	)
+
 	form := tview.NewForm()
+	form.SetTitle(windowTitle)
 	form.SetBorder(true)
-	form.SetTitle(loadKeyPasswordTitle)
 	passwordField := tview.NewInputField().SetLabel("Password").
 		SetFieldWidth(64).
 		SetMaskCharacter('*')
@@ -24,10 +27,10 @@ func showLoadPassword(parent string, path string) {
 		masterKeyToLoad := newMasterKey()
 		err := masterKeyToLoad.load([]byte(passwordField.GetText()), path)
 		if err != nil {
-			showFailWindow("FAILURE", err.Error())
+			showFailWindow(err.Error())
 			layoutRoot.RemovePage(windowName)
 		} else {
-			showSuccessWindow("SUCCESS", fmt.Sprintf("Successfully Loaded Master Key!!!\n%v", path), func() {
+			showSuccessWindow(fmt.Sprintf("Successfully Loaded Master Key!!!\n%v", path), func() {
 				masterKey = masterKeyToLoad
 				masterKey.path = path
 				layoutInfo = infoWindow()
@@ -42,11 +45,16 @@ func showLoadPassword(parent string, path string) {
 	form.AddFormItem(passwordField)
 	form.SetFocus(0)
 
-	layoutRoot.AddPage(windowName, popup(40, 7, form), true, true)
+	layoutRoot.AddPage(windowName, popup(windowWidth, windowHeight, form), true, true)
 }
 
 func showLoadKeyWindow() {
-	windowName := "showLoadKeyWindow"
+	const (
+		windowName   = "showLoadKeyWindow"
+		windowWidth  = 80
+		windowHeight = 7
+		windowTitle  = "-=- LOAD MASTER KEY -=-"
+	)
 
 	// path input field
 	path, err := os.Getwd()
@@ -70,8 +78,8 @@ func showLoadKeyWindow() {
 	})
 
 	form.SetBorder(true)
-	form.SetTitle(loadKeyWindowTitle)
+	form.SetTitle(windowTitle)
 	form.SetFocus(0)
 
-	layoutRoot.AddPage(windowName, popup(80, 7, form), true, true)
+	layoutRoot.AddPage(windowName, popup(windowWidth, windowHeight, form), true, true)
 }
