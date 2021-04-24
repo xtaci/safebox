@@ -30,23 +30,33 @@ func showKeyGenPasswordPrompt(newkey *MasterKey, parent string, path string) {
 	passwordField := tview.NewInputField().SetLabel("Password").
 		SetFieldWidth(64).
 		SetMaskCharacter('*')
-	form.AddFormItem(passwordField)
-	form.AddButton("OK", func() {
-		newkey.changePassword([]byte(passwordField.GetText()))
-		err := newkey.store(path)
 
-		// display message after store
-		if err != nil {
-			showFailWindow(err.Error())
+	passwordFieldConfirm := tview.NewInputField().SetLabel("Password Confirm").
+		SetFieldWidth(64).
+		SetMaskCharacter('*')
+
+	form.AddFormItem(passwordField)
+	form.AddFormItem(passwordFieldConfirm)
+
+	form.AddButton("OK", func() {
+		if passwordField.GetText() != passwordFieldConfirm.GetText() {
+			showFailWindow("PASSWORD MISMATCH")
 		} else {
-			newkey.path = path
-			showSuccessWindow(fmt.Sprint("Successfully Stored Master Key!!!\n", path), func() {
-				// set masterkey to newkey and update view
-				masterKey = newkey
-				refresh()
-				layoutRoot.RemovePage(windowName)
-				layoutRoot.RemovePage(parent)
-			})
+			newkey.changePassword([]byte(passwordField.GetText()))
+			err := newkey.store(path)
+			// display message after store
+			if err != nil {
+				showFailWindow(err.Error())
+			} else {
+				newkey.path = path
+				showSuccessWindow(fmt.Sprint("Successfully Stored Master Key!!!\n", path), func() {
+					// set masterkey to newkey and update view
+					masterKey = newkey
+					refresh()
+					layoutRoot.RemovePage(windowName)
+					layoutRoot.RemovePage(parent)
+				})
+			}
 		}
 	})
 	form.SetFocus(0)
