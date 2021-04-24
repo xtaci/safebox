@@ -43,9 +43,7 @@ func showKeyGenPasswordPrompt(newkey *MasterKey, parent string, path string) {
 			showSuccessWindow(fmt.Sprint("Successfully Stored Master Key!!!\n", path), func() {
 				// set masterkey to newkey and update view
 				masterKey = newkey
-				layoutInfo = infoWindow()
-				layoutMainBody = mainFrameWindow()
-				refreshBody()
+				refresh()
 				layoutRoot.RemovePage(windowName)
 				layoutRoot.RemovePage(parent)
 			})

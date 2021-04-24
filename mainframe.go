@@ -75,6 +75,18 @@ func showSetLabelWindow(row int, col int) {
 
 // main operation frame
 func mainFrameWindow() (content *tview.Flex) {
+	layoutMainBody = tview.NewFlex()
+	layoutMainBody.SetDirection(tview.FlexRow).
+		SetBorder(true).
+		SetTitle(mainFrameTitle)
+
+	refreshMainFrame()
+	return layoutMainBody
+}
+
+func refreshMainFrame() {
+	layoutMainBody.Clear()
+
 	if masterKey == nil {
 		// if master key has not loaded
 		text := tview.NewTextView()
@@ -83,15 +95,10 @@ func mainFrameWindow() (content *tview.Flex) {
 		fmt.Fprintf(text, `[red]KEY NOT LOADED
 PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST`)
 
-		flex := tview.NewFlex()
-		flex.SetDirection(tview.FlexRow).
-			SetBorder(true).
-			SetTitle(mainFrameTitle)
-
-		flex.AddItem(tview.NewBox(), 0, 8, false)
-		flex.AddItem(text, 0, 1, true)
-		flex.AddItem(tview.NewBox(), 0, 8, false)
-		return flex
+		layoutMainBody.AddItem(tview.NewBox(), 0, 8, false)
+		layoutMainBody.AddItem(text, 0, 1, true)
+		layoutMainBody.AddItem(tview.NewBox(), 0, 8, false)
+		return
 	}
 
 	// key table
@@ -204,11 +211,5 @@ PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST
 		}
 	})
 
-	flex := tview.NewFlex()
-	flex.SetDirection(tview.FlexRow).
-		SetBorder(true).
-		SetTitle(mainFrameTitle)
-
-	flex.AddItem(layoutMainBodyTable, 0, 1, true)
-	return flex
+	layoutMainBody.AddItem(layoutMainBodyTable, 0, 1, true)
 }

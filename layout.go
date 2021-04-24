@@ -40,6 +40,25 @@ var (
 	layoutFooter        *tview.TextView
 )
 
+var (
+	keyNames = map[tcell.Key]string{
+		tcell.KeyF1:    "F1",
+		tcell.KeyF2:    "F2",
+		tcell.KeyF3:    "F3",
+		tcell.KeyF4:    "F4",
+		tcell.KeyEsc:   "ESC",
+		tcell.KeyCtrlC: "Ctrl-C",
+	}
+
+	shortCuts = map[tcell.Key]string{
+		tcell.KeyF1:    "GENERATE MASTER KEY",
+		tcell.KeyF2:    "LOAD MASTER KEY",
+		tcell.KeyF3:    "CHANGE MASTER PASSWORD",
+		tcell.KeyEsc:   "BACK",
+		tcell.KeyCtrlC: "QUIT",
+	}
+)
+
 // global function keys handling
 func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 	// check cover page
@@ -62,6 +81,13 @@ func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 		if name, _ := layoutRoot.GetFrontPage(); name == pageMain {
 			showLoadKeyWindow()
 			layoutFooter.Highlight(fmt.Sprint(tcell.KeyF2))
+		}
+		return nil
+
+	case tcell.KeyF3:
+		if name, _ := layoutRoot.GetFrontPage(); name == pageMain {
+			showChangePasswordWindow()
+			layoutFooter.Highlight(fmt.Sprint(tcell.KeyF3))
 		}
 		return nil
 
@@ -112,8 +138,8 @@ func initLayouts() {
 	app.SetInputCapture(globalInputCapture)
 }
 
-func refreshBody() {
-	layoutBody.Clear()
-	layoutBody.AddItem(layoutInfo, 0, 20, false).
-		AddItem(layoutMainBody, 0, 80, true)
+func refresh() {
+	refreshFooter()
+	refreshInfo()
+	refreshMainFrame()
 }

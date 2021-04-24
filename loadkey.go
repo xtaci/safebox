@@ -33,9 +33,7 @@ func showLoadPassword(parent string, path string) {
 			showSuccessWindow(fmt.Sprintf("Successfully Loaded Master Key!!!\n%v", path), func() {
 				masterKey = masterKeyToLoad
 				masterKey.path = path
-				layoutInfo = infoWindow()
-				layoutMainBody = mainFrameWindow()
-				refreshBody()
+				refresh()
 				layoutRoot.RemovePage(windowName)
 				layoutRoot.RemovePage(parent)
 			})
