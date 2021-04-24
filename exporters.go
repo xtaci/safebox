@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/xtaci/safebox/btc"
-	"github.com/xtaci/safebox/eth"
-	"github.com/xtaci/safebox/ssh"
+	"github.com/xtaci/safebox/plugins/btc"
+	"github.com/xtaci/safebox/plugins/eth"
+	"github.com/xtaci/safebox/plugins/ssh"
 )
 
 type IKeyExport interface {
