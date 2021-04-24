@@ -38,6 +38,13 @@ const (
 	MaxKeys         = MasterKeyLength / aes.BlockSize // A const 16K
 )
 
+// record program startup time
+var startTime time.Time
+
+func init() {
+	startTime = time.Now()
+}
+
 // MasterKey defines the master key memory structure
 type MasterKey struct {
 	password  []byte                // the password to encrypt storage masterkey
@@ -54,7 +61,7 @@ func newMasterKey() *MasterKey {
 	return mkey
 }
 
-// generate master key with give entropy
+// generate master key with give entropy and system entropy
 func (mkey *MasterKey) generateMasterKey(entropy []byte) error {
 	_, err := io.ReadFull(rand.Reader, mkey.masterKey[:])
 	if err != nil {
@@ -71,11 +78,12 @@ func (mkey *MasterKey) generateMasterKey(entropy []byte) error {
 	// 5. current uid
 	// 6. hostname
 	// 7. workding dir
+	// 8. process uptime
 
 	var overallEntropy bytes.Buffer
 	hostname, _ := os.Hostname()
 	wd, _ := os.Getwd()
-	fmt.Fprintf(&overallEntropy, "%v%v%v%v%v%v%v%v", time.Now().Unix(), time.Now().UnixNano(), os.Getpid(), runtime.GOOS, hostname, entropy, os.Getuid(), wd)
+	fmt.Fprintf(&overallEntropy, "%v%v%v%v%v%v%v%v%v", time.Now().Unix(), time.Now().UnixNano(), os.Getpid(), runtime.GOOS, hostname, entropy, os.Getuid(), wd, time.Since(startTime))
 
 	// we use all the entropy above to encrypt the master key again
 	aesKey := sha256.Sum256(overallEntropy.Bytes())
@@ -91,7 +99,7 @@ func (mkey *MasterKey) generateMasterKey(entropy []byte) error {
 
 // derive the N-th id with current master key with specified key size
 func (mkey *MasterKey) deriveKey(id uint16, keySize int) (key []byte, err error) {
-	if id >= MasterKeyLength/aes.BlockSize || id < 0 {
+	if id >= MaxKeys || id < 0 {
 		return nil, ErrInvalidKeyId
 	}
 
