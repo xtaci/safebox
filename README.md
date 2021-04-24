@@ -1,15 +1,17 @@
 # Safebox
 
-An unified key management system to make life easier. The main goal of safebox is to make key backup easier with single main key to derive the reset. You only need to backup 1 or 2 file about 256KB to your removable disk, such as floppy disk/thumb drive/mo disk(magneto optical)/dvd-ram, etc...
+An unified key management system to make life easier. 
+
+The main goal of safebox is to make key backup easier with single main key to derive the reset. You only need to backup 1 or 2 file about 256KB to your removable disk, such as floppy disk/thumb drive/mo disk(magneto optical)/dvd-ram, etc...
 
 # Safebox Can derive
 
-1. SSH private&public key
-2. Ethereum private&public key
-3. Bitcoin private&public key
-4. and more plugable key export coming.
+1. SSH Key
+2. Ethereum Key
+3. Bitcoin Key
+4. and more plugable export plugin keeping coming.
 
-up to 16384 keys can be derived with a single main key.
+Up to 16384 keys can be derived with a single main key.
 
 # TUI
 
@@ -19,7 +21,6 @@ Safebox is designed with a DOS style text-based user interface(tui), so a box su
 ![image](https://user-images.githubusercontent.com/2346725/115947871-2fc43100-a4fd-11eb-9f1e-6d2b5e8a005a.png)
 
 ![image](https://user-images.githubusercontent.com/2346725/115947920-6bf79180-a4fd-11eb-986a-b84159585a22.png)
-
 
 
 # Status 
