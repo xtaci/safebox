@@ -2,7 +2,7 @@
 
 An unified key management system to make life easier. 
 
-The main goal of safebox is to make key backup easier with single main key to derive the reset. You only need to backup 1 or 2 file about 256KB to your removable disk, such as floppy disk/thumb drive/mo disk(magneto optical)/dvd-ram, etc...
+The main goal of safebox is to make key backup easier with single main key to derive the reset. You only need to backup **ONE** file about 256KB to your removable disk, such as floppy disk/thumb drive/mo disk(magneto optical)/dvd-ram, etc...
 
 # Safebox Can derive
 
