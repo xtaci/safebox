@@ -139,14 +139,13 @@ func (mkey *MasterKey) deriveKey(id uint16, keySize int) (key []byte, err error)
 //
 //
 // NOTE: all integers are stored in LITTLE-ENDIAN
-func (mkey *MasterKey) store(password []byte, path string) (err error) {
+func (mkey *MasterKey) store(path string) (err error) {
 	file, err := os.Create(path)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	mkey.password = password
 	// Created At
 	err = binary.Write(file, binary.LittleEndian, mkey.createdAt)
 	if err != nil {
@@ -168,7 +167,7 @@ func (mkey *MasterKey) store(password []byte, path string) (err error) {
 
 	// write encrypted(AES-256) master key
 	// expand the password to create AES-256 key
-	key := pbkdf2.Key(password, []byte(SALT), pbkdf2Iterations, 32, sha1.New)
+	key := pbkdf2.Key(mkey.password, []byte(SALT), pbkdf2Iterations, 32, sha1.New)
 	var encryptedMasterKey [MasterKeyLength]byte
 	aesBlock, err := NewAESBlockCrypt(key)
 	if err != nil {
@@ -296,6 +295,11 @@ func (mkey *MasterKey) setLabel(idx uint16, label string) error {
 		mkey.labels[idx] = label
 	}
 	return nil
+}
+
+// change password
+func (mkey *MasterKey) changePassword(password []byte) {
+	mkey.password = password
 }
 
 // BlockCrypt defines encryption/decryption methods for a given byte slice.

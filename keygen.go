@@ -18,7 +18,7 @@ func rawOutput(primitive tview.Primitive) *tview.Flex {
 			AddItem(nil, 0, 1, false), 1, 1, true)
 }
 
-func showKeyGenPasswordPrompt(parent string, path string) {
+func showKeyGenPasswordPrompt(newkey *MasterKey, parent string, path string) {
 	windowName := "showKeyGenPasswordPrompt"
 	form := tview.NewForm()
 	form.SetBorder(true)
@@ -27,14 +27,17 @@ func showKeyGenPasswordPrompt(parent string, path string) {
 		SetMaskCharacter('*')
 	form.AddFormItem(passwordField)
 	form.AddButton("OK", func() {
-		err := masterKey.store([]byte(passwordField.GetText()), path)
+		newkey.changePassword([]byte(passwordField.GetText()))
+		err := newkey.store(path)
 
 		// display message after store
 		if err != nil {
 			showFailWindow("FAILURE", err.Error())
 		} else {
-			masterKey.path = path
+			newkey.path = path
 			showSuccessWindow("SUCCESS", fmt.Sprint("Successfully Stored Master Key!!!\n", path), func() {
+				// set masterkey to newkey and update view
+				masterKey = newkey
 				info = infoWindow()
 				mainFrame = mainFrameWindow()
 				refreshBody()
@@ -56,11 +59,11 @@ func showKeyGenWindow() {
 		SetWrap(false)
 
 	// create a master key
-	masterKey = newMasterKey()
-	masterKey.generateMasterKey(nil)
+	newkey := newMasterKey()
+	newkey.generateMasterKey(nil)
 
 	fmt.Fprint(text, "GENERATED MASTER KEY:\n\n")
-	fmt.Fprintf(text, "[darkorange::bl]%v...\n\n", hex.EncodeToString(masterKey.masterKey[:32]))
+	fmt.Fprintf(text, "[darkorange::bl]%v...\n\n", hex.EncodeToString(newkey.masterKey[:32]))
 	fmt.Fprint(text, "[darkorange::bu]MAKE SURE YOU BACKUP THIS FILE CORRECTLY\n")
 
 	// path input field
@@ -78,7 +81,7 @@ func showKeyGenWindow() {
 	form.AddButton("Save", func() {
 		// check file existence
 		if _, err := os.Stat(inputField.GetText()); os.IsNotExist(err) {
-			showKeyGenPasswordPrompt(windowName, inputField.GetText())
+			showKeyGenPasswordPrompt(newkey, windowName, inputField.GetText())
 		} else {
 			showFailWindow("FAILURE", "MASTER KEY FILE EXISTS, IF YOU WANT TO OVERWRITE, PLEASE DELETE THIS FILE BY YOURSELF.")
 		}

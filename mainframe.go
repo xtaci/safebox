@@ -58,7 +58,7 @@ func showSetLabelWindow(row int, col int) {
 	form.AddButton("Update", func() {
 		//update key
 		masterKey.setLabel(idx, form.GetFormItemByLabel("Label").(*tview.InputField).GetText())
-		masterKey.store(masterKey.password, masterKey.path)
+		masterKey.store(masterKey.path)
 		table.SetCell(int(idx)+1, 1,
 			tview.NewTableCell(masterKey.labels[idx]).
 				SetTextColor(tcell.ColorRed).
