@@ -4,13 +4,11 @@ import (
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"crypto/sha1"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
 	"math/big"
 
-	"golang.org/x/crypto/pbkdf2"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -23,14 +21,12 @@ func (exp *SSHExporter) KeySize() int {
 	return 32
 }
 func (exp *SSHExporter) Export(key []byte) ([]byte, error) {
-	curve := elliptic.P256()
-	// use pbkdf to extend the key
-	if len(key) != curve.Params().BitSize/8 {
-		keyLen := curve.Params().BitSize / 8
-		key = pbkdf2.Key(key, []byte("SSH(EC)"), 1024, keyLen, sha1.New)
+	if len(key) != 32 {
+		return nil, errors.New("invalid key length")
 	}
 
-	// Private Key generation
+	curve := elliptic.P256()
+
 	var priv ecdsa.PrivateKey
 	priv.Curve = curve // SSH uses this curve
 	priv.D = new(big.Int).SetBytes(key)

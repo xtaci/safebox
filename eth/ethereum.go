@@ -3,7 +3,6 @@ package eth
 import (
 	"bytes"
 	"crypto/ecdsa"
-	"crypto/sha1"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -12,7 +11,6 @@ import (
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/xtaci/safebox/qrcode"
-	"golang.org/x/crypto/pbkdf2"
 )
 
 const (
@@ -31,13 +29,10 @@ func (exp *EthereumExporter) KeySize() int {
 }
 
 func (exp *EthereumExporter) Export(key []byte) ([]byte, error) {
-	curve := btcec.S256()
-
-	// use pbkdf to extend the key
-	if len(key) != curve.Params().BitSize/8 {
-		keyLen := curve.Params().BitSize / 8
-		key = pbkdf2.Key(key, []byte("ETH"), 1024, keyLen, sha1.New)
+	if len(key) != 32 {
+		return nil, errors.New("invalid key length")
 	}
+	curve := btcec.S256()
 
 	var priv ecdsa.PrivateKey
 	priv.Curve = curve
