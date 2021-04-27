@@ -61,7 +61,6 @@ func showSetLabelWindow(row int, col int) {
 		masterKey.store(masterKey.path)
 		layoutMainBodyTable.SetCell(int(idx)+1, 1,
 			tview.NewTableCell(masterKey.labels[idx]).
-				SetTextColor(tcell.ColorRed).
 				SetAlign(tview.AlignLeft).
 				SetSelectable(true))
 
