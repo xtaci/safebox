@@ -7,29 +7,46 @@ import (
 	"github.com/rivo/tview"
 )
 
-func footerWindow() *tview.TextView {
-	// The bottom row has some info on where we are.
-	layoutFooter = tview.NewTextView().
-		SetToggleHighlights(true).
-		SetDynamicColors(true).
-		SetRegions(true).
-		SetWrap(false)
+var verString = "version 1.0 @xtaci"
 
+func footerWindow() *tview.Flex {
+	// The bottom row has some info on where we are.
+	layoutFooter = tview.NewFlex()
 	refreshFooter()
 	return layoutFooter
 }
 
 func refreshFooter() {
 	layoutFooter.Clear()
+
+	layoutShortcuts = tview.NewTextView().
+		SetToggleHighlights(true).
+		SetDynamicColors(true).
+		SetRegions(true).
+		SetWrap(false)
+
+		// shortcuts
 	if masterKey == nil {
 		keys := []tcell.Key{tcell.KeyF1, tcell.KeyF2, tcell.KeyEsc, tcell.KeyCtrlC}
 		for _, key := range keys {
-			fmt.Fprintf(layoutFooter, `[darkorange]%v ["%d"][black]%s[""] `, tview.Escape("<"+keyNames[key]+">"), key, shortCuts[key])
+			fmt.Fprintf(layoutShortcuts, `[darkorange]%v ["%d"][black]%s[""] `, tview.Escape("<"+keyNames[key]+">"), key, shortCuts[key])
 		}
 	} else {
 		keys := []tcell.Key{tcell.KeyF1, tcell.KeyF2, tcell.KeyF3, tcell.KeyEsc, tcell.KeyCtrlC}
 		for _, key := range keys {
-			fmt.Fprintf(layoutFooter, `[darkorange]%v ["%d"][black]%s[""] `, tview.Escape("<"+keyNames[key]+">"), key, shortCuts[key])
+			fmt.Fprintf(layoutShortcuts, `[darkorange]%v ["%d"][black]%s[""] `, tview.Escape("<"+keyNames[key]+">"), key, shortCuts[key])
 		}
 	}
+
+	// right aligned version string
+	versionTextView := tview.NewTextView().
+		SetTextAlign(tview.AlignRight).
+		SetDynamicColors(true).
+		SetWrap(false)
+
+	fmt.Fprint(versionTextView, verString)
+
+	//  flex
+	layoutFooter.AddItem(layoutShortcuts, 0, 8, false)
+	layoutFooter.AddItem(versionTextView, 0, 2, false)
 }

@@ -25,6 +25,7 @@ var (
 	//    |______layoutCover
 	//    |______layoutMain
 	//              |______layoutFooter
+	//                      |_______layoutShortCuts
 	//              |______layoutBody
 	//                      |______layoutMainBody
 	//                      |            |______layoutMainBodyTable
@@ -37,7 +38,8 @@ var (
 	layoutMainBody      *tview.Flex
 	layoutMainBodyTable *tview.Table
 	layoutInfo          *tview.Flex
-	layoutFooter        *tview.TextView
+	layoutFooter        *tview.Flex
+	layoutShortcuts     *tview.TextView
 )
 
 var (
@@ -73,21 +75,21 @@ func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 	case tcell.KeyF1:
 		if name, _ := layoutRoot.GetFrontPage(); name == pageMain {
 			showKeyGenWindow()
-			layoutFooter.Highlight(fmt.Sprint(tcell.KeyF1))
+			layoutShortcuts.Highlight(fmt.Sprint(tcell.KeyF1))
 		}
 		return nil
 
 	case tcell.KeyF2:
 		if name, _ := layoutRoot.GetFrontPage(); name == pageMain {
 			showLoadKeyWindow()
-			layoutFooter.Highlight(fmt.Sprint(tcell.KeyF2))
+			layoutShortcuts.Highlight(fmt.Sprint(tcell.KeyF2))
 		}
 		return nil
 
 	case tcell.KeyF3:
 		if name, _ := layoutRoot.GetFrontPage(); name == pageMain {
 			showChangePasswordWindow()
-			layoutFooter.Highlight(fmt.Sprint(tcell.KeyF3))
+			layoutShortcuts.Highlight(fmt.Sprint(tcell.KeyF3))
 		}
 		return nil
 
@@ -95,7 +97,7 @@ func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 		if name, _ := layoutRoot.GetFrontPage(); name != pageMain {
 			layoutRoot.RemovePage(name)
 			if name, _ := layoutRoot.GetFrontPage(); name == pageMain {
-				layoutFooter.Highlight(layoutFooter.GetHighlights()...)
+				layoutShortcuts.Highlight(layoutShortcuts.GetHighlights()...)
 			}
 		}
 		return nil

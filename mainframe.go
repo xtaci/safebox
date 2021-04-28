@@ -8,8 +8,9 @@ import (
 	"github.com/rivo/tview"
 )
 
-var verString = "VER 1.0"
-var mainFrameTitle = fmt.Sprintf("- SAFEBOX KEY MANGEMENT SYSTEM %v -", verString)
+const (
+	mainFrameTitle = "- SAFEBOX KEY MANGEMENT SYSTEM -"
+)
 
 func showExporterWindow(row int, col int) {
 	windowName := "showExporterWindow"
