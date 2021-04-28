@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	mainFrameTitle = "- SAFEBOX KEY MANGEMENT SYSTEM -"
+	mainFrameTitle = "SAFEBOX KEY MANGEMENT SYSTEM"
 )
 
 func showExporterWindow(row int, col int) {

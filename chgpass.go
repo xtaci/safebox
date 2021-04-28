@@ -9,7 +9,7 @@ func showChangePasswordWindow() {
 		windowName   = "changePassword"
 		windowWidth  = 40
 		windowHeight = 10
-		windowTitle  = "- CHANGE MASTERKEY PASSWORD -"
+		windowTitle  = "CHANGE MASTERKEY PASSWORD 🔑"
 	)
 
 	form := tview.NewForm()

@@ -1,10 +1,11 @@
 package main
 
 import (
-	"encoding/hex"
+	"crypto/sha256"
 	"fmt"
 	"os"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/rivo/tview"
 )
 
@@ -21,7 +22,7 @@ func showKeyGenPasswordPrompt(newkey *MasterKey, parent string, path string) {
 		windowName   = "showKeyGenPasswordPrompt"
 		windowWidth  = 40
 		windowHeight = 10
-		windowTitle  = "- PASSWORD -"
+		windowTitle  = "SET MASTERKEY PASSWORD 🔑"
 	)
 
 	form := tview.NewForm()
@@ -69,7 +70,7 @@ func showKeyGenWindow() {
 		windowName   = "showKeyGenWindow"
 		windowWidth  = 100
 		windowHeight = 12
-		windowTitle  = "- KEY GENERATION -"
+		windowTitle  = "- MASTERKEY GENERATION -"
 	)
 
 	text := tview.NewTextView().
@@ -81,9 +82,10 @@ func showKeyGenWindow() {
 	newkey := newMasterKey()
 	newkey.generateMasterKey(nil)
 
-	fmt.Fprint(text, "GENERATED MASTER KEY:\n\n")
-	fmt.Fprintf(text, "[darkorange::bl]%v...\n\n", hex.EncodeToString(newkey.masterKey[:32]))
-	fmt.Fprint(text, "[darkorange::bu]MAKE SURE YOU BACKUP THIS FILE CORRECTLY\n")
+	fmt.Fprint(text, "GENERATED MASTER KEY SHA256:\n\n")
+	md := sha256.Sum256(newkey.masterKey[:])
+	fmt.Fprintf(text, "[darkorange::]%v[-:-:-]\n", hexutil.Encode(md[:]))
+	fmt.Fprint(text, "[white::l]MAKE SURE YOU BACKUP THIS FILE CORRECTLY\n")
 
 	// path input field
 	path, err := os.Getwd()
