@@ -29,6 +29,8 @@ Instructions
 2) Press <Enter> on 'DERIVED KEY' column to export.
 
 3) Press <Enter> on 'NAME' column to set label.
+
+4) Use <TAB> to focus on different items.
 `
 
 func infoWindow() (content *tview.Flex) {
