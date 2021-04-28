@@ -83,7 +83,7 @@ func (mkey *MasterKey) generateMasterKey(entropy []byte) error {
 	var overallEntropy bytes.Buffer
 	hostname, _ := os.Hostname()
 	wd, _ := os.Getwd()
-	fmt.Fprintf(&overallEntropy, "%v%v%v%v%v%v%v%v%v", time.Now().Unix(), time.Now().UnixNano(), os.Getpid(), runtime.GOOS, hostname, entropy, os.Getuid(), wd, time.Since(startTime))
+	fmt.Fprintf(&overallEntropy, "%v%v%v%v%v%v%v%v%v", time.Now().Unix(), time.Now().UnixNano(), os.Getpid(), runtime.GOOS, hostname, entropy, os.Getuid(), wd, int64(time.Since(startTime)))
 
 	// we use all the entropy above to encrypt the master key again
 	aesKey := sha256.Sum256(overallEntropy.Bytes())
