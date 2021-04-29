@@ -92,8 +92,8 @@ func refreshMainFrame() {
 		text := tview.NewTextView()
 		text.SetDynamicColors(true).
 			SetTextAlign(tview.AlignCenter)
-		fmt.Fprintf(text, `[red]KEY NOT LOADED
-PLEASE LOAD A MASTER KEY[yellow][F2][red] OR GENERATE ONE[yellow][F1][red] FIRST`)
+		fmt.Fprintf(text, `[red]Master Key not loaded,
+Please Load a master key or Generate one first`)
 
 		layoutMainBody.AddItem(tview.NewBox(), 0, 8, false)
 		layoutMainBody.AddItem(text, 0, 1, true)

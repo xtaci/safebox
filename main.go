@@ -6,7 +6,7 @@ import (
 )
 
 // The application.
-var app = tview.NewApplication()
+var app *tview.Application
 
 // The master key
 var masterKey *MasterKey
@@ -26,6 +26,7 @@ var theme = tview.Theme{
 }
 
 func main() {
+	app = tview.NewApplication()
 	tview.Styles = theme
 	initLayouts()
 	// Start the application and set root to Cover
