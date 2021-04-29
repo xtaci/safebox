@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/go-bip39"
 	"github.com/xtaci/safebox/qrcode"
-	"strings"
 )
 
 type CosmosExporter struct{}
