@@ -125,8 +125,6 @@ func initLayouts() {
 		AddItem(layoutInfo, 0, 20, false).
 		AddItem(layoutMainBody, 0, 80, true)
 
-	layoutBody.SetBorderPadding(1, 1, 1, 1)
-
 	// Create the layout.
 	layoutMain = tview.NewFlex().
 		SetDirection(tview.FlexRow).
