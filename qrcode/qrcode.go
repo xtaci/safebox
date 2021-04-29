@@ -21,7 +21,7 @@ func GenerateQRCode(text string) string {
 	for i := 0; i < row; i++ {
 		for j := 0; j < column; j++ {
 			if bitmap[i][j] {
-				fmt.Fprint(&out, "\u2588\u2588")
+				fmt.Fprint(&out, "[::r]  [-:-:-]")
 			} else {
 				fmt.Fprint(&out, "  ")
 			}

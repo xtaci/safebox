@@ -33,6 +33,7 @@ func showExporterWindow(row int, col int) {
 
 		// output page
 		outputBox := tview.NewTextView()
+		outputBox.SetDynamicColors(true)
 		outputBox.SetScrollable(true)
 		outputBox.SetWrap(true)
 		outputBox.Write(bts)
