@@ -27,12 +27,12 @@ func refreshFooter() {
 
 		// shortcuts
 	if masterKey == nil {
-		keys := []tcell.Key{tcell.KeyF1, tcell.KeyF2, tcell.KeyEsc, tcell.KeyCtrlC}
+		keys := []tcell.Key{tcell.KeyCtrlG, tcell.KeyCtrlL, tcell.KeyEsc, tcell.KeyCtrlC}
 		for _, key := range keys {
 			fmt.Fprintf(layoutShortcuts, `[darkorange]%v ["%d"][black]%s[""] `, tview.Escape("<"+keyNames[key]+">"), key, shortCuts[key])
 		}
 	} else {
-		keys := []tcell.Key{tcell.KeyF1, tcell.KeyF2, tcell.KeyF3, tcell.KeyEsc, tcell.KeyCtrlC}
+		keys := []tcell.Key{tcell.KeyCtrlG, tcell.KeyCtrlL, tcell.KeyCtrlP, tcell.KeyEsc, tcell.KeyCtrlC}
 		for _, key := range keys {
 			fmt.Fprintf(layoutShortcuts, `[darkorange]%v ["%d"][black]%s[""] `, tview.Escape("<"+keyNames[key]+">"), key, shortCuts[key])
 		}

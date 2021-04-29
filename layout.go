@@ -49,13 +49,16 @@ var (
 		tcell.KeyF3:    "F3",
 		tcell.KeyF4:    "F4",
 		tcell.KeyEsc:   "ESC",
+		tcell.KeyCtrlG: "F1|Ctrl-G",
+		tcell.KeyCtrlL: "F2|Ctrl-L",
+		tcell.KeyCtrlP: "F3|Ctrl-P",
 		tcell.KeyCtrlC: "Ctrl-C",
 	}
 
 	shortCuts = map[tcell.Key]string{
-		tcell.KeyF1:    "Generate master key",
-		tcell.KeyF2:    "Load master key",
-		tcell.KeyF3:    "Change password",
+		tcell.KeyCtrlG: "Generate master key",
+		tcell.KeyCtrlL: "Load master key",
+		tcell.KeyCtrlP: "Change password",
 		tcell.KeyEsc:   "Back",
 		tcell.KeyCtrlC: "Quit",
 	}
@@ -72,21 +75,21 @@ func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 
 	// non cover page
 	switch event.Key() {
-	case tcell.KeyF1:
+	case tcell.KeyF1, tcell.KeyCtrlG:
 		if name, _ := layoutRoot.GetFrontPage(); name == pageMain {
 			showKeyGenWindow()
 			layoutShortcuts.Highlight(fmt.Sprint(tcell.KeyF1))
 		}
 		return nil
 
-	case tcell.KeyF2:
+	case tcell.KeyF2, tcell.KeyCtrlL:
 		if name, _ := layoutRoot.GetFrontPage(); name == pageMain {
 			showLoadKeyWindow()
 			layoutShortcuts.Highlight(fmt.Sprint(tcell.KeyF2))
 		}
 		return nil
 
-	case tcell.KeyF3:
+	case tcell.KeyF3, tcell.KeyCtrlP:
 		if name, _ := layoutRoot.GetFrontPage(); name == pageMain {
 			showChangePasswordWindow()
 			layoutShortcuts.Highlight(fmt.Sprint(tcell.KeyF3))
