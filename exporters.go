@@ -23,7 +23,6 @@ func init() {
 	exports = append(exports, new(eth.EthereumExporter))
 	exports = append(exports, new(ssh.SSHExporter))
 	exports = append(exports, new(btc.BitcoinExporter))
-
 	exports = append(exports, new(atom.CosmosExporter))
 	exports = append(exports, new(xprt.PersistenceExporter))
 	exports = append(exports, new(kava.KavaExporter))
