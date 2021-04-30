@@ -1,6 +1,7 @@
 package atom
 
 import (
+	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/go-bip39"
 	"testing"
 )
@@ -13,11 +14,10 @@ func TestCosmosExporter_Export(t *testing.T) {
 		return
 	}
 	t.Log("mnemonic:", mnemonic)
-	//kb := keyring.NewInMemory()
-	//account, err := kb.NewAccount("string(key)", mnemonic, "", types.FullFundraiserPath, hd.Secp256k1)
-	//if err!=nil{
-	//	t.Log(err)
-	//	return
-	//}
-	//t.Log("account:",account)
+	account, err := NewAccount(mnemonic, types.FullFundraiserPath)
+	if err != nil {
+		t.Log(err)
+		return
+	}
+	t.Log("account:", account)
 }
