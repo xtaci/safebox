@@ -6,6 +6,7 @@ import (
 	"github.com/xtaci/safebox/plugins/band"
 	"github.com/xtaci/safebox/plugins/btc"
 	"github.com/xtaci/safebox/plugins/eth"
+	"github.com/xtaci/safebox/plugins/fil"
 	"github.com/xtaci/safebox/plugins/kava"
 	"github.com/xtaci/safebox/plugins/ssh"
 	"github.com/xtaci/safebox/plugins/xprt"
@@ -28,4 +29,5 @@ func init() {
 	exports = append(exports, new(kava.KavaExporter))
 	exports = append(exports, new(band.BandExporter))
 	exports = append(exports, new(akt.AkashExporter))
+	exports = append(exports, new(fil.FileCoinExporter))
 }
