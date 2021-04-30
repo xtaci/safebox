@@ -14,7 +14,8 @@ The main goal of safebox is to make key backup easier with single main key to de
 6. Persistence
 7. Kava
 8. Akash
-9. and more plugable export plugin keeping coming.
+9. Filecoin
+10. and more plugable export plugin keeping coming.
 
 Up to **16384** keys can be derived with a single main key.
 
@@ -24,9 +25,9 @@ Safebox is designed with a **retro-style** text-based user interface(tui), so a 
 
 ![image](https://user-images.githubusercontent.com/2346725/115947888-45395b00-a4fd-11eb-8189-06b776771542.png)
 
-![image](https://user-images.githubusercontent.com/2346725/115947871-2fc43100-a4fd-11eb-9f1e-6d2b5e8a005a.png)
+![image](https://user-images.githubusercontent.com/2346725/116669957-c8612200-a9d1-11eb-8c16-1d0f340070c7.png)=
 
-![image](https://user-images.githubusercontent.com/2346725/115947920-6bf79180-a4fd-11eb-986a-b84159585a22.png)
+![image](https://user-images.githubusercontent.com/2346725/116670086-e595f080-a9d1-11eb-92b1-b5724b5e764e.png)
 
 
 # Status 
