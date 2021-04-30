@@ -15,7 +15,8 @@ The main goal of safebox is to make key backup easier with single main key to de
 7. Kava
 8. Akash
 9. Filecoin
-10. and more plugable export plugin keeping coming.
+
+and more plugable export plugin keeping coming...
 
 Up to **16384** keys can be derived with a single main key.
 
