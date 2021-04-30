@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -94,11 +96,21 @@ func refreshMainFrame() {
 		text.SetDynamicColors(true).
 			SetTextAlign(tview.AlignCenter)
 		fmt.Fprintf(text, `[red]Master Key not loaded,
-Please Load a master key or Generate one first`)
+Please Load a master key or Generate one first
+`)
+		lang := os.Getenv("LANG")
+		if strings.HasPrefix(lang, "zh_") {
+			fmt.Fprintf(text, `
+Tips:
+To get the BEST display quality, please export LANG to non Asian Language with UTF-8, such as:
+export LANG=C.UTF-8
+export LANG=en_US.UTF-8
+`)
+		}
 
-		layoutMainBody.AddItem(tview.NewBox(), 0, 8, false)
-		layoutMainBody.AddItem(text, 0, 1, true)
-		layoutMainBody.AddItem(tview.NewBox(), 0, 8, false)
+		layoutMainBody.AddItem(tview.NewBox(), 0, 4, false)
+		layoutMainBody.AddItem(text, 0, 2, true)
+		layoutMainBody.AddItem(tview.NewBox(), 0, 4, false)
 		return
 	}
 

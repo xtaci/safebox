@@ -46,3 +46,20 @@ func showSuccessWindow(msg string, callback func()) {
 
 	layoutRoot.AddPage("success", succ, true, true)
 }
+
+func showInfoWindow(msg string, callback func()) {
+	succ := tview.NewModal().
+		SetText(msg).
+		AddButtons([]string{"OK"}).
+		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+			// update info window & mainFrame window
+			layoutRoot.RemovePage("info")
+			if callback != nil {
+				callback()
+			}
+		})
+
+	succ.SetBackgroundColor(tcell.ColorDarkOrange)
+
+	layoutRoot.AddPage("info", succ, true, true)
+}
