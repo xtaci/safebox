@@ -144,9 +144,6 @@ export LANG=en_US.UTF-8
 	addDerivedKeys := func(start uint16) {
 		for i := uint16(0); i < 64; i++ {
 			idx := start + i
-			if idx >= MaxKeys {
-				return
-			}
 			// we derive and show the part of the key
 			key, err := masterKey.deriveKey(idx, 32)
 			if err != nil {

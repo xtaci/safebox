@@ -11,7 +11,10 @@ import (
 )
 
 var infoString = `
-Master Key SHA256:
+[-:-:-]Location:
+[green]%v
+
+[-:-:-]Master Key SHA256:
 [green]%v
 
 [-:-:-]Master Keys Created At:
@@ -19,6 +22,7 @@ Master Key SHA256:
 
 [-:-:-]Number of keys with label:
 [green]%v
+
 `
 
 var instructionsString = `
@@ -60,6 +64,7 @@ func infoMasterKey() *tview.TextView {
 	if masterKey != nil {
 		md := sha256.Sum256(masterKey.masterKey[:])
 		fmt.Fprintf(textview, infoString,
+			masterKey.path,
 			hexutil.Encode(md[:]),
 			time.Unix(masterKey.createdAt, 0).Local().Format(time.RFC822),
 			len(masterKey.labels),

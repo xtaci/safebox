@@ -21,7 +21,6 @@ import (
 )
 
 var (
-	ErrInvalidKeyId      = errors.New("invalid key id")
 	ErrPasswordIncorrect = errors.New("incorrect password to decrypt the master key")
 )
 
@@ -30,12 +29,13 @@ var (
 	IV               = []byte{167, 79, 156, 18, 172, 27, 1, 164, 21, 242, 193, 252, 120, 230, 107, 115}
 	SALT             = "safebox"
 	pbkdf2Iterations = 4096
+	HighRoundsSalt   = "=SAFEBOX=HIGHROUND=%v=7=^HsGBu*3ctvdC!5Cq#-uA68sV4wJkeVNG^YBR&?E_825QRK67?Laq^_qVn$2emX6=-*VU#bSvPr#9jWYNG_s6@5V9y=pXPdSzZ!E**UzmegAPe!fUynwa492qsaJz+"
 )
 
 const (
 	MasterKeyLength = 256 * 1024                      // 256 KB
 	LabelSize       = 16                              // Maximum Label Size
-	MaxKeys         = MasterKeyLength / aes.BlockSize // A const 16K
+	MaxKeysRound0   = MasterKeyLength / aes.BlockSize // A const 16K
 )
 
 // record program startup time
@@ -99,9 +99,9 @@ func (mkey *MasterKey) generateMasterKey(entropy []byte) error {
 
 // derive the N-th id with current master key with specified key size
 func (mkey *MasterKey) deriveKey(id uint16, keySize int) (key []byte, err error) {
-	if id >= MaxKeys || id < 0 {
-		return nil, ErrInvalidKeyId
-	}
+	// get round and make id inside [0, MaxKeyRound0)
+	round := id / MaxKeysRound0
+	id = id % MaxKeysRound0
 
 	// Approcach:
 	// 1. take the N-th 16Byte as the key to encrypt the whole master key in CFB
@@ -122,6 +122,12 @@ func (mkey *MasterKey) deriveKey(id uint16, keySize int) (key []byte, err error)
 	} else {
 		key = md[:]
 	}
+
+	// 4. if round > 0, we need extra key extension for key
+	if round > 0 {
+		key = pbkdf2.Key(key, []byte(fmt.Sprintf(HighRoundsSalt, round)), pbkdf2Iterations, keySize, sha1.New)
+	}
+
 	return key, err
 }
 
@@ -285,10 +291,6 @@ func (mkey *MasterKey) load(password []byte, path string) (err error) {
 
 // set label
 func (mkey *MasterKey) setLabel(idx uint16, label string) error {
-	if idx >= MaxKeys || idx < 0 {
-		return ErrInvalidKeyId
-	}
-
 	if label == "" {
 		delete(mkey.labels, idx)
 	} else {

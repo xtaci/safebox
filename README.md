@@ -18,7 +18,7 @@ The main goal of safebox is to make key backup easier with single main key to de
 
 and more plugable export plugin keeping coming...
 
-Up to **16384** keys can be derived with a single main key.
+**Unlimited** keys can be derived with a single main key, but we still suggest one master key for 16384 derived keys.
 
 # TUI
 
