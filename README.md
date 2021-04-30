@@ -26,7 +26,7 @@ Safebox is designed with a **retro-style** text-based user interface(tui), so a 
 
 ![image](https://user-images.githubusercontent.com/2346725/115947888-45395b00-a4fd-11eb-8189-06b776771542.png)
 
-![image](https://user-images.githubusercontent.com/2346725/116669957-c8612200-a9d1-11eb-8c16-1d0f340070c7.png)=
+![image](https://user-images.githubusercontent.com/2346725/116669957-c8612200-a9d1-11eb-8c16-1d0f340070c7.png)
 
 ![image](https://user-images.githubusercontent.com/2346725/116670086-e595f080-a9d1-11eb-92b1-b5724b5e764e.png)
 
