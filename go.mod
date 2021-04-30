@@ -8,6 +8,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.42.4
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/ethereum/go-ethereum v1.10.2
+	github.com/famz/SetLocale v0.0.0-20140414113655-0457ad1065dd
 	github.com/filecoin-project/go-address v0.0.4
 	github.com/gdamore/tcell/v2 v2.2.1
 	github.com/ipfs/go-cid v0.0.7 // indirect
