@@ -4,12 +4,17 @@ An unified key management system to make life easier.
 
 The main goal of safebox is to make key backup easier with single main key to derive the reset. You only need to backup **ONE** file about **256KB** to your removable disk, such as floppy disk/thumb drive/mo disk(magneto optical)/dvd-ram, etc...
 
-# Safebox Can derive
+# Safebox Can Derive Keys For:
 
-1. SSH Key
-2. Ethereum Key
-3. Bitcoin Key
-4. and more plugable export plugin keeping coming.
+1. SSH
+2. Ethereum
+3. Bitcoin
+4. Atom
+5. Band
+6. Persistence
+7. Kava
+8. Akash
+9. and more plugable export plugin keeping coming.
 
 Up to **16384** keys can be derived with a single main key.
 
