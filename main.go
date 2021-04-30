@@ -44,7 +44,7 @@ func main() {
 	}
 
 	if asianCharset {
-		os.Setenv("LANG", "en_US.UTF-8")
+		os.Setenv("LANG", "C.UTF-8")
 		cmd := exec.Command(os.Args[0])
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
