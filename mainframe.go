@@ -100,7 +100,7 @@ Please Load a master key or Generate one first
 `)
 		lang := os.Getenv("LANG")
 		if strings.HasPrefix(lang, "zh_") {
-			fmt.Fprintf(text, `
+			fmt.Fprintf(text, `[blue::bl]
 Tips:
 To get the BEST display quality, please export LANG to non Asian Language with UTF-8, such as:
 export LANG=C.UTF-8
