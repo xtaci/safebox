@@ -12,7 +12,7 @@ func showLoadPassword(parent string, path string) {
 	const (
 		windowName   = "showLoadPassword"
 		windowWidth  = 40
-		windowHeight = 7
+		windowHeight = 6
 		windowTitle  = "🔓MASTERKEY DECRYPTION"
 	)
 
@@ -23,15 +23,12 @@ func showLoadPassword(parent string, path string) {
 		SetFieldWidth(64).
 		SetMaskCharacter('*')
 
-	form.AddButton("OK", func() {
+	passChangedFunc := func(text string) {
 		// create a master key
 		masterKeyToLoad := newMasterKey()
 		err := masterKeyToLoad.load([]byte(passwordField.GetText()), path)
-		if err != nil {
-			showFailWindow(err.Error())
-			layoutRoot.RemovePage(windowName)
-		} else {
-			showSuccessWindow(fmt.Sprintf("Successfully Loaded Master Key!!!\n%v", path), func() {
+		if err == nil {
+			showSuccessWindow(fmt.Sprintf("Successfully Decrypted Master Key!!!\n%v", path), func() {
 				masterKey = masterKeyToLoad
 				masterKey.path = path
 				refresh()
@@ -39,12 +36,17 @@ func showLoadPassword(parent string, path string) {
 				layoutRoot.RemovePage(parent)
 			})
 		}
-	})
+	}
+	// compute hash on the fly
+	passwordField.SetChangedFunc(passChangedFunc)
 
 	form.AddFormItem(passwordField)
 	form.SetFocus(0)
 
 	layoutRoot.AddPage(windowName, popup(windowWidth, windowHeight, form), true, true)
+
+	// test empty pass
+	passChangedFunc("")
 }
 
 func showLoadKeyWindow() {
