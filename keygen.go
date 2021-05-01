@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/rivo/tview"
@@ -96,7 +97,7 @@ func showKeyGenWindow() {
 	form := tview.NewForm()
 	inputField := tview.NewInputField().
 		SetLabel("Save To:").
-		SetText(path + "/.safebox.key").
+		SetText(filepath.Join(path, ".safebox.key")).
 		SetFieldWidth(64)
 	form.AddFormItem(inputField)
 	form.AddButton("Save", func() {

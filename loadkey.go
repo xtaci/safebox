@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/rivo/tview"
 )
@@ -64,7 +65,7 @@ func showLoadKeyWindow() {
 	// input field setting
 	inputField := tview.NewInputField().
 		SetLabel("Path: ").
-		SetText(path + "/.safebox.key").
+		SetText(filepath.Join(path, ".safebox.key")).
 		SetFieldWidth(64)
 
 	form.AddFormItem(inputField)
