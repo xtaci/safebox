@@ -70,7 +70,11 @@ func showLoadKeyWindow() {
 
 	form.AddFormItem(inputField)
 	form.AddButton("Load", func() {
-		showLoadPassword(windowName, inputField.GetText())
+		if _, err := os.Stat(inputField.GetText()); os.IsNotExist(err) {
+			showFailWindow(fmt.Sprintf("File: %v does not exists", inputField.GetText()))
+		} else {
+			showLoadPassword(windowName, inputField.GetText())
+		}
 	})
 	form.AddButton("...", func() {
 		showDirWindow(inputField)
