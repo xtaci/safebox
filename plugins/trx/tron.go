@@ -2,8 +2,10 @@ package trx
 
 import (
 	"bytes"
+	"crypto/ecdsa"
 	"errors"
 	"fmt"
+	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/sasaxie/go-client-api/common/base58"
 	"github.com/sasaxie/go-client-api/common/crypto"
 	"github.com/xtaci/safebox/qrcode"
@@ -20,15 +22,15 @@ func (exp *TronExporter) Desc() string {
 }
 
 func (exp *TronExporter) KeySize() int {
-	return 32
+	return 64
 }
 
 func (exp *TronExporter) Export(key []byte) ([]byte, error) {
-	if len(key) != 32 {
+	if len(key) != 64 {
 		return nil, errors.New("invalid key length")
 	}
 
-	k, err := crypto.GenerateKey()
+	k, err := ecdsa.GenerateKey(ethcrypto.S256(), bytes.NewBuffer(key))
 	if err != nil {
 		return nil, err
 	}
