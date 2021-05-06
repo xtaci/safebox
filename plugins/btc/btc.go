@@ -46,10 +46,10 @@ func (exp *BitcoinExporter) Export(key []byte) ([]byte, error) {
 	var out bytes.Buffer
 	fmt.Fprintf(&out,
 		`Bitcoin Account: %v
-Public Key QR Code:
+Address QR Code:
 %v
 Private Key: %v
-Private Key QR Code :
+Private Key QR Code:
 %v`,
 		address.EncodeAddress(),
 		qrcode.GenerateQRCode(address.EncodeAddress()),

@@ -57,7 +57,7 @@ func (exp *KavaExporter) Export(key []byte) ([]byte, error) {
 	fmt.Fprintf(&out,
 		`Kava Account: %v
 HD derivation path: %v
-Public Key QR Code:
+Address QR Code:
 %v
 Mnemonic: %v
 Mnemonic QR Code(part1):
@@ -66,7 +66,7 @@ Mnemonic QR Code(part2):
 %v`,
 		account.GetAddress().String(),
 		hdPath,
-		qrcode.GenerateQRCode(account.GetPubKey().String()),
+		qrcode.GenerateQRCode(account.GetAddress().String()),
 		mnemonic,
 		qrcode.GenerateQRCode(strings.Join(mnemonicSlice[0:len(mnemonicSlice)/2], " ")),
 		qrcode.GenerateQRCode(strings.Join(mnemonicSlice[len(mnemonicSlice)/2:], " ")),

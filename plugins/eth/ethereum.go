@@ -55,10 +55,10 @@ func (exp *EthereumExporter) Export(key []byte) ([]byte, error) {
 	var out bytes.Buffer
 	fmt.Fprintf(&out,
 		`Ethereum Account: %v
-Public Key QR Code:
+Address QR Code:
 %v
 Private Key: %v
-Private Key QR Code :
+Private Key QR Code:
 %v`,
 		crypto.PubkeyToAddress(priv.PublicKey),
 		qrcode.GenerateQRCode(crypto.PubkeyToAddress(priv.PublicKey).String()),

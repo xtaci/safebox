@@ -48,13 +48,13 @@ func (exp *FileCoinExporter) Export(key []byte) ([]byte, error) {
 	var out bytes.Buffer
 	fmt.Fprintf(&out,
 		`FileCoin Account: %v
-Public Key QR Code:
+Address QR Code:
 %v
 Private Key: %v
 Private Key QR Code :
 %v`,
 		keys.Address.String(),
-		qrcode.GenerateQRCode(hex.EncodeToString(keys.PublicKey)),
+		qrcode.GenerateQRCode(keys.Address.String()),
 		hex.EncodeToString(keys.PrivateKey),
 		qrcode.GenerateQRCode(hex.EncodeToString(keys.PrivateKey)),
 	)
