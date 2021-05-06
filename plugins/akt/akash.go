@@ -4,18 +4,23 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/go-bip39"
 	"github.com/xtaci/safebox/plugins/atom"
 	"github.com/xtaci/safebox/qrcode"
-	"strings"
 )
 
 type AkashExporter struct{}
 
 func (exp *AkashExporter) Name() string {
 	return "Akash"
+}
+
+func (exp *AkashExporter) Desc() string {
+	return "The world's first decentralized open source cloud, and DeCloud for DeFi."
 }
 
 func (exp *AkashExporter) KeySize() int {

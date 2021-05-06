@@ -20,6 +20,11 @@ type EthereumExporter struct{}
 func (exp *EthereumExporter) Name() string {
 	return "Ethereum"
 }
+
+func (exp *EthereumExporter) Desc() string {
+	return "Ethereum is a technology that's home to digital money, global payments, and applications."
+}
+
 func (exp *EthereumExporter) KeySize() int {
 	return 32
 }

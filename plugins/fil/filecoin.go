@@ -7,10 +7,11 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
+
 	secp256k1 "github.com/ethereum/go-ethereum/crypto"
 	"github.com/filecoin-project/go-address"
 	"github.com/xtaci/safebox/qrcode"
-	"io"
 )
 
 type FileCoinExporter struct{}
@@ -18,7 +19,9 @@ type FileCoinExporter struct{}
 func (exp *FileCoinExporter) Name() string {
 	return "FileCoin"
 }
-
+func (exp *FileCoinExporter) Desc() string {
+	return "Filecoin is a decentralized storage network designed to store humanity's most important information."
+}
 func (exp *FileCoinExporter) KeySize() int {
 	return 64
 }

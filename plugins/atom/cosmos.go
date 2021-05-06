@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/types"
-	"strings"
 
 	"github.com/cosmos/go-bip39"
 	"github.com/xtaci/safebox/qrcode"
@@ -18,6 +19,10 @@ type CosmosExporter struct{}
 
 func (exp *CosmosExporter) Name() string {
 	return "Cosmos"
+}
+
+func (exp *CosmosExporter) Desc() string {
+	return "Cosmos is an ever-expanding ecosystem of interoperable and sovereign blockchain apps and services, built for a decentralized future"
 }
 
 func (exp *CosmosExporter) KeySize() int {

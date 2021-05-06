@@ -4,18 +4,23 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/go-bip39"
 	"github.com/xtaci/safebox/plugins/atom"
 	"github.com/xtaci/safebox/qrcode"
-	"strings"
 )
 
 type BandExporter struct{}
 
 func (exp *BandExporter) Name() string {
 	return "Band"
+}
+
+func (exp *BandExporter) Desc() string {
+	return "BandChain is designed to be compatible with most smart contract and blockchain development frameworks"
 }
 
 func (exp *BandExporter) KeySize() int {

@@ -24,6 +24,9 @@ type BitcoinExporter struct{}
 func (exp *BitcoinExporter) Name() string {
 	return "Bitcoin"
 }
+func (exp *BitcoinExporter) Desc() string {
+	return "Bitcoin is an innovative payment network and a new kind of money."
+}
 func (exp *BitcoinExporter) KeySize() int {
 	return 32
 }

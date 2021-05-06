@@ -13,9 +13,10 @@ import (
 )
 
 type IKeyExport interface {
-	Name() string
-	Export(key []byte) ([]byte, error)
-	KeySize() int
+	Name() string                      // name of the exporter
+	Desc() string                      // description
+	Export(key []byte) ([]byte, error) // export function
+	KeySize() int                      // expected key size to input to exporter
 }
 
 var exports []IKeyExport

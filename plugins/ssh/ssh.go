@@ -17,9 +17,15 @@ type SSHExporter struct{}
 func (exp *SSHExporter) Name() string {
 	return "SSH(ECDSA)"
 }
+
+func (exp *SSHExporter) Desc() string {
+	return "The Secure Shell Protocol (SSH) is a cryptographic network protocol for operating network services securely over an unsecured network"
+}
+
 func (exp *SSHExporter) KeySize() int {
 	return 32
 }
+
 func (exp *SSHExporter) Export(key []byte) ([]byte, error) {
 	if len(key) != 32 {
 		return nil, errors.New("invalid key length")
