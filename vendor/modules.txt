@@ -192,6 +192,15 @@ github.com/ipfs/go-ipld-cbor
 github.com/ipfs/go-ipld-cbor/encoding
 # github.com/ipfs/go-ipld-format v0.0.1
 github.com/ipfs/go-ipld-format
+# github.com/isarq/nem-sdk-go v0.0.6
+## explicit
+github.com/isarq/nem-sdk-go/base
+github.com/isarq/nem-sdk-go/external/crypto/ed25519
+github.com/isarq/nem-sdk-go/external/crypto/ed25519/internal/edwards25519
+github.com/isarq/nem-sdk-go/external/crypto/sha3
+github.com/isarq/nem-sdk-go/extras
+github.com/isarq/nem-sdk-go/model
+github.com/isarq/nem-sdk-go/utils
 # github.com/jmhodges/levigo v1.0.0
 github.com/jmhodges/levigo
 # github.com/libp2p/go-buffer-pool v0.0.2

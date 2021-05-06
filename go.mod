@@ -11,6 +11,7 @@ require (
 	github.com/filecoin-project/go-address v0.0.4
 	github.com/gdamore/tcell/v2 v2.2.1
 	github.com/ipfs/go-cid v0.0.7 // indirect
+	github.com/isarq/nem-sdk-go v0.0.6
 	github.com/mattn/go-runewidth v0.0.12 // indirect
 	github.com/multiformats/go-multihash v0.0.14 // indirect
 	github.com/rivo/tview v0.0.0-20210427112837-09cec83b1732

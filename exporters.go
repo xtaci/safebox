@@ -10,6 +10,7 @@ import (
 	"github.com/xtaci/safebox/plugins/kava"
 	"github.com/xtaci/safebox/plugins/ssh"
 	"github.com/xtaci/safebox/plugins/trx"
+	"github.com/xtaci/safebox/plugins/xem"
 	"github.com/xtaci/safebox/plugins/xprt"
 )
 
@@ -33,4 +34,5 @@ func init() {
 	exports = append(exports, new(akt.AkashExporter))
 	exports = append(exports, new(fil.FileCoinExporter))
 	exports = append(exports, new(trx.TronExporter))
+	exports = append(exports, new(xem.NemExporter))
 }
