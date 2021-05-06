@@ -22,13 +22,27 @@ func showExporterWindow(row int, col int) {
 		exportorNames = append(exportorNames, exports[k].Name())
 	}
 
+	desc := tview.NewTextView()
+	desc.SetWordWrap(true)
+	desc.SetDynamicColors(true)
+	desc.SetWrap(true)
+
 	idx := uint16(row - 1)
 	selected := 0
 	form := tview.NewForm()
 	form.SetTitle("EXPORT KEY")
-	form.AddDropDown(exporterLabel, exportorNames, 0, func(option string, optionIndex int) {
+
+	dropdown := tview.NewDropDown()
+	dropdown.SetLabel(exporterLabel)
+	dropdown.SetOptions(exportorNames, func(option string, optionIndex int) {
 		selected = optionIndex
+		desc.Clear()
+		fmt.Fprintf(desc, exports[selected].Desc())
 	})
+
+	dropdown.SetCurrentOption(0)
+	form.AddFormItem(dropdown)
+
 	form.AddButton("Export", func() {
 		key, _ := masterKey.deriveKey(idx, exports[selected].KeySize())
 		bts, _ := exports[selected].Export(key)
@@ -46,9 +60,10 @@ func showExporterWindow(row int, col int) {
 	view := tview.NewFlex()
 	view.SetBorder(true)
 	view.SetDirection(tview.FlexRow).
-		AddItem(form, 0, 1, true)
+		AddItem(form, 0, 1, true).
+		AddItem(desc, 0, 2, true)
 
-	layoutRoot.AddPage(windowName, popup(80, 10, view), true, true)
+	layoutRoot.AddPage(windowName, popup(80, 20, view), true, true)
 }
 
 func showSetLabelWindow(row int, col int) {
