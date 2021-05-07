@@ -22,6 +22,10 @@ and more plugable export plugin keeping coming...
 
 **Unlimited** keys can be derived with a single main key, but we still suggest one master key for 16384 derived keys.
 
+# Recommendations
+
+1. Install on Openbsd
+
 # TUI
 
 Safebox is designed with a **retro-style** text-based user interface(tui), so a box such as Raspberry Pi will be able to act as key mangement box for offline storage. And keys can be obtain via text-based **QR-Code**.
