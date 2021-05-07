@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/md5"
 	"crypto/sha256"
 	"fmt"
 	"os"
@@ -111,8 +110,7 @@ func showKeyEntropyInputWindow() {
 			close(chanClosed)
 			showSuccessWindow(fmt.Sprint("Successfully Generated Master Key"), func() {
 				newKey := newMasterKey()
-				sum := md5.Sum([]byte(entropy))
-				newKey.generateMasterKey(sum[:])
+				newKey.generateMasterKey([]byte(entropy))
 				layoutRoot.RemovePage(windowName)
 				showKeySaveWindow(newKey)
 			})
