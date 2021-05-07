@@ -79,8 +79,12 @@ func showKeyEntropyInputWindow() {
 		windowTitle  = "- TYPE IN RANDOM KEYS TO GATHER ENTROPY -"
 	)
 
+	const (
+		entropyToGather = 100
+	)
+
 	var (
-		tips = []string{"very good!", "that's !AWESOME!", "GoRGEoUS!!!", "UNBELIEVABLE!!!"}
+		tips = []string{"very good!", "that's !AWESOME!", "GORRRRGEOUS!!!", "UNBELIEVABLE!!!"}
 	)
 
 	// a sinker
@@ -107,7 +111,7 @@ func showKeyEntropyInputWindow() {
 		// display hits
 		hits := atomic.AddInt32(&keyboardHits, 1)
 		_, _, width, _ := entropyText.GetInnerRect()
-		s := fmt.Sprintf("[blue][%s %d%%]", strings.Repeat("#", int(float32(width-7)*float32(hits)/100)), hits)
+		s := fmt.Sprintf("[blue][%s %d%%]", strings.Repeat("#", int(float32(width-7)*float32(hits)/entropyToGather)), hits)
 		entropyText.SetText(s)
 
 		// gather entropy
@@ -115,7 +119,7 @@ func showKeyEntropyInputWindow() {
 		entropy = fmt.Sprintf("%s|%d|%d", entropy, key, time.Now().UnixNano())
 
 		for k := range tips {
-			if int(hits) > k*100/len(tips) {
+			if int(hits) > k*entropyToGather/len(tips) {
 				tipsText.SetText(tips[k])
 			} else {
 				break
@@ -123,7 +127,7 @@ func showKeyEntropyInputWindow() {
 		}
 
 		// entropy enough
-		if hits >= 100 {
+		if hits >= entropyToGather {
 			close(chanClosed)
 			showSuccessWindow(fmt.Sprint("Successfully Generated Master Key"), func() {
 				newKey := newMasterKey()
@@ -155,7 +159,7 @@ func showKeyEntropyInputWindow() {
 				}
 				app.QueueUpdateDraw(func() {
 					_, _, width, _ := entropyText.GetInnerRect()
-					s := fmt.Sprintf("[gray][%s %d%%]", strings.Repeat("#", int(float32(width-7)*float32(hits)/100)), hits)
+					s := fmt.Sprintf("[gray][%s %d%%]", strings.Repeat("#", int(float32(width-7)*float32(hits)/entropyToGather)), hits)
 					entropyText.SetText(s)
 				})
 			case <-chanClosed:
