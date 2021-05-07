@@ -15,6 +15,8 @@ The main goal of safebox is to make key backup easier with single main key to de
 7. Kava
 8. Akash
 9. Filecoin
+10. NEM
+11. Tron
 
 and more plugable export plugin keeping coming...
 
