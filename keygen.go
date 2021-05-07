@@ -1,13 +1,14 @@
 package main
 
 import (
+	"crypto/md5"
 	"crypto/sha256"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/tview"
 	"os"
 	"path/filepath"
-
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/rivo/tview"
 )
 
 func rawOutput(primitive tview.Primitive) *tview.Flex {
@@ -66,7 +67,55 @@ func showKeyGenPasswordPrompt(newkey *MasterKey, parent string, path string) {
 	layoutRoot.AddPage(windowName, popup(windowWidth, windowHeight, form), true, true)
 }
 
-func showKeyGenWindow() {
+func showKeyEntropyInputWindow() {
+	const (
+		windowName   = "showKeyEntropyInputWindow"
+		windowWidth  = 100
+		windowHeight = 12
+		windowTitle  = "- HIT KEYBOARD RANDOMLY -"
+	)
+	keyboardHits := uint8(0)
+	var entropy string
+	entropyText := tview.NewTextView().
+		SetDynamicColors(true).
+		SetTextAlign(tview.AlignCenter).
+		SetWrap(false).SetText("0/16")
+	entropyText.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		keyboardHits++
+		key := event.Key()
+		entropy = fmt.Sprintf("%s|%d", entropy, key)
+		s := fmt.Sprintf("%d/16", keyboardHits)
+		entropyText.SetText(s)
+		if keyboardHits == 16 {
+			newKey := newMasterKey()
+			sum := md5.Sum([]byte(entropy))
+			newKey.generateMasterKey(sum[:])
+			layoutRoot.RemovePage(windowName)
+			showKeyGenWindow(newKey)
+		}
+		return nil
+	})
+
+	form := tview.NewForm()
+	form.SetFocus(0)
+
+	flex := tview.NewFlex()
+	flex.SetDirection(tview.FlexRow).
+		SetTitle(windowTitle).
+		SetBorder(true)
+	text := tview.NewTextView().
+		SetDynamicColors(true).
+		SetTextAlign(tview.AlignLeft).
+		SetWrap(false)
+
+	flex.AddItem(text, 0, 1, false)
+	flex.AddItem(entropyText, 0, 1, true)
+	flex.AddItem(form, 0, 1, false)
+
+	layoutRoot.AddPage(windowName, popup(windowWidth, windowHeight, flex), true, true)
+}
+
+func showKeyGenWindow(newkey *MasterKey) {
 	const (
 		windowName   = "showKeyGenWindow"
 		windowWidth  = 100
@@ -78,10 +127,6 @@ func showKeyGenWindow() {
 		SetDynamicColors(true).
 		SetTextAlign(tview.AlignLeft).
 		SetWrap(false)
-
-	// create a master key
-	newkey := newMasterKey()
-	newkey.generateMasterKey(nil)
 
 	fmt.Fprint(text, "GENERATED MASTER KEY SHA256:\n\n")
 	md := sha256.Sum256(newkey.masterKey[:])
@@ -112,7 +157,7 @@ func showKeyGenWindow() {
 		showDirWindow(inputField)
 	})
 
-	form.SetFocus(0)
+	form.SetFocus(2)
 
 	flex := tview.NewFlex()
 	flex.SetDirection(tview.FlexRow).
