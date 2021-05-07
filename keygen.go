@@ -75,8 +75,12 @@ func showKeyEntropyInputWindow() {
 	const (
 		windowName   = "showKeyEntropyInputWindow"
 		windowWidth  = 100
-		windowHeight = 3
+		windowHeight = 4
 		windowTitle  = "- TYPE IN RANDOM KEYS TO GATHER ENTROPY -"
+	)
+
+	var (
+		tips = []string{"very good!", "that's !AWESOME!", "GoRGEoUS!!!", "UNBELIEVABLE!!!"}
 	)
 
 	// a sinker
@@ -94,6 +98,11 @@ func showKeyEntropyInputWindow() {
 		SetTextAlign(tview.AlignLeft).
 		SetWrap(false).SetText("[0%]")
 
+	tipsText := tview.NewTextView().
+		SetDynamicColors(true).
+		SetTextAlign(tview.AlignCenter).
+		SetWrap(false)
+
 	entropyText.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		// display hits
 		hits := atomic.AddInt32(&keyboardHits, 1)
@@ -104,6 +113,14 @@ func showKeyEntropyInputWindow() {
 		// gather entropy
 		key := event.Key()
 		entropy = fmt.Sprintf("%s|%d|%d", entropy, key, time.Now().UnixNano())
+
+		for k := range tips {
+			if int(hits) > k*100/len(tips) {
+				tipsText.SetText(tips[k])
+			} else {
+				break
+			}
+		}
 
 		// entropy enough
 		if hits >= 100 {
@@ -125,6 +142,7 @@ func showKeyEntropyInputWindow() {
 
 	flex.AddItem(text, 0, 1, false)
 	flex.AddItem(entropyText, 0, 1, true)
+	flex.AddItem(tipsText, 0, 1, false)
 
 	go func() {
 		ticker := time.NewTicker(time.Second)
