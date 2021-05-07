@@ -99,7 +99,7 @@ func showKeyEntropyInputWindow() {
 		// display hits
 		hits := atomic.AddInt32(&keyboardHits, 1)
 		_, _, width, _ := entropyText.GetInnerRect()
-		s := fmt.Sprintf("[blue][%s%d%%]", strings.Repeat("#", int(float32(width-5)*float32(hits)/100)), hits)
+		s := fmt.Sprintf("[blue][%s %d%%]", strings.Repeat("#", int(float32(width-7)*float32(hits)/100)), hits)
 		entropyText.SetText(s)
 
 		// gather entropy
@@ -108,13 +108,13 @@ func showKeyEntropyInputWindow() {
 
 		// entropy enough
 		if hits >= 100 {
+			close(chanClosed)
 			showSuccessWindow(fmt.Sprint("Successfully Generated Master Key"), func() {
-				close(chanClosed)
 				newKey := newMasterKey()
 				sum := md5.Sum([]byte(entropy))
 				newKey.generateMasterKey(sum[:])
 				layoutRoot.RemovePage(windowName)
-				showKeyGenWindow(newKey)
+				showKeySaveWindow(newKey)
 			})
 		}
 		return nil
@@ -139,7 +139,7 @@ func showKeyEntropyInputWindow() {
 				}
 				app.QueueUpdateDraw(func() {
 					_, _, width, _ := entropyText.GetInnerRect()
-					s := fmt.Sprintf("[gray][%s%d%%]", strings.Repeat("#", int(float32(width-5)*float32(hits)/100)), hits)
+					s := fmt.Sprintf("[gray][%s %d%%]", strings.Repeat("#", int(float32(width-7)*float32(hits)/100)), hits)
 					entropyText.SetText(s)
 				})
 			case <-chanClosed:
@@ -151,12 +151,12 @@ func showKeyEntropyInputWindow() {
 	layoutRoot.AddPage(windowName, popup(windowWidth, windowHeight, flex), true, true)
 }
 
-func showKeyGenWindow(newkey *MasterKey) {
+func showKeySaveWindow(newkey *MasterKey) {
 	const (
-		windowName   = "showKeyGenWindow"
+		windowName   = "showKeySaveWindow"
 		windowWidth  = 100
 		windowHeight = 12
-		windowTitle  = "- MASTERKEY GENERATION -"
+		windowTitle  = "- MASTERKEY GENERATED -"
 	)
 
 	text := tview.NewTextView().
