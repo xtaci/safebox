@@ -77,7 +77,7 @@ func globalInputCapture(event *tcell.EventKey) *tcell.EventKey {
 	switch event.Key() {
 	case tcell.KeyF1, tcell.KeyCtrlG:
 		if name, _ := layoutRoot.GetFrontPage(); name == pageMain {
-			showKeyGenWindow()
+			showKeyEntropyInputWindow()
 			layoutShortcuts.Highlight(fmt.Sprint(tcell.KeyF1))
 		}
 		return nil
