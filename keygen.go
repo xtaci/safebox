@@ -4,11 +4,15 @@ import (
 	"crypto/md5"
 	"crypto/sha256"
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync/atomic"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"os"
-	"path/filepath"
 )
 
 func rawOutput(primitive tview.Primitive) *tview.Flex {
@@ -68,41 +72,54 @@ func showKeyGenPasswordPrompt(newkey *MasterKey, parent string, path string) {
 }
 
 func showKeyEntropyInputWindow() {
+
 	const (
 		windowName   = "showKeyEntropyInputWindow"
 		windowWidth  = 100
-		windowHeight = 12
-		windowTitle  = "- HIT KEYBOARD RANDOMLY -"
+		windowHeight = 3
+		windowTitle  = "- TYPE IN RANDOM KEYS TO GATHER ENTROPY -"
 	)
-	keyboardHits := uint8(0)
-	var entropy string
-	entropyText := tview.NewTextView().
-		SetDynamicColors(true).
-		SetTextAlign(tview.AlignCenter).
-		SetWrap(false).SetText("0/16")
-	entropyText.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		keyboardHits++
-		key := event.Key()
-		entropy = fmt.Sprintf("%s|%d", entropy, key)
-		s := fmt.Sprintf("%d/16", keyboardHits)
-		entropyText.SetText(s)
-		if keyboardHits == 16 {
-			newKey := newMasterKey()
-			sum := md5.Sum([]byte(entropy))
-			newKey.generateMasterKey(sum[:])
-			layoutRoot.RemovePage(windowName)
-			showKeyGenWindow(newKey)
-		}
-		return nil
-	})
 
-	form := tview.NewForm()
-	form.SetFocus(0)
-
+	// a sinker
+	chanClosed := make(chan struct{})
 	flex := tview.NewFlex()
 	flex.SetDirection(tview.FlexRow).
 		SetTitle(windowTitle).
 		SetBorder(true)
+
+	var keyboardHits int32
+	var entropy string
+
+	entropyText := tview.NewTextView().
+		SetDynamicColors(true).
+		SetTextAlign(tview.AlignLeft).
+		SetWrap(false).SetText("[0%]")
+
+	entropyText.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		// display hits
+		hits := atomic.AddInt32(&keyboardHits, 1)
+		_, _, width, _ := entropyText.GetInnerRect()
+		s := fmt.Sprintf("[blue][%s%d%%]", strings.Repeat("#", int(float32(width-5)*float32(hits)/100)), hits)
+		entropyText.SetText(s)
+
+		// gather entropy
+		key := event.Key()
+		entropy = fmt.Sprintf("%s|%d|%d", entropy, key, time.Now().UnixNano())
+
+		// entropy enough
+		if hits >= 100 {
+			showSuccessWindow(fmt.Sprint("Successfully Generated Master Key"), func() {
+				close(chanClosed)
+				newKey := newMasterKey()
+				sum := md5.Sum([]byte(entropy))
+				newKey.generateMasterKey(sum[:])
+				layoutRoot.RemovePage(windowName)
+				showKeyGenWindow(newKey)
+			})
+		}
+		return nil
+	})
+
 	text := tview.NewTextView().
 		SetDynamicColors(true).
 		SetTextAlign(tview.AlignLeft).
@@ -110,7 +127,26 @@ func showKeyEntropyInputWindow() {
 
 	flex.AddItem(text, 0, 1, false)
 	flex.AddItem(entropyText, 0, 1, true)
-	flex.AddItem(form, 0, 1, false)
+
+	go func() {
+		ticker := time.NewTicker(time.Second)
+		for {
+			select {
+			case <-ticker.C:
+				hits := atomic.AddInt32(&keyboardHits, -1)
+				if hits < 0 {
+					hits = atomic.AddInt32(&keyboardHits, 1)
+				}
+				app.QueueUpdateDraw(func() {
+					_, _, width, _ := entropyText.GetInnerRect()
+					s := fmt.Sprintf("[gray][%s%d%%]", strings.Repeat("#", int(float32(width-5)*float32(hits)/100)), hits)
+					entropyText.SetText(s)
+				})
+			case <-chanClosed:
+				return
+			}
+		}
+	}()
 
 	layoutRoot.AddPage(windowName, popup(windowWidth, windowHeight, flex), true, true)
 }
