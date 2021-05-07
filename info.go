@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha256"
 	"fmt"
+	"runtime"
 	"strings"
 	"time"
 
@@ -22,6 +23,9 @@ var infoString = `
 
 [-:-:-]Number of keys with label:
 [green]%v
+
+[-:-:-]System:
+[green]%v %v
 
 `
 
@@ -68,6 +72,8 @@ func infoMasterKey() *tview.TextView {
 			hexutil.Encode(md[:]),
 			time.Unix(masterKey.createdAt, 0).Local().Format(time.RFC822),
 			len(masterKey.labels),
+			runtime.GOOS,
+			runtime.GOARCH,
 		)
 	}
 	return textview
