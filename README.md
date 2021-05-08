@@ -1,4 +1,4 @@
-# Safebox
+# 🔐 SafeBox
 
 An unified key management system to make life easier. 
 
