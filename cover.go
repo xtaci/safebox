@@ -20,8 +20,9 @@ const logo = `
 `
 
 const (
-	subtitle   = `[::u]AN UNIFIED KEY MANAGEMENT SYSTEM`
+	subtitle   = `[::]:: An unified key management system ::`
 	navigation = `[::bl]Press any key to continue...[-:-:-]`
+	author     = `[::]https://github.com/xtaci/safebox[-:-:-]`
 )
 
 // coverPage returns the coverPage page.
@@ -44,6 +45,7 @@ func coverPage() *tview.Flex {
 		SetBorders(0, 0, 0, 0, 0, 0).
 		AddText(subtitle, true, tview.AlignCenter, tcell.ColorDarkOrange).
 		AddText("", true, tview.AlignCenter, tcell.ColorGold).
+		AddText(author, true, tview.AlignCenter, tcell.ColorLightGray).
 		AddText(navigation, true, tview.AlignCenter, tcell.ColorWhite)
 
 	// Create a Flex layout that centers the logo and subtitle.

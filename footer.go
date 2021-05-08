@@ -7,7 +7,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-var verString = "version 1.0 @xtaci"
+var verString = "//safebox //version 1.0 "
 
 func footerWindow() *tview.Flex {
 	// The bottom row has some info on where we are.
