@@ -4,6 +4,12 @@ An unified key management system to make life easier.
 
 The main goal of safebox is to make key backup easier with single main key to derive the reset. You only need to backup **ONE** file about **256KB** to your removable disk, such as floppy disk/thumb drive/mo disk(magneto optical)/dvd-ram, etc...
 
+# Features
+
+1. **Unlimited keys** can be derived with a single main key, but we still suggest one master key for 16384 derived keys.
+2. **Multi-source entropy**, entropy comes from key strokes, system entropy(/dev/urandom), startup time, process pid, etc...
+3. P**lugable exporters** to adapt to different scenario, such as, blockchain, secure shell.
+
 # Safebox Can Derive Keys For:
 
 1. SSH
@@ -20,7 +26,6 @@ The main goal of safebox is to make key backup easier with single main key to de
 
 and more plugable export plugin keeping coming...
 
-**Unlimited** keys can be derived with a single main key, but we still suggest one master key for 16384 derived keys.
 
 # Recommendations
 
