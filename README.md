@@ -30,7 +30,7 @@ and more plugable export plugin keeping coming...
 
 Safebox is designed with a **retro-style** text-based user interface(tui), so a box such as Raspberry Pi will be able to act as key mangement box for offline storage. And keys can be obtain via text-based **QR-Code**.
 
-![image](https://user-images.githubusercontent.com/2346725/115947888-45395b00-a4fd-11eb-8189-06b776771542.png)
+![image](https://user-images.githubusercontent.com/2346725/117523871-35397500-afed-11eb-9cce-cce2635929e7.png)
 
 ![image](https://user-images.githubusercontent.com/2346725/116669957-c8612200-a9d1-11eb-8c16-1d0f340070c7.png)
 
