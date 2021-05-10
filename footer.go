@@ -7,7 +7,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-var verString = "//safebox //version 1.0 "
+var verString = "//safebox //version %v"
 
 func footerWindow() *tview.Flex {
 	// The bottom row has some info on where we are.
@@ -44,7 +44,7 @@ func refreshFooter() {
 		SetDynamicColors(true).
 		SetWrap(false)
 
-	fmt.Fprint(versionTextView, verString)
+	fmt.Fprintf(versionTextView, verString, VERSION)
 
 	//  flex
 	layoutFooter.AddItem(layoutShortcuts, 0, 8, false)

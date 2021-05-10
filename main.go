@@ -5,6 +5,8 @@ import (
 	"github.com/rivo/tview"
 )
 
+var VERSION = "undefined"
+
 // The application.
 var app *tview.Application
 
