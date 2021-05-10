@@ -24,7 +24,7 @@ if hash upx 2>/dev/null; then
 	UPX=true
 fi
 
-VERSION="1.0.1"
+VERSION="1.0.2"
 LDFLAGS="-X main.VERSION=$VERSION -s -w"
 GCFLAGS=""
 
