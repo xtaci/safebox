@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -18,6 +19,9 @@ func showDirWindow(inputField *tview.InputField) {
 	)
 
 	rootDir := "/"
+	if runtime.GOOS == "windows" {
+		rootDir = "C:\\"
+	}
 
 	node := tview.NewTreeNode(rootDir).SetColor(tcell.ColorRed)
 	tree := tview.NewTreeView().

@@ -15,9 +15,10 @@ const (
 
 func TestCreateKey(t *testing.T) {
 	mkey := newMasterKey()
+	mkey.changePassword([]byte(testPass))
 	mkey.generateMasterKey(nil)
 	mkey.labels[0] = "HELLO"
-	assert.Nil(t, mkey.store([]byte(testPass), testMKeyPath))
+	assert.Nil(t, mkey.store(testMKeyPath))
 
 	loaded := newMasterKey()
 	assert.Nil(t, loaded.load([]byte(testPass), testMKeyPath))
@@ -30,8 +31,9 @@ func TestCreateKey(t *testing.T) {
 func TestCreateKeySalted(t *testing.T) {
 	mkey := newMasterKey()
 	mkey.generateMasterKey([]byte("added some salt"))
+	mkey.changePassword([]byte(testPass))
 	mkey.labels[0] = "HELLO"
-	assert.Nil(t, mkey.store([]byte(testPass), testMKeyPath))
+	assert.Nil(t, mkey.store(testMKeyPath))
 
 	loaded := newMasterKey()
 	assert.Nil(t, loaded.load([]byte(testPass), testMKeyPath))
