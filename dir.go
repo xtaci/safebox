@@ -144,5 +144,12 @@ func showDirWindow(inputField *tview.InputField) {
 		}
 	})
 
+	// set input field to current node
+	currentNode := tree.GetCurrentNode()
+	reference := currentNode.GetReference()
+	if reference != nil {
+		inputField.SetText(reference.(string))
+	}
+
 	layoutRoot.AddPage(windowName, popup(windowWidth, windowHeight, tree), true, true)
 }
