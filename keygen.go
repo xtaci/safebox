@@ -213,7 +213,7 @@ func showKeySaveWindow(newkey *MasterKey) {
 		showDirWindow(inputField)
 	})
 
-	form.SetFocus(2)
+	form.SetFocus(1)
 
 	flex := tview.NewFlex()
 	flex.SetDirection(tview.FlexRow).
