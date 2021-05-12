@@ -14,7 +14,7 @@ The main goal of safebox is to make key backup easier with single main key to de
 
 1. **Unlimited keys** can be derived with a single main key, but we still suggest one master key for 16384 derived keys.
 2. **Multi-source entropy**, entropy comes from key strokes, system entropy(/dev/urandom), startup time, process pid, etc...
-3. P**lugable exporters** to adapt to different scenario, such as, blockchain, secure shell.
+3. **Plugable exporters** to adapt to different scenario, such as, blockchain, secure shell.
 
 # Safebox Can Derive Keys For:
 
@@ -36,6 +36,19 @@ and more plugable export plugin keeping coming...
 # Recommendations
 
 1. Install on Openbsd
+2. Backup your master key file on **Removable & Reliable storages**, such as [DVD-RAM](https://en.wikipedia.org/wiki/DVD-RAM), [MO](https://en.wikipedia.org/wiki/Magneto-optical_drive). 
+ 
+Common Storage Lifetime Table:
+
+| Storage | LifeTime | Cold storage|
+|------|------|------|
+|Magneto Optical Disk| estimated 50 years | Yes |
+|DVD-RAM|estimated 30 years| Yes |
+|Floppy disk | 10-20 years | Yes |
+|Flash(SD Card/USB Thumb/SSD)|5-10 years or more (depends on write cycles)| Yes |
+|Hard Disk | 3-5 years| **No** |
+|Recordable CD/DVD| 2-5 years | Yes|
+
 
 # TUI
 
@@ -50,4 +63,4 @@ Safebox is designed with a **retro-style** text-based user interface(tui), so a 
 
 # Status 
 
-Alpha
+Beta
