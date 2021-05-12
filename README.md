@@ -63,4 +63,4 @@ Safebox is designed with a **retro-style** text-based user interface(tui), so a 
 
 # Status 
 
-Alpha
+Beta
