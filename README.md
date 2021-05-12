@@ -42,7 +42,7 @@ Common Storage Lifetime Table:
 
 | Storage | LifeTime | Cold storage|
 |------|------|------|
-|Magneto Optical Disk| 50 years | Yes |
+|Magneto Optical Disk| estimated 50 years | Yes |
 |DVD-RAM|estimated 30 years| Yes |
 |Floppy disk | 10-20 years | Yes |
 |Flash(SD Card/USB Thumb/SSD)|5-10 years or more (depends on write cycles)| Yes |
