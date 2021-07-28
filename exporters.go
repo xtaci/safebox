@@ -5,6 +5,7 @@ import (
 	"github.com/xtaci/safebox/plugins/atom"
 	"github.com/xtaci/safebox/plugins/band"
 	"github.com/xtaci/safebox/plugins/btc"
+	"github.com/xtaci/safebox/plugins/dot"
 	"github.com/xtaci/safebox/plugins/eth"
 	"github.com/xtaci/safebox/plugins/fil"
 	"github.com/xtaci/safebox/plugins/kava"
@@ -35,4 +36,5 @@ func init() {
 	exports = append(exports, new(fil.FileCoinExporter))
 	exports = append(exports, new(trx.TronExporter))
 	exports = append(exports, new(xem.NemExporter))
+	exports = append(exports, new(dot.PolkadotExporter))
 }
