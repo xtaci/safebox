@@ -3,6 +3,7 @@ module github.com/xtaci/safebox
 go 1.16
 
 require (
+	github.com/ChainSafe/gossamer v0.6.0
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/cosmos/cosmos-sdk v0.42.4
