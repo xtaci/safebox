@@ -4,11 +4,12 @@ go 1.16
 
 require (
 	github.com/ChainSafe/gossamer v0.6.0
-	github.com/btcsuite/btcd v0.21.0-beta
-	github.com/btcsuite/btcutil v1.0.2
+	github.com/btcsuite/btcd v0.22.0-beta
+	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
+	github.com/consensys/gurvy v0.3.8 // indirect
 	github.com/cosmos/cosmos-sdk v0.42.4
 	github.com/cosmos/go-bip39 v1.0.0
-	github.com/ethereum/go-ethereum v1.10.2
+	github.com/ethereum/go-ethereum v1.10.8
 	github.com/filecoin-project/go-address v0.0.4
 	github.com/gdamore/tcell/v2 v2.2.1
 	github.com/ipfs/go-cid v0.0.7 // indirect
@@ -22,8 +23,8 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/templexxx/xorsimd v0.4.1
 	github.com/whyrusleeping/cbor-gen v0.0.0-20200812213548-958ddffe352c // indirect
-	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc
-	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887 // indirect
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	golang.org/x/sys v0.0.0-20211013075003-97ac67df715c // indirect
 	golang.org/x/term v0.0.0-20210422114643-f5beecf764ed // indirect
 	golang.org/x/text v0.3.6 // indirect
 )
