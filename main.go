@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/awnumar/memguard"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -29,6 +30,12 @@ var theme = tview.Theme{
 
 func main() {
 	fixCharset()
+	// Safely terminate in case of an interrupt signal
+	memguard.CatchInterrupt()
+
+	// Purge the session when we return
+	defer memguard.Purge()
+
 	app = tview.NewApplication()
 	tview.Styles = theme
 	initLayouts()

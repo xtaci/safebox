@@ -12,6 +12,12 @@ github.com/OneOfOne/xxhash
 # github.com/armon/go-metrics v0.3.6
 github.com/armon/go-metrics
 github.com/armon/go-metrics/prometheus
+# github.com/awnumar/memcall v0.0.0-20191004114545-73db50fd9f80
+github.com/awnumar/memcall
+# github.com/awnumar/memguard v0.22.2
+## explicit
+github.com/awnumar/memguard
+github.com/awnumar/memguard/core
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
 # github.com/btcsuite/btcd v0.22.0-beta
@@ -80,7 +86,7 @@ github.com/dgryski/go-farm
 github.com/dustin/go-humanize
 # github.com/enigmampc/btcutil v1.0.3-0.20200723161021-e2fb6adb2a25
 github.com/enigmampc/btcutil/bech32
-# github.com/ethereum/go-ethereum v1.10.8
+# github.com/ethereum/go-ethereum v1.10.13
 ## explicit
 github.com/ethereum/go-ethereum/common
 github.com/ethereum/go-ethereum/common/hexutil
@@ -161,7 +167,7 @@ github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
-# github.com/golang/snappy v0.0.3
+# github.com/golang/snappy v0.0.4
 github.com/golang/snappy
 # github.com/google/btree v1.0.0
 github.com/google/btree
@@ -229,7 +235,7 @@ github.com/mimoo/StrobeGo/strobe
 github.com/minio/blake2b-simd
 # github.com/minio/sha256-simd v0.1.1
 github.com/minio/sha256-simd
-# github.com/mitchellh/mapstructure v1.1.2
+# github.com/mitchellh/mapstructure v1.4.1
 github.com/mitchellh/mapstructure
 # github.com/mr-tron/base58 v1.2.0
 github.com/mr-tron/base58/base58
@@ -316,7 +322,7 @@ github.com/spf13/viper
 github.com/stretchr/testify/assert
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
-# github.com/syndtr/goleveldb v1.0.1-0.20210305035536-64b5b1c73954
+# github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 github.com/syndtr/goleveldb/leveldb
 github.com/syndtr/goleveldb/leveldb/cache
 github.com/syndtr/goleveldb/leveldb/comparer
@@ -385,7 +391,7 @@ github.com/tendermint/tm-db
 github.com/whyrusleeping/cbor-gen
 # go.etcd.io/bbolt v1.3.5
 go.etcd.io/bbolt
-# golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+# golang.org/x/crypto v0.0.0-20211209193657-4570a0811e8b
 ## explicit
 golang.org/x/crypto/blake2b
 golang.org/x/crypto/blake2s
@@ -407,7 +413,7 @@ golang.org/x/crypto/salsa20/salsa
 golang.org/x/crypto/sha3
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d
+# golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
@@ -416,7 +422,7 @@ golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/netutil
 golang.org/x/net/trace
-# golang.org/x/sys v0.0.0-20211013075003-97ac67df715c
+# golang.org/x/sys v0.0.0-20211213223007-03aa0b5f6827
 ## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
