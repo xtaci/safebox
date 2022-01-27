@@ -82,11 +82,13 @@ github.com/dgraph-io/ristretto
 github.com/dgraph-io/ristretto/z
 # github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13
 github.com/dgryski/go-farm
+# github.com/dop251/goja v0.0.0-20211011172007-d99e4b8cbf48
+## explicit
 # github.com/dustin/go-humanize v1.0.0
 github.com/dustin/go-humanize
 # github.com/enigmampc/btcutil v1.0.3-0.20200723161021-e2fb6adb2a25
 github.com/enigmampc/btcutil/bech32
-# github.com/ethereum/go-ethereum v1.10.13
+# github.com/ethereum/go-ethereum v1.10.9
 ## explicit
 github.com/ethereum/go-ethereum/common
 github.com/ethereum/go-ethereum/common/hexutil
@@ -218,6 +220,8 @@ github.com/isarq/nem-sdk-go/model
 github.com/isarq/nem-sdk-go/utils
 # github.com/jmhodges/levigo v1.0.0
 github.com/jmhodges/levigo
+# github.com/karalabe/usb v0.0.0-20211005121534-4c5740d64559
+## explicit
 # github.com/libp2p/go-buffer-pool v0.0.2
 github.com/libp2p/go-buffer-pool
 # github.com/lucasb-eyer/go-colorful v1.2.0
@@ -391,7 +395,7 @@ github.com/tendermint/tm-db
 github.com/whyrusleeping/cbor-gen
 # go.etcd.io/bbolt v1.3.5
 go.etcd.io/bbolt
-# golang.org/x/crypto v0.0.0-20211209193657-4570a0811e8b
+# golang.org/x/crypto v0.0.0-20220126234351-aa10faf2a1f8
 ## explicit
 golang.org/x/crypto/blake2b
 golang.org/x/crypto/blake2s
@@ -422,7 +426,7 @@ golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/netutil
 golang.org/x/net/trace
-# golang.org/x/sys v0.0.0-20211213223007-03aa0b5f6827
+# golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 ## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
