@@ -37,8 +37,6 @@ github.com/cespare/xxhash
 github.com/cespare/xxhash/v2
 # github.com/confio/ics23/go v0.6.3
 github.com/confio/ics23/go
-# github.com/consensys/gurvy v0.3.8
-## explicit
 # github.com/cosmos/cosmos-sdk v0.42.4
 ## explicit
 github.com/cosmos/cosmos-sdk/codec
@@ -82,13 +80,11 @@ github.com/dgraph-io/ristretto
 github.com/dgraph-io/ristretto/z
 # github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13
 github.com/dgryski/go-farm
-# github.com/dop251/goja v0.0.0-20211011172007-d99e4b8cbf48
-## explicit
 # github.com/dustin/go-humanize v1.0.0
 github.com/dustin/go-humanize
 # github.com/enigmampc/btcutil v1.0.3-0.20200723161021-e2fb6adb2a25
 github.com/enigmampc/btcutil/bech32
-# github.com/ethereum/go-ethereum v1.10.9
+# github.com/ethereum/go-ethereum v1.10.10
 ## explicit
 github.com/ethereum/go-ethereum/common
 github.com/ethereum/go-ethereum/common/hexutil
@@ -200,7 +196,6 @@ github.com/inconshreveable/mousetrap
 # github.com/ipfs/go-block-format v0.0.2
 github.com/ipfs/go-block-format
 # github.com/ipfs/go-cid v0.0.7
-## explicit
 github.com/ipfs/go-cid
 # github.com/ipfs/go-ipfs-util v0.0.2
 github.com/ipfs/go-ipfs-util
@@ -220,8 +215,6 @@ github.com/isarq/nem-sdk-go/model
 github.com/isarq/nem-sdk-go/utils
 # github.com/jmhodges/levigo v1.0.0
 github.com/jmhodges/levigo
-# github.com/karalabe/usb v0.0.0-20211005121534-4c5740d64559
-## explicit
 # github.com/libp2p/go-buffer-pool v0.0.2
 github.com/libp2p/go-buffer-pool
 # github.com/lucasb-eyer/go-colorful v1.2.0
@@ -252,7 +245,6 @@ github.com/multiformats/go-multiaddr
 # github.com/multiformats/go-multibase v0.0.3
 github.com/multiformats/go-multibase
 # github.com/multiformats/go-multihash v0.0.14
-## explicit
 github.com/multiformats/go-multihash
 # github.com/multiformats/go-varint v0.0.6
 github.com/multiformats/go-varint
@@ -437,7 +429,6 @@ golang.org/x/sys/windows
 ## explicit
 golang.org/x/term
 # golang.org/x/text v0.3.6
-## explicit
 golang.org/x/text/encoding
 golang.org/x/text/encoding/internal/identifier
 golang.org/x/text/secure/bidirule
