@@ -11,7 +11,6 @@ require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4
 	github.com/btcsuite/btcd/btcutil v1.1.6
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
-	github.com/cosmos/cosmos-sdk v0.50.9
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/ethereum/go-ethereum v1.14.8
 	github.com/filecoin-project/go-address v1.1.0
