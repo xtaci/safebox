@@ -1,4 +1,4 @@
-# Online deadlock detection in go (golang). [![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://wandbox.org/permlink/hJc6QCZowxbNm9WW) [![Docs](https://godoc.org/github.com/sasha-s/go-deadlock?status.svg)](https://godoc.org/github.com/sasha-s/go-deadlock) [![Build Status](https://travis-ci.org/sasha-s/go-deadlock.svg?branch=master)](https://travis-ci.org/sasha-s/go-deadlock) [![codecov](https://codecov.io/gh/sasha-s/go-deadlock/branch/master/graph/badge.svg)](https://codecov.io/gh/sasha-s/go-deadlock) [![version](https://badge.fury.io/gh/sasha-s%2Fgo-deadlock.svg)](https://github.com/sasha-s/go-deadlock/releases)  [![Go Report Card](https://goreportcard.com/badge/github.com/sasha-s/go-deadlock)](https://goreportcard.com/report/github.com/sasha-s/go-deadlock) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) 
+# Online deadlock detection in go (golang). [![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://wandbox.org/permlink/hJc6QCZowxbNm9WW) [![Docs](https://godoc.org/github.com/sasha-s/go-deadlock?status.svg)](https://godoc.org/github.com/sasha-s/go-deadlock) [![Build Status](https://travis-ci.com/sasha-s/go-deadlock.svg?branch=master)](https://travis-ci.com/sasha-s/go-deadlock) [![codecov](https://codecov.io/gh/sasha-s/go-deadlock/branch/master/graph/badge.svg)](https://codecov.io/gh/sasha-s/go-deadlock) [![version](https://badge.fury.io/gh/sasha-s%2Fgo-deadlock.svg)](https://github.com/sasha-s/go-deadlock/releases)  [![Go Report Card](https://goreportcard.com/badge/github.com/sasha-s/go-deadlock)](https://goreportcard.com/report/github.com/sasha-s/go-deadlock) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) 
 
 ## Why
 Deadlocks happen and are painful to debug.
@@ -42,7 +42,7 @@ B.Lock() // defer B.Unlock() or similar.
 A.Lock() // defer A.Unlock() or similar.
 ```
 
-Another common sources of deadlocs is duplicate take a lock in a goroutine:
+Another common sources of deadlocks is duplicate take a lock in a goroutine:
 ```
 A.Rlock() or lock()
 
@@ -172,4 +172,16 @@ func main() {
 	rlockTwice()
 }
 ```
+## Configuring go-deadlock
 
+Have a look at [Opts](https://pkg.go.dev/github.com/sasha-s/go-deadlock#pkg-variables).
+
+* `Opts.Disable`: disables deadlock detection altogether
+* `Opts.DisableLockOrderDetection`: disables lock order based deadlock detection.
+* `Opts.DeadlockTimeout`: blocking on mutex for longer than DeadlockTimeout is considered a deadlock. ignored if negative
+* `Opts.OnPotentialDeadlock`: callback for then deadlock is detected
+* `Opts.MaxMapSize`: size of happens before // happens after table
+* `Opts.PrintAllCurrentGoroutines`:  dump stacktraces of all goroutines when inconsistent locking is detected, verbose
+* `Opts.LogBuf`: where to write deadlock info/stacktraces
+
+	

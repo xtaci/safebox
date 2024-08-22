@@ -1,17 +1,31 @@
 package core
 
-import "errors"
-
-var (
-	// Declare a key for use in encrypting data this session.
-	key *Coffer
+import (
+	"errors"
+	"sync"
 )
 
-func init() {
-	// Initialize the key declared above with a random value.
-	if key == nil {
+var (
+	key    = &Coffer{}
+	keyMtx = sync.Mutex{}
+)
+
+func getOrCreateKey() *Coffer {
+	keyMtx.Lock()
+	defer keyMtx.Unlock()
+
+	if key.Destroyed() {
 		key = NewCoffer()
 	}
+
+	return key
+}
+
+func getKey() *Coffer {
+	keyMtx.Lock()
+	defer keyMtx.Unlock()
+
+	return key
 }
 
 // ErrNullEnclave is returned when attempting to construct an enclave of size less than one.
@@ -37,7 +51,7 @@ func NewEnclave(buf []byte) (*Enclave, error) {
 	e := new(Enclave)
 
 	// Get a view of the key.
-	k, err := key.View()
+	k, err := getOrCreateKey().View()
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +112,7 @@ func Open(e *Enclave) (*Buffer, error) {
 	}
 
 	// Grab a view of the key.
-	k, err := key.View()
+	k, err := getOrCreateKey().View()
 	if err != nil {
 		return nil, err
 	}

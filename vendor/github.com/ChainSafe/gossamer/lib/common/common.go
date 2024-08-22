@@ -1,18 +1,5 @@
-// Copyright 2019 ChainSafe Systems (ON) Corp.
-// This file is part of gossamer.
-//
-// The gossamer library is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The gossamer library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the gossamer library. If not, see <http://www.gnu.org/licenses/>.
+// Copyright 2021 ChainSafe Systems (ON)
+// SPDX-License-Identifier: LGPL-3.0-only
 
 package common
 
@@ -20,6 +7,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"io"
 	"strconv"
 	"strings"
@@ -29,9 +17,8 @@ import (
 var ErrNoPrefix = errors.New("could not byteify non 0x prefixed string")
 
 // StringToInts turns a string consisting of ints separated by commas into an int array
-func StringToInts(in string) ([]int, error) {
+func StringToInts(in string) (res []int, err error) {
 	intstrs := strings.Split(in, ",")
-	res := []int{}
 	for _, intstr := range intstrs {
 		i, err := strconv.Atoi(intstr)
 		if err != nil {
@@ -44,38 +31,34 @@ func StringToInts(in string) ([]int, error) {
 
 // StringArrayToBytes turns an array of strings into an array of byte arrays
 func StringArrayToBytes(in []string) [][]byte {
-	b := [][]byte{}
-	for _, str := range in {
-		b = append(b, []byte(str))
+	b := make([][]byte, len(in))
+	for i := range in {
+		b[i] = []byte(in[i])
 	}
 	return b
 }
 
 // BytesToStringArray turns an array of byte arrays into an array strings
 func BytesToStringArray(in [][]byte) []string {
-	strs := []string{}
-	for _, b := range in {
-		strs = append(strs, string(b))
+	strs := make([]string, len(in))
+	for i := range in {
+		strs[i] = string(in[i])
 	}
 	return strs
 }
 
 // HexToBytes turns a 0x prefixed hex string into a byte slice
-func HexToBytes(in string) ([]byte, error) {
-	if len(in) < 2 {
-		return nil, errors.New("invalid string")
+func HexToBytes(in string) (b []byte, err error) {
+	if !strings.HasPrefix(in, "0x") {
+		return nil, fmt.Errorf("%w: %s", ErrNoPrefix, in)
 	}
 
-	if strings.Compare(in[:2], "0x") != 0 {
-		return nil, ErrNoPrefix
+	b, err = hex.DecodeString(in[2:])
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", err, in)
 	}
-	// Ensure we have an even length, otherwise hex.DecodeString will fail and return zero hash
-	if len(in)%2 != 0 {
-		return nil, errors.New("cannot decode a odd length string")
-	}
-	in = in[2:]
-	out, err := hex.DecodeString(in)
-	return out, err
+
+	return b, nil
 }
 
 // MustHexToBytes turns a 0x prefixed hex string into a byte slice
@@ -91,7 +74,7 @@ func MustHexToBytes(in string) []byte {
 
 	// Ensure we have an even length, otherwise hex.DecodeString will fail and return zero hash
 	if len(in)%2 != 0 {
-		panic("cannot decode a odd length string")
+		panic("cannot decode an odd length string")
 	}
 
 	in = in[2:]
@@ -124,6 +107,48 @@ func Uint16ToBytes(in uint16) (out []byte) {
 	out[0] = byte(in & 0x00ff)
 	out[1] = byte(in >> 8 & 0x00ff)
 	return out
+}
+
+// UintToBytes converts a uint into a Big Endian byte slice
+// using a compact number of bytes. This is to imitate
+// the big.Int().Bytes() behaviour.
+func UintToBytes(n uint) (b []byte) {
+	b = make([]byte, 0)
+	for n > 0 {
+		b = append([]byte{byte(n & 0xFF)}, b...)
+		n >>= 8
+	}
+	return b
+}
+
+// UintToHex converts a uint into the hex string representation
+// of a Big Endian byte slice using 4 bytes for values that fit
+// in a uint32 and in 8 bytes otherwise.
+func UintToHex(n uint) (hexString string) {
+	b := UintToBytes(n)
+	return BytesToHex(b)
+}
+
+// BytesToUint converts a bytes slice in Big Endian compact
+// format to a uint. This is to imitate the
+// big.NewInt(0).SetBytes(b) behaviour.
+func BytesToUint(b []byte) (n uint) {
+	for i := range b {
+		byteValue := uint(b[i])
+		shift := (len(b) - i - 1) * 8
+		n += byteValue << shift
+	}
+	return n
+}
+
+// HexToUint converts a hex string of bytes in Big Endian compact
+// format to a uint. See BytesToUint for more details.
+func HexToUint(hexString string) (n uint, err error) {
+	b, err := HexToBytes(hexString)
+	if err != nil {
+		return 0, err
+	}
+	return BytesToUint(b), nil
 }
 
 // AppendZeroes appends zeroes to the input byte array up until it has length l

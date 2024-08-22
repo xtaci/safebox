@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcutil"
 	"github.com/xtaci/safebox/qrcode"
 )
 
@@ -35,8 +35,7 @@ func (exp *BitcoinExporter) Export(key []byte) ([]byte, error) {
 	if len(key) != 32 {
 		return nil, errors.New("invalid key length")
 	}
-	curve := btcec.S256()
-	priv, pub := btcec.PrivKeyFromBytes(curve, key)
+	priv, pub := btcec.PrivKeyFromBytes(key)
 
 	address, err := btcutil.NewAddressPubKey(pub.SerializeUncompressed(), &chaincfg.MainNetParams)
 	if err != nil {

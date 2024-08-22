@@ -88,7 +88,6 @@ type Walker struct {
 // * Active node.
 // * Path to the active node.
 
-
 // Function called each time a node is arrived upon in a walk operation
 // through the `down` method (not when going back `up`). It is the main
 // API to implement DAG functionality (e.g., read and seek a file DAG)
@@ -116,6 +115,9 @@ type NavigableNode interface {
 
 	// ChildTotal returns the number of children of the `ActiveNode`.
 	ChildTotal() uint
+
+	// GetIPLDNode returns actual IPLD Node
+	GetIPLDNode() Node
 
 	// TODO: Evaluate providing the `Cleanup` and `Reset` methods.
 
@@ -163,6 +165,8 @@ var errUpOnRoot = errors.New("can't go up, already on root")
 
 // EndOfDag wraps the `errUpOnRoot` and signals to the user that the
 // entire DAG has been iterated.
+//
+//lint:ignore ST1012 // This is roughly equivalent to io.EOF.
 var EndOfDag = errors.New("end of DAG")
 
 // ErrNextNoChild signals the end of this parent child nodes.

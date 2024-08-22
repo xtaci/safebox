@@ -4,10 +4,16 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-// Configuration values.
+// Flex directions.
 const (
-	FlexRow = iota
-	FlexColumn
+	// One item per row.
+	FlexRow = 0
+	// One item per column.
+	FlexColumn = 1
+	// As defined in CSS, items distributed along a row.
+	FlexRowCSS = 1
+	// As defined in CSS, items distributed within a column.
+	FlexColumnCSS = 0
 )
 
 // flexItem holds layout options for one item.
@@ -47,7 +53,7 @@ type Flex struct {
 // background before any items are drawn, set it to a box with the desired
 // color:
 //
-//   flex.Box = NewBox()
+//	flex.Box = NewBox()
 func NewFlex() *Flex {
 	f := &Flex{
 		direction: FlexColumn,
@@ -58,7 +64,9 @@ func NewFlex() *Flex {
 }
 
 // SetDirection sets the direction in which the contained primitives are
-// distributed. This can be either FlexColumn (default) or FlexRow.
+// distributed. This can be either FlexColumn (default) or FlexRow. Note that
+// these are the opposite of what you would expect coming from CSS. You may also
+// use FlexColumnCSS or FlexRowCSS, to remain in line with the CSS definition.
 func (f *Flex) SetDirection(direction int) *Flex {
 	f.direction = direction
 	return f
@@ -99,6 +107,19 @@ func (f *Flex) RemoveItem(p Primitive) *Flex {
 		}
 	}
 	return f
+}
+
+// GetItemCount returns the number of items in this container.
+func (f *Flex) GetItemCount() int {
+	return len(f.items)
+}
+
+// GetItem returns the primitive at the given index, starting with 0 for the
+// first primitive in this container.
+//
+// This function will panic for out of range indices.
+func (f *Flex) GetItem(index int) Primitive {
+	return f.items[index].Item
 }
 
 // Clear removes all items from the container.
@@ -190,6 +211,7 @@ func (f *Flex) Focus(delegate func(p Primitive)) {
 			return
 		}
 	}
+	f.Box.Focus(delegate)
 }
 
 // HasFocus returns whether or not this primitive has focus.
@@ -199,7 +221,7 @@ func (f *Flex) HasFocus() bool {
 			return true
 		}
 	}
-	return false
+	return f.Box.HasFocus()
 }
 
 // MouseHandler returns the mouse handler for this primitive.
@@ -231,6 +253,20 @@ func (f *Flex) InputHandler() func(event *tcell.EventKey, setFocus func(p Primit
 			if item.Item != nil && item.Item.HasFocus() {
 				if handler := item.Item.InputHandler(); handler != nil {
 					handler(event, setFocus)
+					return
+				}
+			}
+		}
+	})
+}
+
+// PasteHandler returns the handler for this primitive.
+func (f *Flex) PasteHandler() func(pastedText string, setFocus func(p Primitive)) {
+	return f.WrapPasteHandler(func(pastedText string, setFocus func(p Primitive)) {
+		for _, item := range f.items {
+			if item.Item != nil && item.Item.HasFocus() {
+				if handler := item.Item.PasteHandler(); handler != nil {
+					handler(pastedText, setFocus)
 					return
 				}
 			}

@@ -7,12 +7,19 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
+	"sync/atomic"
 
-	yaml "gopkg.in/yaml.v2"
+	"github.com/hashicorp/golang-lru/simplelru"
+	"sigs.k8s.io/yaml"
 
-	"github.com/cosmos/cosmos-sdk/codec/legacy"
+	errorsmod "cosmossdk.io/errors"
+
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	"github.com/cosmos/cosmos-sdk/internal/conv"
+	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 const (
@@ -24,14 +31,15 @@ const (
 	//	config.SetBech32PrefixForAccount(yourBech32PrefixAccAddr, yourBech32PrefixAccPub)
 	//	config.SetBech32PrefixForValidator(yourBech32PrefixValAddr, yourBech32PrefixValPub)
 	//	config.SetBech32PrefixForConsensusNode(yourBech32PrefixConsAddr, yourBech32PrefixConsPub)
+	//	config.SetPurpose(yourPurpose)
 	//	config.SetCoinType(yourCoinType)
-	//	config.SetFullFundraiserPath(yourFullFundraiserPath)
 	//	config.Seal()
 
-	// AddrLen defines a valid address length
-	AddrLen = 20
 	// Bech32MainPrefix defines the main SDK Bech32 prefix of an account's address
 	Bech32MainPrefix = "cosmos"
+
+	// Purpose is the ATOM purpose as defined in SLIP44 (https://github.com/satoshilabs/slips/blob/master/slip-0044.md)
+	Purpose = 44
 
 	// CoinType is the ATOM coin type as defined in SLIP44 (https://github.com/satoshilabs/slips/blob/master/slip-0044.md)
 	CoinType = 118
@@ -68,6 +76,52 @@ const (
 	Bech32PrefixConsPub = Bech32MainPrefix + PrefixValidator + PrefixConsensus + PrefixPublic
 )
 
+// cache variables
+var (
+	// AccAddress.String() is expensive and if unoptimized dominantly showed up in profiles,
+	// yet has no mechanisms to trivially cache the result given that AccAddress is a []byte type.
+	accAddrMu     sync.Mutex
+	accAddrCache  *simplelru.LRU
+	consAddrMu    sync.Mutex
+	consAddrCache *simplelru.LRU
+	valAddrMu     sync.Mutex
+	valAddrCache  *simplelru.LRU
+
+	isCachingEnabled atomic.Bool
+)
+
+// sentinel errors
+var (
+	ErrEmptyHexAddress = errors.New("decoding address from hex string failed: empty address")
+)
+
+func init() {
+	var err error
+	SetAddrCacheEnabled(true)
+
+	// in total the cache size is 61k entries. Key is 32 bytes and value is around 50-70 bytes.
+	// That will make around 92 * 61k * 2 (LRU) bytes ~ 11 MB
+	if accAddrCache, err = simplelru.NewLRU(60000, nil); err != nil {
+		panic(err)
+	}
+	if consAddrCache, err = simplelru.NewLRU(500, nil); err != nil {
+		panic(err)
+	}
+	if valAddrCache, err = simplelru.NewLRU(500, nil); err != nil {
+		panic(err)
+	}
+}
+
+// SetAddrCacheEnabled enables or disables accAddrCache, consAddrCache, and valAddrCache. By default, caches are enabled.
+func SetAddrCacheEnabled(enabled bool) {
+	isCachingEnabled.Store(enabled)
+}
+
+// IsAddrCacheEnabled returns if the address caches are enabled.
+func IsAddrCacheEnabled() bool {
+	return isCachingEnabled.Load()
+}
+
 // Address is a common interface for different types of addresses used by the SDK
 type Address interface {
 	Equals(Address) bool
@@ -80,13 +134,11 @@ type Address interface {
 }
 
 // Ensure that different address types implement the interface
-var _ Address = AccAddress{}
-var _ Address = ValAddress{}
-var _ Address = ConsAddress{}
-
-var _ yaml.Marshaler = AccAddress{}
-var _ yaml.Marshaler = ValAddress{}
-var _ yaml.Marshaler = ConsAddress{}
+var (
+	_ Address = AccAddress{}
+	_ Address = ValAddress{}
+	_ Address = ConsAddress{}
+)
 
 // ----------------------------------------------------------------------------
 // account
@@ -96,24 +148,46 @@ var _ yaml.Marshaler = ConsAddress{}
 // When marshaled to a string or JSON, it uses Bech32.
 type AccAddress []byte
 
-// AccAddressFromHex creates an AccAddress from a hex string.
-func AccAddressFromHex(address string) (addr AccAddress, err error) {
+// AccAddressFromHexUnsafe creates an AccAddress from a HEX-encoded string.
+//
+// Note, this function is considered unsafe as it may produce an AccAddress from
+// otherwise invalid input, such as a transaction hash. Please use
+// AccAddressFromBech32.
+func AccAddressFromHexUnsafe(address string) (addr AccAddress, err error) {
 	bz, err := addressBytesFromHexString(address)
 	return AccAddress(bz), err
 }
 
 // VerifyAddressFormat verifies that the provided bytes form a valid address
 // according to the default address rules or a custom address verifier set by
-// GetConfig().SetAddressVerifier()
+// GetConfig().SetAddressVerifier().
+// TODO make an issue to get rid of global Config
+// ref: https://github.com/cosmos/cosmos-sdk/issues/9690
 func VerifyAddressFormat(bz []byte) error {
 	verifier := GetConfig().GetAddressVerifier()
 	if verifier != nil {
 		return verifier(bz)
 	}
-	if len(bz) != AddrLen {
-		return fmt.Errorf("incorrect address length (expected: %d, actual: %d)", AddrLen, len(bz))
+
+	if len(bz) == 0 {
+		return errorsmod.Wrap(sdkerrors.ErrUnknownAddress, "addresses cannot be empty")
 	}
+
+	if len(bz) > address.MaxAddrLen {
+		return errorsmod.Wrapf(sdkerrors.ErrUnknownAddress, "address max length is %d, got %d", address.MaxAddrLen, len(bz))
+	}
+
 	return nil
+}
+
+// MustAccAddressFromBech32 calls AccAddressFromBech32 and panics on error.
+func MustAccAddressFromBech32(address string) AccAddress {
+	addr, err := AccAddressFromBech32(address)
+	if err != nil {
+		panic(err)
+	}
+
+	return addr
 }
 
 // AccAddressFromBech32 creates an AccAddress from a Bech32 string.
@@ -148,12 +222,7 @@ func (aa AccAddress) Equals(aa2 Address) bool {
 
 // Returns boolean for whether an AccAddress is empty
 func (aa AccAddress) Empty() bool {
-	if aa == nil {
-		return true
-	}
-
-	aa2 := AccAddress{}
-	return bytes.Equal(aa.Bytes(), aa2.Bytes())
+	return len(aa) == 0
 }
 
 // Marshal returns the raw address bytes. It is needed for protobuf
@@ -183,7 +252,6 @@ func (aa AccAddress) MarshalYAML() (interface{}, error) {
 func (aa *AccAddress) UnmarshalJSON(data []byte) error {
 	var s string
 	err := json.Unmarshal(data, &s)
-
 	if err != nil {
 		return err
 	}
@@ -233,18 +301,22 @@ func (aa AccAddress) String() string {
 		return ""
 	}
 
-	bech32PrefixAccAddr := GetConfig().GetBech32AccountAddrPrefix()
+	key := conv.UnsafeBytesToStr(aa)
 
-	bech32Addr, err := bech32.ConvertAndEncode(bech32PrefixAccAddr, aa.Bytes())
-	if err != nil {
-		panic(err)
+	if IsAddrCacheEnabled() {
+		accAddrMu.Lock()
+		defer accAddrMu.Unlock()
+
+		addr, ok := accAddrCache.Get(key)
+		if ok {
+			return addr.(string)
+		}
 	}
-
-	return bech32Addr
+	return cacheBech32Addr(GetConfig().GetBech32AccountAddrPrefix(), aa, accAddrCache, key)
 }
 
 // Format implements the fmt.Formatter interface.
-// nolint: errcheck
+
 func (aa AccAddress) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 's':
@@ -300,14 +372,9 @@ func (va ValAddress) Equals(va2 Address) bool {
 	return bytes.Equal(va.Bytes(), va2.Bytes())
 }
 
-// Returns boolean for whether an AccAddress is empty
+// Returns boolean for whether an ValAddress is empty
 func (va ValAddress) Empty() bool {
-	if va == nil {
-		return true
-	}
-
-	va2 := ValAddress{}
-	return bytes.Equal(va.Bytes(), va2.Bytes())
+	return len(va) == 0
 }
 
 // Marshal returns the raw address bytes. It is needed for protobuf
@@ -388,18 +455,22 @@ func (va ValAddress) String() string {
 		return ""
 	}
 
-	bech32PrefixValAddr := GetConfig().GetBech32ValidatorAddrPrefix()
+	key := conv.UnsafeBytesToStr(va)
 
-	bech32Addr, err := bech32.ConvertAndEncode(bech32PrefixValAddr, va.Bytes())
-	if err != nil {
-		panic(err)
+	if IsAddrCacheEnabled() {
+		valAddrMu.Lock()
+		defer valAddrMu.Unlock()
+
+		addr, ok := valAddrCache.Get(key)
+		if ok {
+			return addr.(string)
+		}
 	}
-
-	return bech32Addr
+	return cacheBech32Addr(GetConfig().GetBech32ValidatorAddrPrefix(), va, valAddrCache, key)
 }
 
 // Format implements the fmt.Formatter interface.
-// nolint: errcheck
+
 func (va ValAddress) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 's':
@@ -420,6 +491,7 @@ func (va ValAddress) Format(s fmt.State, verb rune) {
 type ConsAddress []byte
 
 // ConsAddressFromHex creates a ConsAddress from a hex string.
+// Deprecated: use ConsensusAddressCodec from Staking keeper
 func ConsAddressFromHex(address string) (addr ConsAddress, err error) {
 	bz, err := addressBytesFromHexString(address)
 	return ConsAddress(bz), err
@@ -462,12 +534,7 @@ func (ca ConsAddress) Equals(ca2 Address) bool {
 
 // Returns boolean for whether an ConsAddress is empty
 func (ca ConsAddress) Empty() bool {
-	if ca == nil {
-		return true
-	}
-
-	ca2 := ConsAddress{}
-	return bytes.Equal(ca.Bytes(), ca2.Bytes())
+	return len(ca) == 0
 }
 
 // Marshal returns the raw address bytes. It is needed for protobuf
@@ -548,14 +615,18 @@ func (ca ConsAddress) String() string {
 		return ""
 	}
 
-	bech32PrefixConsAddr := GetConfig().GetBech32ConsensusAddrPrefix()
+	key := conv.UnsafeBytesToStr(ca)
 
-	bech32Addr, err := bech32.ConvertAndEncode(bech32PrefixConsAddr, ca.Bytes())
-	if err != nil {
-		panic(err)
+	if IsAddrCacheEnabled() {
+		consAddrMu.Lock()
+		defer consAddrMu.Unlock()
+
+		addr, ok := consAddrCache.Get(key)
+		if ok {
+			return addr.(string)
+		}
 	}
-
-	return bech32Addr
+	return cacheBech32Addr(GetConfig().GetBech32ConsensusAddrPrefix(), ca, consAddrCache, key)
 }
 
 // Bech32ifyAddressBytes returns a bech32 representation of address bytes.
@@ -583,7 +654,7 @@ func MustBech32ifyAddressBytes(prefix string, bs []byte) string {
 }
 
 // Format implements the fmt.Formatter interface.
-// nolint: errcheck
+
 func (ca ConsAddress) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 's':
@@ -599,86 +670,12 @@ func (ca ConsAddress) Format(s fmt.State, verb rune) {
 // auxiliary
 // ----------------------------------------------------------------------------
 
-// Bech32PubKeyType defines a string type alias for a Bech32 public key type.
-type Bech32PubKeyType string
-
-// Bech32 conversion constants
-const (
-	Bech32PubKeyTypeAccPub  Bech32PubKeyType = "accpub"
-	Bech32PubKeyTypeValPub  Bech32PubKeyType = "valpub"
-	Bech32PubKeyTypeConsPub Bech32PubKeyType = "conspub"
-)
-
-// Bech32ifyPubKey returns a Bech32 encoded string containing the appropriate
-// prefix based on the key type provided for a given PublicKey.
-// TODO: Remove Bech32ifyPubKey and all usages (cosmos/cosmos-sdk/issues/#7357)
-func Bech32ifyPubKey(pkt Bech32PubKeyType, pubkey cryptotypes.PubKey) (string, error) {
-	var bech32Prefix string
-
-	switch pkt {
-	case Bech32PubKeyTypeAccPub:
-		bech32Prefix = GetConfig().GetBech32AccountPubPrefix()
-
-	case Bech32PubKeyTypeValPub:
-		bech32Prefix = GetConfig().GetBech32ValidatorPubPrefix()
-
-	case Bech32PubKeyTypeConsPub:
-		bech32Prefix = GetConfig().GetBech32ConsensusPubPrefix()
-
-	}
-
-	return bech32.ConvertAndEncode(bech32Prefix, legacy.Cdc.MustMarshalBinaryBare(pubkey))
-}
-
-// MustBech32ifyPubKey calls Bech32ifyPubKey except it panics on error.
-func MustBech32ifyPubKey(pkt Bech32PubKeyType, pubkey cryptotypes.PubKey) string {
-	res, err := Bech32ifyPubKey(pkt, pubkey)
-	if err != nil {
-		panic(err)
-	}
-
-	return res
-}
-
-// GetPubKeyFromBech32 returns a PublicKey from a bech32-encoded PublicKey with
-// a given key type.
-func GetPubKeyFromBech32(pkt Bech32PubKeyType, pubkeyStr string) (cryptotypes.PubKey, error) {
-	var bech32Prefix string
-
-	switch pkt {
-	case Bech32PubKeyTypeAccPub:
-		bech32Prefix = GetConfig().GetBech32AccountPubPrefix()
-
-	case Bech32PubKeyTypeValPub:
-		bech32Prefix = GetConfig().GetBech32ValidatorPubPrefix()
-
-	case Bech32PubKeyTypeConsPub:
-		bech32Prefix = GetConfig().GetBech32ConsensusPubPrefix()
-
-	}
-
-	bz, err := GetFromBech32(pubkeyStr, bech32Prefix)
-	if err != nil {
-		return nil, err
-	}
-
-	return legacy.PubKeyFromBytes(bz)
-}
-
-// MustGetPubKeyFromBech32 calls GetPubKeyFromBech32 except it panics on error.
-func MustGetPubKeyFromBech32(pkt Bech32PubKeyType, pubkeyStr string) cryptotypes.PubKey {
-	res, err := GetPubKeyFromBech32(pkt, pubkeyStr)
-	if err != nil {
-		panic(err)
-	}
-
-	return res
-}
+var errBech32EmptyAddress = errors.New("decoding Bech32 address failed: must provide a non empty address")
 
 // GetFromBech32 decodes a bytestring from a Bech32 encoded string.
 func GetFromBech32(bech32str, prefix string) ([]byte, error) {
 	if len(bech32str) == 0 {
-		return nil, errors.New("decoding Bech32 address failed: must provide an address")
+		return nil, errBech32EmptyAddress
 	}
 
 	hrp, bz, err := bech32.DecodeAndConvert(bech32str)
@@ -695,8 +692,20 @@ func GetFromBech32(bech32str, prefix string) ([]byte, error) {
 
 func addressBytesFromHexString(address string) ([]byte, error) {
 	if len(address) == 0 {
-		return nil, errors.New("decoding Bech32 address failed: must provide an address")
+		return nil, ErrEmptyHexAddress
 	}
 
 	return hex.DecodeString(address)
+}
+
+// cacheBech32Addr is not concurrency safe. Concurrent access to cache causes race condition.
+func cacheBech32Addr(prefix string, addr []byte, cache *simplelru.LRU, cacheKey string) string {
+	bech32Addr, err := bech32.ConvertAndEncode(prefix, addr)
+	if err != nil {
+		panic(err)
+	}
+	if IsAddrCacheEnabled() {
+		cache.Add(cacheKey, bech32Addr)
+	}
+	return bech32Addr
 }

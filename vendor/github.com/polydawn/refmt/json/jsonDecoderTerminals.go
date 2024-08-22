@@ -273,10 +273,13 @@ func (d *Decoder) decodeNumber(majorByte byte) (tok.TokenType, int64, float64, e
 	}
 	// Parse!
 	// *This is not a fast parse*.
-	// Try int first; if it fails try float; if that fails return the float error.
+	// Try int first; if it fails for range reasons, halt; otherwise,
+	// then try float; if that fails return the float error.
 	s := string(d.r.StopTrack())
 	if i, err := strconv.ParseInt(s, 10, 64); err == nil {
 		return tok.TInt, i, 0, nil
+	} else if err.(*strconv.NumError).Err == strconv.ErrRange {
+		return tok.TInt, i, 0, err
 	}
 	f, err := strconv.ParseFloat(s, 64)
 	return tok.TFloat64, 0, f, err

@@ -7,14 +7,14 @@ import (
 	"fmt"
 	"io"
 
+	cmttypes "github.com/cometbft/cometbft/types"
 	amino "github.com/tendermint/go-amino"
-	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/codec/types"
 )
 
-// deprecated: LegacyAmino defines a wrapper for an Amino codec that properly handles protobuf
-// types with Any's
+// LegacyAmino defines a wrapper for an Amino codec that properly
+// handles protobuf types with Any's. Deprecated.
 type LegacyAmino struct {
 	Amino *amino.Codec
 }
@@ -27,11 +27,11 @@ func NewLegacyAmino() *LegacyAmino {
 	return &LegacyAmino{amino.NewCodec()}
 }
 
-// RegisterEvidences registers Tendermint evidence types with the provided Amino
+// RegisterEvidences registers CometBFT evidence types with the provided Amino
 // codec.
 func RegisterEvidences(cdc *LegacyAmino) {
-	cdc.Amino.RegisterInterface((*tmtypes.Evidence)(nil), nil)
-	cdc.Amino.RegisterConcrete(&tmtypes.DuplicateVoteEvidence{}, "tendermint/DuplicateVoteEvidence", nil)
+	cdc.Amino.RegisterInterface((*cmttypes.Evidence)(nil), nil)
+	cdc.Amino.RegisterConcrete(&cmttypes.DuplicateVoteEvidence{}, "tendermint/DuplicateVoteEvidence", nil)
 }
 
 // MarshalJSONIndent provides a utility for indented JSON encoding of an object
@@ -47,7 +47,6 @@ func MarshalJSONIndent(cdc *LegacyAmino, obj interface{}) ([]byte, error) {
 	if err = json.Indent(&out, bz, "", "  "); err != nil {
 		return nil, err
 	}
-
 	return out.Bytes(), nil
 }
 
@@ -77,7 +76,7 @@ func (cdc *LegacyAmino) jsonUnmarshalAnys(o interface{}) error {
 	return types.UnpackInterfaces(o, types.AminoJSONUnpacker{Cdc: cdc.Amino})
 }
 
-func (cdc *LegacyAmino) MarshalBinaryBare(o interface{}) ([]byte, error) {
+func (cdc *LegacyAmino) Marshal(o interface{}) ([]byte, error) {
 	err := cdc.marshalAnys(o)
 	if err != nil {
 		return nil, err
@@ -85,15 +84,15 @@ func (cdc *LegacyAmino) MarshalBinaryBare(o interface{}) ([]byte, error) {
 	return cdc.Amino.MarshalBinaryBare(o)
 }
 
-func (cdc *LegacyAmino) MustMarshalBinaryBare(o interface{}) []byte {
-	bz, err := cdc.MarshalBinaryBare(o)
+func (cdc *LegacyAmino) MustMarshal(o interface{}) []byte {
+	bz, err := cdc.Marshal(o)
 	if err != nil {
 		panic(err)
 	}
 	return bz
 }
 
-func (cdc *LegacyAmino) MarshalBinaryLengthPrefixed(o interface{}) ([]byte, error) {
+func (cdc *LegacyAmino) MarshalLengthPrefixed(o interface{}) ([]byte, error) {
 	err := cdc.marshalAnys(o)
 	if err != nil {
 		return nil, err
@@ -101,15 +100,15 @@ func (cdc *LegacyAmino) MarshalBinaryLengthPrefixed(o interface{}) ([]byte, erro
 	return cdc.Amino.MarshalBinaryLengthPrefixed(o)
 }
 
-func (cdc *LegacyAmino) MustMarshalBinaryLengthPrefixed(o interface{}) []byte {
-	bz, err := cdc.MarshalBinaryLengthPrefixed(o)
+func (cdc *LegacyAmino) MustMarshalLengthPrefixed(o interface{}) []byte {
+	bz, err := cdc.MarshalLengthPrefixed(o)
 	if err != nil {
 		panic(err)
 	}
 	return bz
 }
 
-func (cdc *LegacyAmino) UnmarshalBinaryBare(bz []byte, ptr interface{}) error {
+func (cdc *LegacyAmino) Unmarshal(bz []byte, ptr interface{}) error {
 	err := cdc.Amino.UnmarshalBinaryBare(bz, ptr)
 	if err != nil {
 		return err
@@ -117,14 +116,14 @@ func (cdc *LegacyAmino) UnmarshalBinaryBare(bz []byte, ptr interface{}) error {
 	return cdc.unmarshalAnys(ptr)
 }
 
-func (cdc *LegacyAmino) MustUnmarshalBinaryBare(bz []byte, ptr interface{}) {
-	err := cdc.UnmarshalBinaryBare(bz, ptr)
+func (cdc *LegacyAmino) MustUnmarshal(bz []byte, ptr interface{}) {
+	err := cdc.Unmarshal(bz, ptr)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (cdc *LegacyAmino) UnmarshalBinaryLengthPrefixed(bz []byte, ptr interface{}) error {
+func (cdc *LegacyAmino) UnmarshalLengthPrefixed(bz []byte, ptr interface{}) error {
 	err := cdc.Amino.UnmarshalBinaryLengthPrefixed(bz, ptr)
 	if err != nil {
 		return err
@@ -132,14 +131,14 @@ func (cdc *LegacyAmino) UnmarshalBinaryLengthPrefixed(bz []byte, ptr interface{}
 	return cdc.unmarshalAnys(ptr)
 }
 
-func (cdc *LegacyAmino) MustUnmarshalBinaryLengthPrefixed(bz []byte, ptr interface{}) {
-	err := cdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
+func (cdc *LegacyAmino) MustUnmarshalLengthPrefixed(bz []byte, ptr interface{}) {
+	err := cdc.UnmarshalLengthPrefixed(bz, ptr)
 	if err != nil {
 		panic(err)
 	}
 }
 
-// MarshalJSON implements codec.Marshaler interface
+// MarshalJSON implements codec.Codec interface
 func (cdc *LegacyAmino) MarshalJSON(o interface{}) ([]byte, error) {
 	err := cdc.jsonMarshalAnys(o)
 	if err != nil {
@@ -156,7 +155,7 @@ func (cdc *LegacyAmino) MustMarshalJSON(o interface{}) []byte {
 	return bz
 }
 
-// UnmarshalJSON implements codec.Marshaler interface
+// UnmarshalJSON implements codec.Codec interface
 func (cdc *LegacyAmino) UnmarshalJSON(bz []byte, ptr interface{}) error {
 	err := cdc.Amino.UnmarshalJSON(bz, ptr)
 	if err != nil {

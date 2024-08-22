@@ -1,6 +1,7 @@
-// +build js plan9 windows
+//go:build plan9 || windows
+// +build plan9 windows
 
-// Copyright 2021 The TCell Authors
+// Copyright 2022 The TCell Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use file except in compliance with the License.
@@ -20,24 +21,12 @@ package tcell
 // that would probably mean sacrificing some of the richer key reporting
 // that we can obtain with the console API present on Windows.
 
-func (t *tScreen) engage() error {
-	return ErrNoScreen
-}
-
-func (t *tScreen) disengage() {
-}
-
 func (t *tScreen) initialize() error {
-	return ErrNoScreen
-}
-
-func (t *tScreen) finalize() {
-}
-
-func (t *tScreen) getWinSize() (int, int, error) {
-	return 0, 0, ErrNoScreen
-}
-
-func (t *tScreen) Beep() error {
-	return ErrNoScreen
+	if t.tty == nil {
+		return ErrNoScreen
+	}
+	// If a tty was supplied (custom), it should work.
+	// Custom screen implementations will need to provide a TTY
+	// implementation that we can use.
+	return nil
 }

@@ -45,7 +45,7 @@ func init() {
 		KeyLeft:      "\x1bOD",
 		KeyInsert:    "\x1b[2~",
 		KeyDelete:    "\x1b[3~",
-		KeyBackspace: "\u007f",
+		KeyBackspace: "\x7f",
 		KeyHome:      "\x1b[1~",
 		KeyEnd:       "\x1b[4~",
 		KeyPgUp:      "\x1b[5~",
@@ -63,6 +63,7 @@ func init() {
 		KeyF11:       "\x1b[23~",
 		KeyF12:       "\x1b[24~",
 		KeyBacktab:   "\x1b[Z",
+		AutoMargin:   true,
 	})
 
 	// GNU Screen with 256 colors
@@ -104,7 +105,7 @@ func init() {
 		KeyLeft:      "\x1bOD",
 		KeyInsert:    "\x1b[2~",
 		KeyDelete:    "\x1b[3~",
-		KeyBackspace: "\u007f",
+		KeyBackspace: "\x7f",
 		KeyHome:      "\x1b[1~",
 		KeyEnd:       "\x1b[4~",
 		KeyPgUp:      "\x1b[5~",
@@ -122,5 +123,6 @@ func init() {
 		KeyF11:       "\x1b[23~",
 		KeyF12:       "\x1b[24~",
 		KeyBacktab:   "\x1b[Z",
+		AutoMargin:   true,
 	})
 }

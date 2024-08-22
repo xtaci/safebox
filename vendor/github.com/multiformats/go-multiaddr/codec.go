@@ -93,6 +93,9 @@ func validateBytes(b []byte) (err error) {
 		if len(b) < size || size < 0 {
 			return fmt.Errorf("invalid value for size %d", len(b))
 		}
+		if p.Path && len(b) != size {
+			return fmt.Errorf("invalid size of component for path protocol %d: expected %d", size, len(b))
+		}
 
 		err = p.Transcoder.ValidateBytes(b[:size])
 		if err != nil {
@@ -175,30 +178,4 @@ func sizeForAddr(p Protocol, b []byte) (skip, size int, err error) {
 		}
 		return n, size, nil
 	}
-}
-
-func bytesSplit(b []byte) ([][]byte, error) {
-	var ret [][]byte
-	for len(b) > 0 {
-		code, n, err := ReadVarintCode(b)
-		if err != nil {
-			return nil, err
-		}
-
-		p := ProtocolWithCode(code)
-		if p.Code == 0 {
-			return nil, fmt.Errorf("no protocol with code %d", b[0])
-		}
-
-		n2, size, err := sizeForAddr(p, b[n:])
-		if err != nil {
-			return nil, err
-		}
-
-		length := n + n2 + size
-		ret = append(ret, b[:length])
-		b = b[length:]
-	}
-
-	return ret, nil
 }

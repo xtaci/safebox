@@ -1,22 +1,11 @@
-// Copyright 2019 ChainSafe Systems (ON) Corp.
-// This file is part of gossamer.
-//
-// The gossamer library is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The gossamer library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the gossamer library. If not, see <http://www.gnu.org/licenses/>.
+// Copyright 2021 ChainSafe Systems (ON)
+// SPDX-License-Identifier: LGPL-3.0-only
 
 package common
 
-import ma "github.com/multiformats/go-multiaddr"
+import (
+	ma "github.com/multiformats/go-multiaddr"
+)
 
 // Health is network information about host needed for the rpc server
 type Health struct {
@@ -34,7 +23,23 @@ type NetworkState struct {
 // PeerInfo is network information about peers needed for the rpc server
 type PeerInfo struct {
 	PeerID     string
-	Roles      byte
+	Role       NetworkRole
 	BestHash   Hash
 	BestNumber uint64
 }
+
+// NetworkRole is the type of node.
+type NetworkRole byte
+
+const (
+	// NoNetworkRole runs a node without networking
+	NoNetworkRole NetworkRole = 0
+	// FullNodeRole allow you to read the current state of the chain and to submit and validate
+	// extrinsics directly on the network without relying on a centralised infrastructure provider.
+	FullNodeRole NetworkRole = 1
+	// LightClientRole node has only the runtime and the current state, but does not store past
+	// blocks and so cannot read historical data without requesting it from a node that has it.
+	LightClientRole NetworkRole = 2
+	// AuthorityRole runs the node as a block-producing and finalising node
+	AuthorityRole NetworkRole = 4
+)

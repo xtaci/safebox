@@ -7,6 +7,7 @@ import (
 	"io"
 	"math"
 	"strconv"
+	"strings"
 
 	cbor "github.com/ipfs/go-ipld-cbor"
 	"github.com/minio/blake2b-simd"
@@ -54,7 +55,7 @@ const (
 // MainnetPrefix is the main network prefix.
 const MainnetPrefix = "f"
 
-// TestnetPrefix is the main network prefix.
+// TestnetPrefix is the test network prefix.
 const TestnetPrefix = "t"
 
 // Protocol represents which protocol an address uses.
@@ -69,6 +70,8 @@ const (
 	Actor
 	// BLS represents the address BLS protocol.
 	BLS
+	// Delegated represents the delegated (f4) address protocol.
+	Delegated
 
 	Unknown = Protocol(255)
 )
@@ -177,6 +180,19 @@ func NewBLSAddress(pubkey []byte) (Address, error) {
 	return newAddress(BLS, pubkey)
 }
 
+// NewDelegatedAddress returns an address using the Delegated protocol.
+func NewDelegatedAddress(namespace uint64, subaddr []byte) (Address, error) {
+	if namespace > math.MaxInt64 {
+		return Undef, xerrors.New("namespace must be less than 2^63")
+	}
+	if len(subaddr) > MaxSubaddressLen {
+		return Undef, ErrInvalidLength
+	}
+
+	payload := append(varint.ToUvarint(namespace), subaddr...)
+	return newAddress(Delegated, payload)
+}
+
 // NewFromString returns the address represented by the string `addr`.
 func NewFromString(addr string) (Address, error) {
 	return decode(addr)
@@ -208,24 +224,42 @@ func addressHash(ingest []byte) []byte {
 	return hash(ingest, payloadHashConfig)
 }
 
+// FIXME: This needs to be unified with the logic of `decode` (which would
+//
+//	handle the initial verification of the checksum separately), both are doing
+//	the exact same length checks.
 func newAddress(protocol Protocol, payload []byte) (Address, error) {
 	switch protocol {
 	case ID:
-		_, n, err := varint.FromUvarint(payload)
+		v, n, err := varint.FromUvarint(payload)
 		if err != nil {
 			return Undef, xerrors.Errorf("could not decode: %v: %w", err, ErrInvalidPayload)
 		}
 		if n != len(payload) {
 			return Undef, xerrors.Errorf("different varint length (v:%d != p:%d): %w",
-				n, len(payload), ErrInvalidPayload)
+				n, len(payload), ErrInvalidLength)
+		}
+		if v > math.MaxInt64 {
+			return Undef, xerrors.Errorf("id addresses must be less than 2^63: %w", ErrInvalidPayload)
 		}
 	case SECP256K1, Actor:
 		if len(payload) != PayloadHashLength {
-			return Undef, ErrInvalidPayload
+			return Undef, ErrInvalidLength
 		}
 	case BLS:
 		if len(payload) != BlsPublicKeyBytes {
-			return Undef, ErrInvalidPayload
+			return Undef, ErrInvalidLength
+		}
+	case Delegated:
+		namespace, n, err := varint.FromUvarint(payload)
+		if err != nil {
+			return Undef, xerrors.Errorf("could not decode delegated address namespace: %v: %w", err, ErrInvalidPayload)
+		}
+		if namespace > math.MaxInt64 {
+			return Undef, xerrors.Errorf("namespace id must be less than 2^63: %w", ErrInvalidPayload)
+		}
+		if len(payload)-n > MaxSubaddressLen {
+			return Undef, ErrInvalidLength
 		}
 	default:
 		return Undef, ErrUnknownProtocol
@@ -253,17 +287,33 @@ func encode(network Network, addr Address) (string, error) {
 		return UndefAddressString, ErrUnknownNetwork
 	}
 
+	protocol := addr.Protocol()
+	payload := addr.Payload()
 	var strAddr string
-	switch addr.Protocol() {
-	case SECP256K1, Actor, BLS:
-		cksm := Checksum(append([]byte{addr.Protocol()}, addr.Payload()...))
-		strAddr = ntwk + fmt.Sprintf("%d", addr.Protocol()) + AddressEncoding.WithPadding(-1).EncodeToString(append(addr.Payload(), cksm[:]...))
+	switch protocol {
+	case SECP256K1, Actor, BLS, Delegated:
+		// The checksum and prefix is the same for all protocols
+		cksm := Checksum(append([]byte{protocol}, payload...))
+		strAddr = ntwk + fmt.Sprintf("%d", protocol)
+
+		// if delegated, we need to write the namespace out separately.
+		if protocol == Delegated {
+			namespace, n, err := varint.FromUvarint(payload)
+			if err != nil {
+				return UndefAddressString, xerrors.Errorf("could not decode delegated address namespace: %w", err)
+			}
+			payload = payload[n:]
+			strAddr += fmt.Sprintf("%df", namespace)
+		}
+
+		// Then encode the payload (or the rest of it) and the checksum.
+		strAddr += AddressEncoding.WithPadding(-1).EncodeToString(append(payload, cksm[:]...))
 	case ID:
-		i, n, err := varint.FromUvarint(addr.Payload())
+		i, n, err := varint.FromUvarint(payload)
 		if err != nil {
 			return UndefAddressString, xerrors.Errorf("could not decode varint: %w", err)
 		}
-		if n != len(addr.Payload()) {
+		if n != len(payload) {
 			return UndefAddressString, xerrors.Errorf("payload contains additional bytes")
 		}
 		strAddr = fmt.Sprintf("%s%d%d", ntwk, addr.Protocol(), i)
@@ -271,6 +321,19 @@ func encode(network Network, addr Address) (string, error) {
 		return UndefAddressString, ErrUnknownProtocol
 	}
 	return strAddr, nil
+}
+
+func base32decode(s string) ([]byte, error) {
+	decoded, err := AddressEncoding.WithPadding(-1).DecodeString(s)
+	if err != nil {
+		return nil, err
+	}
+
+	reencoded := AddressEncoding.WithPadding(-1).EncodeToString(decoded)
+	if reencoded != s {
+		return nil, ErrInvalidEncoding
+	}
+	return decoded, nil
 }
 
 func decode(a string) (Address, error) {
@@ -298,37 +361,83 @@ func decode(a string) (Address, error) {
 		protocol = Actor
 	case '3':
 		protocol = BLS
+	case '4':
+		protocol = Delegated
 	default:
 		return Undef, ErrUnknownProtocol
 	}
 
 	raw := a[2:]
 	if protocol == ID {
-		// 20 is length of math.MaxUint64 as a string
-		if len(raw) > 20 {
+		if len(raw) > MaxInt64StringLength {
 			return Undef, ErrInvalidLength
 		}
-		id, err := strconv.ParseUint(raw, 10, 64)
+		id, err := strconv.ParseUint(raw, 10, 63)
 		if err != nil {
 			return Undef, ErrInvalidPayload
 		}
 		return newAddress(protocol, varint.ToUvarint(id))
 	}
 
-	payloadcksm, err := AddressEncoding.WithPadding(-1).DecodeString(raw)
-	if err != nil {
-		return Undef, err
-	}
-	payload := payloadcksm[:len(payloadcksm)-ChecksumHashLength]
-	cksm := payloadcksm[len(payloadcksm)-ChecksumHashLength:]
-
-	if protocol == SECP256K1 || protocol == Actor {
-		if len(payload) != 20 {
+	var cksum, payload []byte
+	if protocol == Delegated {
+		parts := strings.SplitN(raw, "f", 2)
+		if len(parts) != 2 {
 			return Undef, ErrInvalidPayload
+		}
+		namespaceStr := parts[0]
+		subaddrStr := parts[1]
+
+		if len(namespaceStr) > MaxInt64StringLength {
+			return Undef, ErrInvalidLength
+		}
+		namespace, err := strconv.ParseUint(namespaceStr, 10, 63)
+		if err != nil {
+			return Undef, ErrInvalidPayload
+		}
+
+		subaddrcksm, err := base32decode(subaddrStr)
+		if err != nil {
+			return Undef, err
+		}
+
+		if len(subaddrcksm) < ChecksumHashLength {
+			return Undef, ErrInvalidLength
+		}
+		subaddr := subaddrcksm[:len(subaddrcksm)-ChecksumHashLength]
+		cksum = subaddrcksm[len(subaddrcksm)-ChecksumHashLength:]
+		if len(subaddr) > MaxSubaddressLen {
+			return Undef, ErrInvalidLength
+		}
+
+		payload = append(varint.ToUvarint(namespace), subaddr...)
+	} else {
+		payloadcksm, err := base32decode(raw)
+		if err != nil {
+			return Undef, err
+		}
+
+		if len(payloadcksm) < ChecksumHashLength {
+			return Undef, ErrInvalidLength
+		}
+
+		payload = payloadcksm[:len(payloadcksm)-ChecksumHashLength]
+		cksum = payloadcksm[len(payloadcksm)-ChecksumHashLength:]
+
+		if protocol == SECP256K1 || protocol == Actor {
+			if len(payload) != PayloadHashLength {
+				return Undef, ErrInvalidLength
+			}
+		}
+
+		if protocol == BLS {
+			if len(payload) != BlsPublicKeyBytes {
+				return Undef, ErrInvalidLength
+			}
 		}
 	}
 
-	if !ValidateChecksum(append([]byte{protocol}, payload...), cksm) {
+	if !ValidateChecksum(append([]byte{protocol}, payload...), cksum) {
 		return Undef, ErrInvalidChecksum
 	}
 

@@ -6,26 +6,17 @@ import (
 	"fmt"
 	"time"
 
-	dbm "github.com/tendermint/tm-db"
-)
+	"cosmossdk.io/log"
 
-var (
-	// This is set at compile time. Could be cleveldb, defaults is goleveldb.
-	DBBackend = ""
-	backend   = dbm.GoLevelDBBackend
+	"github.com/cosmos/cosmos-sdk/types/kv"
 )
-
-func init() {
-	if len(DBBackend) != 0 {
-		backend = dbm.BackendType(DBBackend)
-	}
-}
 
 // SortedJSON takes any JSON and returns it sorted by keys. Also, all white-spaces
 // are removed.
 // This method can be used to canonicalize JSON to be returned by GetSignBytes,
 // e.g. for the ledger integration.
 // If the passed JSON isn't valid it will return an error.
+// Deprecated: SortJSON was used for GetSignbytes, this is now automatic with amino signing
 func SortJSON(toSortJSON []byte) ([]byte, error) {
 	var c interface{}
 	err := json.Unmarshal(toSortJSON, &c)
@@ -41,6 +32,7 @@ func SortJSON(toSortJSON []byte) ([]byte, error) {
 
 // MustSortJSON is like SortJSON but panic if an error occurs, e.g., if
 // the passed JSON isn't valid.
+// Deprecated: SortJSON was used for GetSignbytes, this is now automatic with amino signing
 func MustSortJSON(toSortJSON []byte) []byte {
 	js, err := SortJSON(toSortJSON)
 	if err != nil {
@@ -71,28 +63,42 @@ const SortableTimeFormat = "2006-01-02T15:04:05.000000000"
 
 // Formats a time.Time into a []byte that can be sorted
 func FormatTimeBytes(t time.Time) []byte {
-	return []byte(t.UTC().Round(0).Format(SortableTimeFormat))
+	return []byte(FormatTimeString(t))
+}
+
+// Formats a time.Time into a string
+func FormatTimeString(t time.Time) string {
+	return t.UTC().Round(0).Format(SortableTimeFormat)
 }
 
 // Parses a []byte encoded using FormatTimeKey back into a time.Time
 func ParseTimeBytes(bz []byte) (time.Time, error) {
-	str := string(bz)
-	t, err := time.Parse(SortableTimeFormat, str)
-	if err != nil {
-		return t, err
-	}
-	return t.UTC().Round(0), nil
+	return ParseTime(bz)
 }
 
-// NewLevelDB instantiate a new LevelDB instance according to DBBackend.
-func NewLevelDB(name, dir string) (db dbm.DB, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("couldn't create db: %v", r)
-		}
-	}()
+// Parses an encoded type using FormatTimeKey back into a time.Time
+func ParseTime(t any) (time.Time, error) {
+	var (
+		result time.Time
+		err    error
+	)
 
-	return dbm.NewDB(name, backend, dir)
+	switch t := t.(type) {
+	case time.Time:
+		result, err = t, nil
+	case []byte:
+		result, err = time.Parse(SortableTimeFormat, string(t))
+	case string:
+		result, err = time.Parse(SortableTimeFormat, t)
+	default:
+		return time.Time{}, fmt.Errorf("unexpected type %T", t)
+	}
+
+	if err != nil {
+		return result, err
+	}
+
+	return result.UTC().Round(0), nil
 }
 
 // copy bytes
@@ -103,4 +109,38 @@ func CopyBytes(bz []byte) (ret []byte) {
 	ret = make([]byte, len(bz))
 	copy(ret, bz)
 	return ret
+}
+
+// AppendLengthPrefixedBytes combines the slices of bytes to one slice of bytes.
+func AppendLengthPrefixedBytes(args ...[]byte) []byte {
+	length := 0
+	for _, v := range args {
+		length += len(v)
+	}
+	res := make([]byte, length)
+
+	length = 0
+	for _, v := range args {
+		copy(res[length:length+len(v)], v)
+		length += len(v)
+	}
+
+	return res
+}
+
+// ParseLengthPrefixedBytes panics when store key length is not equal to the given length.
+func ParseLengthPrefixedBytes(key []byte, startIndex, sliceLength int) ([]byte, int) {
+	neededLength := startIndex + sliceLength
+	endIndex := neededLength - 1
+	kv.AssertKeyAtLeastLength(key, neededLength)
+	byteSlice := key[startIndex:neededLength]
+
+	return byteSlice, endIndex
+}
+
+// LogDeferred logs an error in a deferred function call if the returned error is non-nil.
+func LogDeferred(logger log.Logger, f func() error) {
+	if err := f(); err != nil {
+		logger.Error(err.Error())
+	}
 }

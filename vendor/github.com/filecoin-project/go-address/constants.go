@@ -41,10 +41,15 @@ var (
 	ErrInvalidLength = errors.New("invalid address length")
 	// ErrInvalidChecksum is returned when encountering an invalid address checksum.
 	ErrInvalidChecksum = errors.New("invalid address checksum")
+	// ErrInvalidEncoding is returned when encountering a non-standard encoding of an address.
+	ErrInvalidEncoding = errors.New("invalid encoding")
 )
 
 // UndefAddressString is the string used to represent an empty address when encoded to a string.
 var UndefAddressString = "<empty>"
+
+// MaxInt64StringLength defines the maximum length of `int64` as a string.
+const MaxInt64StringLength = 19
 
 // PayloadHashLength defines the hash length taken over addresses using the Actor and SECP256K1 protocols.
 const PayloadHashLength = 20
@@ -52,15 +57,17 @@ const PayloadHashLength = 20
 // ChecksumHashLength defines the hash length used for calculating address checksums.
 const ChecksumHashLength = 4
 
-// MaxAddressStringLength is the max length of an address encoded as a string
-// it include the network prefx, protocol, and bls publickey
-const MaxAddressStringLength = 2 + 84
+// MaxAddressStringLength is the max length of an address encoded as a string (115).
+const MaxAddressStringLength = 2 + MaxInt64StringLength + 1 + 93
 
 // BlsPublicKeyBytes is the length of a BLS public key
 const BlsPublicKeyBytes = 48
 
 // BlsPrivateKeyBytes is the length of a BLS private key
 const BlsPrivateKeyBytes = 32
+
+// MaxSubaddressLen is the maximum length of a delegated address's sub-address.
+const MaxSubaddressLen = 54
 
 var payloadHashConfig = &blake2b.Config{Size: PayloadHashLength}
 var checksumHashConfig = &blake2b.Config{Size: ChecksumHashLength}

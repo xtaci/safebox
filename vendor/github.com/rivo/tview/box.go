@@ -45,8 +45,14 @@ type Box struct {
 	// The alignment of the title.
 	titleAlign int
 
-	// Whether or not this box has focus.
+	// Whether or not this box has focus. This is typically ignored for
+	// container primitives (e.g. Flex, Grid, Pages), as they will delegate
+	// focus to their children.
 	hasFocus bool
+
+	// Optional callback functions invoked when the primitive receives or loses
+	// focus.
+	focus, blur func()
 
 	// An optional capture function which receives a key event and returns the
 	// event to be forwarded to the primitive's default input handler (nil if
@@ -119,7 +125,7 @@ func (b *Box) GetInnerRect() (int, int, int, int) {
 // if this primitive is part of a layout (e.g. Flex, Grid) or if it was added
 // like this:
 //
-//   application.SetRoot(b, true)
+//	application.SetRoot(p, true)
 func (b *Box) SetRect(x, y, width, height int) {
 	b.x = x
 	b.y = y
@@ -147,8 +153,8 @@ func (b *Box) GetDrawFunc() func(screen tcell.Screen, x, y, width, height int) (
 	return b.draw
 }
 
-// WrapInputHandler wraps an input handler (see InputHandler()) with the
-// functionality to capture input (see SetInputCapture()) before passing it
+// WrapInputHandler wraps an input handler (see [Box.InputHandler]) with the
+// functionality to capture input (see [Box.SetInputCapture]) before passing it
 // on to the provided (default) input handler.
 //
 // This is only meant to be used by subclassing primitives.
@@ -163,9 +169,23 @@ func (b *Box) WrapInputHandler(inputHandler func(*tcell.EventKey, func(p Primiti
 	}
 }
 
-// InputHandler returns nil.
+// InputHandler returns nil. Box has no default input handling.
 func (b *Box) InputHandler() func(event *tcell.EventKey, setFocus func(p Primitive)) {
 	return b.WrapInputHandler(nil)
+}
+
+// WrapPasteHandler wraps a paste handler (see [Box.PasteHandler]).
+func (b *Box) WrapPasteHandler(pasteHandler func(string, func(p Primitive))) func(string, func(p Primitive)) {
+	return func(text string, setFocus func(p Primitive)) {
+		if pasteHandler != nil {
+			pasteHandler(text, setFocus)
+		}
+	}
+}
+
+// PasteHandler returns nil. Box has no default paste handling.
+func (b *Box) PasteHandler() func(pastedText string, setFocus func(p Primitive)) {
+	return b.WrapPasteHandler(nil)
 }
 
 // SetInputCapture installs a function which captures key events before they are
@@ -176,12 +196,11 @@ func (b *Box) InputHandler() func(event *tcell.EventKey, setFocus func(p Primiti
 //
 // Providing a nil handler will remove a previously existing handler.
 //
-// Note that this function will not have an effect on primitives composed of
-// other primitives, such as Form, Flex, or Grid. Key events are only captured
-// by the primitives that have focus (e.g. InputField) and only one primitive
-// can have focus at a time. Composing primitives such as Form pass the focus on
-// to their contained primitives and thus never receive any key events
-// themselves. Therefore, they cannot intercept key events.
+// This function can also be used on container primitives (like Flex, Grid, or
+// Form) as keyboard events will be handed down until they are handled.
+//
+// Pasted key events are not forwarded to the input capture function if pasting
+// is enabled (see [Application.EnablePaste]).
 func (b *Box) SetInputCapture(capture func(event *tcell.EventKey) *tcell.EventKey) *Box {
 	b.inputCapture = capture
 	return b
@@ -193,8 +212,8 @@ func (b *Box) GetInputCapture() func(event *tcell.EventKey) *tcell.EventKey {
 	return b.inputCapture
 }
 
-// WrapMouseHandler wraps a mouse event handler (see MouseHandler()) with the
-// functionality to capture mouse events (see SetMouseCapture()) before passing
+// WrapMouseHandler wraps a mouse event handler (see [Box.MouseHandler]) with the
+// functionality to capture mouse events (see [Box.SetMouseCapture]) before passing
 // them on to the provided (default) event handler.
 //
 // This is only meant to be used by subclassing primitives.
@@ -203,17 +222,21 @@ func (b *Box) WrapMouseHandler(mouseHandler func(MouseAction, *tcell.EventMouse,
 		if b.mouseCapture != nil {
 			action, event = b.mouseCapture(action, event)
 		}
-		if event != nil && mouseHandler != nil {
+		if event == nil {
+			if action == MouseConsumed {
+				consumed = true
+			}
+		} else if mouseHandler != nil {
 			consumed, capture = mouseHandler(action, event, setFocus)
 		}
 		return
 	}
 }
 
-// MouseHandler returns nil.
+// MouseHandler returns nil. Box has no default mouse handling.
 func (b *Box) MouseHandler() func(action MouseAction, event *tcell.EventMouse, setFocus func(p Primitive)) (consumed bool, capture Primitive) {
 	return b.WrapMouseHandler(func(action MouseAction, event *tcell.EventMouse, setFocus func(p Primitive)) (consumed bool, capture Primitive) {
-		if action == MouseLeftClick && b.InRect(event.Position()) {
+		if action == MouseLeftDown && b.InRect(event.Position()) {
 			setFocus(b)
 			consumed = true
 		}
@@ -228,7 +251,15 @@ func (b *Box) MouseHandler() func(action MouseAction, event *tcell.EventMouse, s
 // returning a nil mouse event, in which case the default handler will not be
 // called.
 //
+// When a nil event is returned, the returned mouse action value may be set to
+// [MouseConsumed] to indicate that the event was consumed and the screen should
+// be redrawn. Any other value will not cause a redraw.
+//
 // Providing a nil handler will remove a previously existing handler.
+//
+// Note that mouse events are ignored completely if the application has not been
+// enabled for mouse events (see [Application.EnableMouse]), which is the
+// default.
 func (b *Box) SetMouseCapture(capture func(action MouseAction, event *tcell.EventMouse) (MouseAction, *tcell.EventMouse)) *Box {
 	b.mouseCapture = capture
 	return b
@@ -238,6 +269,13 @@ func (b *Box) SetMouseCapture(capture func(action MouseAction, event *tcell.Even
 // rectangle.
 func (b *Box) InRect(x, y int) bool {
 	rectX, rectY, width, height := b.GetRect()
+	return x >= rectX && x < rectX+width && y >= rectY && y < rectY+height
+}
+
+// InInnerRect returns true if the given coordinate is within the bounds of the
+// box's inner rectangle (within the border and padding).
+func (b *Box) InInnerRect(x, y int) bool {
+	rectX, rectY, width, height := b.GetInnerRect()
 	return x >= rectX && x < rectX+width && y >= rectY && y < rectY+height
 }
 
@@ -261,6 +299,12 @@ func (b *Box) SetBorder(show bool) *Box {
 	return b
 }
 
+// SetBorderStyle sets the box's border style.
+func (b *Box) SetBorderStyle(style tcell.Style) *Box {
+	b.borderStyle = style
+	return b
+}
+
 // SetBorderColor sets the box's border color.
 func (b *Box) SetBorderColor(color tcell.Color) *Box {
 	b.borderStyle = b.borderStyle.Foreground(color)
@@ -270,7 +314,7 @@ func (b *Box) SetBorderColor(color tcell.Color) *Box {
 // SetBorderAttributes sets the border's style attributes. You can combine
 // different attributes using bitmask operations:
 //
-//   box.SetBorderAttributes(tcell.AttrUnderline | tcell.AttrBold)
+//	box.SetBorderAttributes(tcell.AttrUnderline | tcell.AttrBold)
 func (b *Box) SetBorderAttributes(attr tcell.AttrMask) *Box {
 	b.borderStyle = b.borderStyle.Attributes(attr)
 	return b
@@ -334,10 +378,8 @@ func (b *Box) DrawForSubclass(screen tcell.Screen, p Primitive) {
 		return
 	}
 
-	def := tcell.StyleDefault
-
 	// Fill background.
-	background := def.Background(b.backgroundColor)
+	background := tcell.StyleDefault.Background(b.backgroundColor)
 	if !b.dontClear {
 		for y := b.y; y < b.y+b.height; y++ {
 			for x := b.x; x < b.x+b.width; x++ {
@@ -381,9 +423,13 @@ func (b *Box) DrawForSubclass(screen tcell.Screen, p Primitive) {
 		if b.title != "" && b.width >= 4 {
 			printed, _ := Print(screen, b.title, b.x+1, b.y, b.width-2, b.titleAlign, b.titleColor)
 			if len(b.title)-printed > 0 && printed > 0 {
-				_, _, style, _ := screen.GetContent(b.x+b.width-2, b.y)
+				xEllipsis := b.x + b.width - 2
+				if b.titleAlign == AlignRight {
+					xEllipsis = b.x + 1
+				}
+				_, _, style, _ := screen.GetContent(xEllipsis, b.y)
 				fg, _, _ := style.Decompose()
-				Print(screen, string(SemigraphicsHorizontalEllipsis), b.x+b.width-2, b.y, 1, AlignLeft, fg)
+				Print(screen, string(SemigraphicsHorizontalEllipsis), xEllipsis, b.y, 1, AlignLeft, fg)
 			}
 		}
 	}
@@ -398,13 +444,39 @@ func (b *Box) DrawForSubclass(screen tcell.Screen, p Primitive) {
 	}
 }
 
+// SetFocusFunc sets a callback function which is invoked when this primitive
+// receives focus. Container primitives such as [Flex] or [Grid] may not be
+// notified if one of their descendents receive focus directly.
+//
+// Set to nil to remove the callback function.
+func (b *Box) SetFocusFunc(callback func()) *Box {
+	b.focus = callback
+	return b
+}
+
+// SetBlurFunc sets a callback function which is invoked when this primitive
+// loses focus. This does not apply to container primitives such as [Flex] or
+// [Grid].
+//
+// Set to nil to remove the callback function.
+func (b *Box) SetBlurFunc(callback func()) *Box {
+	b.blur = callback
+	return b
+}
+
 // Focus is called when this primitive receives focus.
 func (b *Box) Focus(delegate func(p Primitive)) {
 	b.hasFocus = true
+	if b.focus != nil {
+		b.focus()
+	}
 }
 
 // Blur is called when this primitive loses focus.
 func (b *Box) Blur() {
+	if b.blur != nil {
+		b.blur()
+	}
 	b.hasFocus = false
 }
 

@@ -1,7 +1,15 @@
 package json
 
+// License note: the string and numeric parsers here borrow
+// heavily from the golang stdlib json parser scanner.
+// That code is originally Copyright 2010 The Go Authors,
+// and is governed by a BSD-style license.
+
 import (
+	"fmt"
 	"io"
+	"math"
+	"strconv"
 	"unicode/utf8"
 )
 
@@ -75,4 +83,35 @@ func (d *Encoder) emitString(s string) {
 		io.WriteString(d.wr, s[start:])
 	}
 	d.writeByte('"')
+}
+
+func (d *Encoder) emitFloat(f float64) error {
+	if math.IsInf(f, 0) || math.IsNaN(f) {
+		return fmt.Errorf("unsupported value: %s", strconv.FormatFloat(f, 'g', -1, int(64)))
+	}
+
+	// Convert as if by ES6 number to string conversion.
+	// This matches most other JSON generators.
+	// See golang.org/issue/6384 and golang.org/issue/14135.
+	// Like fmt %g, but the exponent cutoffs are different
+	// and exponents themselves are not padded to two digits.
+	b := d.scratch[:0]
+	abs := math.Abs(f)
+	fmt := byte('f')
+	if abs != 0 {
+		if abs < 1e-6 || abs >= 1e21 {
+			fmt = 'e'
+		}
+	}
+	b = strconv.AppendFloat(b, f, fmt, -1, int(64))
+	if fmt == 'e' {
+		// clean up e-09 to e-9
+		n := len(b)
+		if n >= 4 && b[n-4] == 'e' && b[n-3] == '-' && b[n-2] == '0' {
+			b[n-2] = b[n-1]
+			b = b[:n-1]
+		}
+	}
+	d.wr.Write(b)
+	return nil
 }

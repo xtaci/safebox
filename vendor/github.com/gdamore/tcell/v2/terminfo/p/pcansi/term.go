@@ -6,7 +6,7 @@ import "github.com/gdamore/tcell/v2/terminfo"
 
 func init() {
 
-	// ibm-pc terminal programs claiming to be ansi
+	// ibm-pc terminal programs claiming to be ANSI
 	terminfo.AddTerminfo(&terminfo.Terminfo{
 		Name:         "pcansi",
 		Columns:      80,
@@ -36,5 +36,6 @@ func init() {
 		KeyLeft:      "\x1b[D",
 		KeyBackspace: "\b",
 		KeyHome:      "\x1b[H",
+		AutoMargin:   true,
 	})
 }

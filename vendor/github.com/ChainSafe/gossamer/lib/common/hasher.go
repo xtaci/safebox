@@ -1,18 +1,5 @@
-// Copyright 2019 ChainSafe Systems (ON) Corp.
-// This file is part of gossamer.
-//
-// The gossamer library is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The gossamer library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the gossamer library. If not, see <http://www.gnu.org/licenses/>.
+// Copyright 2021 ChainSafe Systems (ON)
+// SPDX-License-Identifier: LGPL-3.0-only
 
 package common
 
@@ -40,6 +27,33 @@ func Blake2b128(in []byte) ([]byte, error) {
 	return h.Sum(nil), nil
 }
 
+// Blake2b8 returns the first 8 bytes of the Blake2b hash of the input data
+func Blake2b8(data []byte) (digest [8]byte, err error) {
+	const bytes = 8
+	hasher, err := blake2b.New(bytes, nil)
+	if err != nil {
+		return [8]byte{}, err
+	}
+
+	_, err = hasher.Write(data)
+	if err != nil {
+		return [8]byte{}, err
+	}
+
+	digestBytes := hasher.Sum(nil)
+	copy(digest[:], digestBytes)
+	return digest, nil
+}
+
+// MustBlake2b8 returns the first 8 bytes of the Blake2b hash of the input data
+func MustBlake2b8(data []byte) (digest [8]byte) {
+	digest, err := Blake2b8(data)
+	if err != nil {
+		panic(err)
+	}
+	return digest
+}
+
 // Blake2bHash returns the 256-bit blake2b hash of the input data
 func Blake2bHash(in []byte) (Hash, error) {
 	h, err := blake2b.New256(nil)
@@ -54,7 +68,7 @@ func Blake2bHash(in []byte) (Hash, error) {
 
 	hash := h.Sum(nil)
 	var buf = [32]byte{}
-	copy(buf[:], hash)
+	copy(buf[:], hash[:])
 	return buf, nil
 }
 
@@ -98,10 +112,10 @@ func Twox64(in []byte) ([]byte, error) {
 }
 
 // Twox128Hash computes xxHash64 twice with seeds 0 and 1 applied on given byte array
-func Twox128Hash(msg []byte) ([]byte, error) {
+func Twox128Hash(msg []byte) (result []byte, err error) {
 	// compute xxHash64 twice with seeds 0 and 1 applied on given byte array
 	h0 := xxhash.NewS64(0) // create xxHash with 0 seed
-	_, err := h0.Write(msg)
+	_, err = h0.Write(msg)
 	if err != nil {
 		return nil, err
 	}
@@ -118,9 +132,11 @@ func Twox128Hash(msg []byte) ([]byte, error) {
 	hash1 := make([]byte, 8)
 	binary.LittleEndian.PutUint64(hash1, res1)
 
-	//concatenated result
-	both := append(hash0, hash1...)
-	return both, nil
+	result = make([]byte, 16)
+	copy(result[:8], hash0)
+	copy(result[8:], hash1)
+
+	return result, nil
 }
 
 // Twox256 returns the twox256 hash of the input data

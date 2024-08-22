@@ -1,6 +1,8 @@
 package multisig
 
 import (
+	errorsmod "cosmossdk.io/errors"
+
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -36,7 +38,7 @@ func protoToTm(protoPk *LegacyAminoPubKey) (tmMultisig, error) {
 	for i, pk := range protoPk.PubKeys {
 		pks[i], ok = pk.GetCachedValue().(cryptotypes.PubKey)
 		if !ok {
-			return tmMultisig{}, sdkerrors.Wrapf(sdkerrors.ErrInvalidType, "expected %T, got %T", (cryptotypes.PubKey)(nil), pk.GetCachedValue())
+			return tmMultisig{}, errorsmod.Wrapf(sdkerrors.ErrInvalidType, "expected %T, got %T", (cryptotypes.PubKey)(nil), pk.GetCachedValue())
 		}
 	}
 
@@ -64,7 +66,7 @@ func tmToProto(tmPk tmMultisig) (*LegacyAminoPubKey, error) {
 }
 
 // MarshalAminoJSON overrides amino JSON unmarshaling.
-func (m LegacyAminoPubKey) MarshalAminoJSON() (tmMultisig, error) { //nolint:golint
+func (m LegacyAminoPubKey) MarshalAminoJSON() (tmMultisig, error) { //nolint:golint,revive // we need to override the default amino JSON marshaling
 	return protoToTm(&m)
 }
 
@@ -78,9 +80,28 @@ func (m *LegacyAminoPubKey) UnmarshalAminoJSON(tmPk tmMultisig) error {
 	// Instead of just doing `*m = *protoPk`, we prefer to modify in-place the
 	// existing Anys inside `m` (instead of allocating new Anys), as so not to
 	// break the `.compat` fields in the existing Anys.
+	if m.PubKeys == nil {
+		m.PubKeys = make([]*types.Any, len(tmPk.PubKeys))
+	}
 	for i := range m.PubKeys {
-		m.PubKeys[i].TypeUrl = protoPk.PubKeys[i].TypeUrl
-		m.PubKeys[i].Value = protoPk.PubKeys[i].Value
+		if m.PubKeys[i] == nil {
+			// create the compat jsonBz value
+			bz, err := AminoCdc.MarshalJSON(tmPk.PubKeys[i])
+			if err != nil {
+				return err
+			}
+
+			m.PubKeys[i] = protoPk.PubKeys[i]
+			// UnmarshalJSON():
+			// just sets the compat.jsonBz value.
+			// always succeeds: err == nil
+			if err := m.PubKeys[i].UnmarshalJSON(bz); err != nil {
+				return err
+			}
+		} else {
+			m.PubKeys[i].TypeUrl = protoPk.PubKeys[i].TypeUrl
+			m.PubKeys[i].Value = protoPk.PubKeys[i].Value
+		}
 	}
 	m.Threshold = protoPk.Threshold
 

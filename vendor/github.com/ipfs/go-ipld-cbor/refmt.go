@@ -37,7 +37,6 @@ var BigIntAtlasEntry = atlas.BuildEntry(big.Int{}).Transform().
 
 // CborAtlas is the refmt.Atlas used by the CBOR IPLD decoder/encoder.
 var CborAtlas atlas.Atlas
-var cborSortingMode = atlas.KeySortMode_RFC7049
 var atlasEntries = []*atlas.AtlasEntry{cidAtlasEntry}
 
 var (

@@ -1,29 +1,20 @@
 package codec
 
 import (
-	"encoding/json"
-
-	"github.com/gogo/protobuf/proto"
-	"gopkg.in/yaml.v2"
+	"github.com/cosmos/gogoproto/proto"
+	"sigs.k8s.io/yaml"
 )
 
-// MarshalYAML marshals toPrint using jsonMarshaler to leverage specialized MarshalJSON methods
+// MarshalYAML marshals toPrint using JSONCodec to leverage specialized MarshalJSON methods
 // (usually related to serialize data with protobuf or amin depending on a configuration).
 // This involves additional roundtrip through JSON.
-func MarshalYAML(jsonMarshaler JSONMarshaler, toPrint proto.Message) ([]byte, error) {
+func MarshalYAML(cdc JSONCodec, toPrint proto.Message) ([]byte, error) {
 	// We are OK with the performance hit of the additional JSON roundtip. MarshalYAML is not
 	// used in any critical parts of the system.
-	bz, err := jsonMarshaler.MarshalJSON(toPrint)
+	bz, err := cdc.MarshalJSON(toPrint)
 	if err != nil {
 		return nil, err
 	}
 
-	// generate YAML by decoding JSON and re-encoding to YAML
-	var j interface{}
-	err = json.Unmarshal(bz, &j)
-	if err != nil {
-		return nil, err
-	}
-
-	return yaml.Marshal(j)
+	return yaml.JSONToYAML(bz)
 }

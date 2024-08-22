@@ -9,6 +9,9 @@ go-block-format
 
 > go-block-format is a set of interfaces that a type needs to implement in order to be a CID addressable block of data.
 
+## Lead Maintainer
+
+[Eric Myhre](https://github.com/warpfork)
 
 ## Table of Contents
 

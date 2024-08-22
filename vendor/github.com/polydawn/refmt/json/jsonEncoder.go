@@ -66,8 +66,7 @@ func (d *Encoder) Step(tok *Token) (done bool, err error) {
 			return true, fmt.Errorf("unexpected arrClose; expected start of value")
 		default:
 			// It's a value; handle it.
-			d.flushValue(tok)
-			return true, nil
+			return true, d.flushValue(tok)
 		}
 	case phase_mapExpectKeyOrEnd:
 		switch tok.Type {
@@ -118,9 +117,8 @@ func (d *Encoder) Step(tok *Token) (done bool, err error) {
 			return true, fmt.Errorf("unexpected arrClose; expected start of value")
 		default:
 			// It's a value; handle it.
-			d.flushValue(tok)
 			d.current = phase_mapExpectKeyOrEnd
-			return false, nil
+			return false, d.flushValue(tok)
 		}
 	case phase_arrExpectValueOrEnd:
 		switch tok.Type {
@@ -148,8 +146,7 @@ func (d *Encoder) Step(tok *Token) (done bool, err error) {
 		default:
 			// It's a value; handle it.
 			d.entrySep()
-			d.flushValue(tok)
-			return false, nil
+			return false, d.flushValue(tok)
 		}
 	default:
 		panic("Unreachable")
@@ -191,24 +188,30 @@ func (d *Encoder) entrySep() {
 	}
 }
 
-func (d *Encoder) flushValue(tok *Token) {
+func (d *Encoder) flushValue(tok *Token) error {
 	switch tok.Type {
 	case TString:
 		d.emitString(tok.Str)
+		return nil
 	case TBool:
-		switch tok.Bool {
-		case true:
+		if tok.Bool {
 			d.wr.Write(wordTrue)
-		case false:
+			return nil
+		} else {
 			d.wr.Write(wordFalse)
+			return nil
 		}
 	case TInt:
 		b := strconv.AppendInt(d.scratch[:0], tok.Int, 10)
 		d.wr.Write(b)
+		return nil
+	case TFloat64:
+		return d.emitFloat(tok.Float64)
 	case TNull:
 		d.wr.Write(wordNull)
+		return nil
 	default:
-		panic(fmt.Errorf("TODO finish more jsonEncoder primitives support: unhandled token %s", tok))
+		panic("unreachable")
 	}
 }
 

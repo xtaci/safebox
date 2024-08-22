@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/gogo/protobuf/jsonpb"
+	"github.com/cosmos/gogoproto/jsonpb"
+	"github.com/cosmos/gogoproto/proto"
+	"google.golang.org/protobuf/reflect/protodesc"
+	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"github.com/gogo/protobuf/proto"
+	"cosmossdk.io/x/tx/signing"
 )
 
 // AnyUnpacker is an interface which allows safely unpacking types packed
@@ -46,23 +49,29 @@ type InterfaceRegistry interface {
 	//  registry.RegisterImplementations((*sdk.Msg)(nil), &MsgSend{}, &MsgMultiSend{})
 	RegisterImplementations(iface interface{}, impls ...proto.Message)
 
-	// RegisterCustomTypeURL allows a protobuf message to be registered as a
-	// google.protobuf.Any with a custom typeURL (besides its own canonical
-	// typeURL). iface should be an interface as type, as in RegisterInterface
-	// and RegisterImplementations.
-	//
-	// Ex:
-	// This will allow us to pack service methods in Any's using the full method name
-	// as the type URL and the request body as the value, and allow us to unpack
-	// such packed methods using the normal UnpackAny method for the interface iface.
-	RegisterCustomTypeURL(iface interface{}, typeURL string, impl proto.Message)
-
 	// ListAllInterfaces list the type URLs of all registered interfaces.
 	ListAllInterfaces() []string
 
 	// ListImplementations lists the valid type URLs for the given interface name that can be used
 	// for the provided interface type URL.
 	ListImplementations(ifaceTypeURL string) []string
+
+	// EnsureRegistered ensures there is a registered interface for the given concrete type.
+	EnsureRegistered(iface interface{}) error
+
+	protodesc.Resolver
+
+	// RangeFiles iterates over all registered files and calls f on each one. This
+	// implements the part of protoregistry.Files that is needed for reflecting over
+	// the entire FileDescriptorSet.
+	RangeFiles(f func(protoreflect.FileDescriptor) bool)
+
+	SigningContext() *signing.Context
+
+	// mustEmbedInterfaceRegistry requires that all implementations of InterfaceRegistry embed an official implementation
+	// from this package. This allows new methods to be added to the InterfaceRegistry interface without breaking
+	// backwards compatibility.
+	mustEmbedInterfaceRegistry()
 }
 
 // UnpackInterfacesMessage is meant to extend protobuf types (which implement
@@ -90,20 +99,60 @@ type UnpackInterfacesMessage interface {
 }
 
 type interfaceRegistry struct {
+	signing.ProtoFileResolver
 	interfaceNames map[string]reflect.Type
 	interfaceImpls map[reflect.Type]interfaceMap
+	implInterfaces map[reflect.Type]reflect.Type
 	typeURLMap     map[string]reflect.Type
+	signingCtx     *signing.Context
 }
 
 type interfaceMap = map[string]reflect.Type
 
 // NewInterfaceRegistry returns a new InterfaceRegistry
 func NewInterfaceRegistry() InterfaceRegistry {
-	return &interfaceRegistry{
-		interfaceNames: map[string]reflect.Type{},
-		interfaceImpls: map[reflect.Type]interfaceMap{},
-		typeURLMap:     map[string]reflect.Type{},
+	registry, err := NewInterfaceRegistryWithOptions(InterfaceRegistryOptions{
+		ProtoFiles: proto.HybridResolver,
+		SigningOptions: signing.Options{
+			AddressCodec:          failingAddressCodec{},
+			ValidatorAddressCodec: failingAddressCodec{},
+		},
+	})
+	if err != nil {
+		panic(err)
 	}
+	return registry
+}
+
+// InterfaceRegistryOptions are options for creating a new InterfaceRegistry.
+type InterfaceRegistryOptions struct {
+	// ProtoFiles is the set of files to use for the registry. It is required.
+	ProtoFiles signing.ProtoFileResolver
+
+	// SigningOptions are the signing options to use for the registry.
+	SigningOptions signing.Options
+}
+
+// NewInterfaceRegistryWithOptions returns a new InterfaceRegistry with the given options.
+func NewInterfaceRegistryWithOptions(options InterfaceRegistryOptions) (InterfaceRegistry, error) {
+	if options.ProtoFiles == nil {
+		return nil, fmt.Errorf("proto files must be provided")
+	}
+
+	options.SigningOptions.FileResolver = options.ProtoFiles
+	signingCtx, err := signing.NewContext(options.SigningOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return &interfaceRegistry{
+		interfaceNames:    map[string]reflect.Type{},
+		interfaceImpls:    map[reflect.Type]interfaceMap{},
+		implInterfaces:    map[reflect.Type]reflect.Type{},
+		typeURLMap:        map[string]reflect.Type{},
+		ProtoFileResolver: options.ProtoFiles,
+		signingCtx:        signingCtx,
+	}, nil
 }
 
 func (registry *interfaceRegistry) RegisterInterface(protoName string, iface interface{}, impls ...proto.Message) {
@@ -111,8 +160,24 @@ func (registry *interfaceRegistry) RegisterInterface(protoName string, iface int
 	if typ.Elem().Kind() != reflect.Interface {
 		panic(fmt.Errorf("%T is not an interface type", iface))
 	}
+
 	registry.interfaceNames[protoName] = typ
 	registry.RegisterImplementations(iface, impls...)
+}
+
+// EnsureRegistered ensures there is a registered interface for the given concrete type.
+//
+// Returns an error if not, and nil if so.
+func (registry *interfaceRegistry) EnsureRegistered(impl interface{}) error {
+	if reflect.ValueOf(impl).Kind() != reflect.Ptr {
+		return fmt.Errorf("%T is not a pointer", impl)
+	}
+
+	if _, found := registry.implInterfaces[reflect.TypeOf(impl)]; !found {
+		return fmt.Errorf("%T does not have a registered interface", impl)
+	}
+
+	return nil
 }
 
 // RegisterImplementations registers a concrete proto Message which implements
@@ -122,7 +187,7 @@ func (registry *interfaceRegistry) RegisterInterface(protoName string, iface int
 // same typeURL.
 func (registry *interfaceRegistry) RegisterImplementations(iface interface{}, impls ...proto.Message) {
 	for _, impl := range impls {
-		typeURL := "/" + proto.MessageName(impl)
+		typeURL := MsgTypeURL(impl)
 		registry.registerImpl(iface, typeURL, impl)
 	}
 }
@@ -173,7 +238,7 @@ func (registry *interfaceRegistry) registerImpl(iface interface{}, typeURL strin
 
 	imap[typeURL] = implType
 	registry.typeURLMap[typeURL] = implType
-
+	registry.implInterfaces[implType] = ityp
 	registry.interfaceImpls[ityp] = imap
 }
 
@@ -279,6 +344,12 @@ func (registry *interfaceRegistry) Resolve(typeURL string) (proto.Message, error
 	return msg, nil
 }
 
+func (registry *interfaceRegistry) SigningContext() *signing.Context {
+	return registry.signingCtx
+}
+
+func (registry *interfaceRegistry) mustEmbedInterfaceRegistry() {}
+
 // UnpackInterfaces is a convenience function that calls UnpackInterfaces
 // on x if x implements UnpackInterfacesMessage
 func UnpackInterfaces(x interface{}, unpacker AnyUnpacker) error {
@@ -286,4 +357,14 @@ func UnpackInterfaces(x interface{}, unpacker AnyUnpacker) error {
 		return msg.UnpackInterfaces(unpacker)
 	}
 	return nil
+}
+
+type failingAddressCodec struct{}
+
+func (f failingAddressCodec) StringToBytes(string) ([]byte, error) {
+	return nil, fmt.Errorf("InterfaceRegistry requires a proper address codec implementation to do address conversion")
+}
+
+func (f failingAddressCodec) BytesToString([]byte) (string, error) {
+	return "", fmt.Errorf("InterfaceRegistry requires a proper address codec implementation to do address conversion")
 }

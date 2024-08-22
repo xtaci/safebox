@@ -1,4 +1,4 @@
-// Copyright 2021 The TCell Authors
+// Copyright 2023 The TCell Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use file except in compliance with the License.
@@ -14,6 +14,8 @@
 
 package tcell
 
+import "sync"
+
 // Screen represents the physical (or emulated) screen.
 // This can be a terminal window or a physical console.  Platforms implement
 // this differently.
@@ -24,12 +26,13 @@ type Screen interface {
 	// Fini finalizes the screen also releasing resources.
 	Fini()
 
-	// Clear erases the screen.  The contents of any screen buffers
-	// will also be cleared.  This has the logical effect of
-	// filling the screen with spaces, using the global default style.
+	// Clear logically erases the screen.
+	// This is effectively a short-cut for Fill(' ', StyleDefault).
 	Clear()
 
 	// Fill fills the screen with the given character and style.
+	// The effect of filling the screen is not visible until Show
+	// is called (or Sync).
 	Fill(rune, Style)
 
 	// SetCell is an older API, and will be removed.  Please use
@@ -42,8 +45,8 @@ type Screen interface {
 	// and may not actually be what is displayed, but rather are what will
 	// be displayed if Show() or Sync() is called.  The width is the width
 	// in screen cells; most often this will be 1, but some East Asian
-	// characters require two cells.
-	GetContent(x, y int) (mainc rune, combc []rune, style Style, width int)
+	// characters and emoji require two cells.
+	GetContent(x, y int) (primary rune, combining []rune, style Style, width int)
 
 	// SetContent sets the contents of the given cell location.  If
 	// the coordinates are out of range, then the operation is ignored.
@@ -52,13 +55,13 @@ type Screen interface {
 	// that follows is a possible list of combining characters to append,
 	// and will usually be nil (no combining characters.)
 	//
-	// The results are not displayd until Show() or Sync() is called.
+	// The results are not displayed until Show() or Sync() is called.
 	//
-	// Note that wide (East Asian full width) runes occupy two cells,
+	// Note that wide (East Asian full width and emoji) runes occupy two cells,
 	// and attempts to place character at next cell to the right will have
 	// undefined effects.  Wide runes that are printed in the
 	// last column will be replaced with a single width space on output.
-	SetContent(x int, y int, mainc rune, combc []rune, style Style)
+	SetContent(x int, y int, primary rune, combining []rune, style Style)
 
 	// SetStyle sets the default style to use when clearing the screen
 	// or when StyleDefault is specified.  If it is also StyleDefault,
@@ -70,18 +73,41 @@ type Screen interface {
 	// dimensions of the screen, the cursor will be hidden.
 	ShowCursor(x int, y int)
 
-	// HideCursor is used to hide the cursor.  Its an alias for
-	// ShowCursor(-1, -1).
+	// HideCursor is used to hide the cursor.  It's an alias for
+	// ShowCursor(-1, -1).sim
 	HideCursor()
+
+	// SetCursorStyle is used to set the cursor style.  If the style
+	// is not supported (or cursor styles are not supported at all),
+	// then this will have no effect.
+	SetCursorStyle(CursorStyle)
 
 	// Size returns the screen size as width, height.  This changes in
 	// response to a call to Clear or Flush.
-	Size() (int, int)
+	Size() (width, height int)
+
+	// ChannelEvents is an infinite loop that waits for an event and
+	// channels it into the user provided channel ch.  Closing the
+	// quit channel and calling the Fini method are cancellation
+	// signals.  When a cancellation signal is received the method
+	// returns after closing ch.
+	//
+	// This method should be used as a goroutine.
+	//
+	// NOTE: PollEvent should not be called while this method is running.
+	ChannelEvents(ch chan<- Event, quit <-chan struct{})
 
 	// PollEvent waits for events to arrive.  Main application loops
 	// must spin on this to prevent the application from stalling.
 	// Furthermore, this will return nil if the Screen is finalized.
 	PollEvent() Event
+
+	// HasPendingEvent returns true if PollEvent would return an event
+	// without blocking.  If the screen is stopped and PollEvent would
+	// return nil, then the return value from this function is unspecified.
+	// The purpose of this function is to allow multiple events to be collected
+	// at once, to minimize screen redraws.
+	HasPendingEvent() bool
 
 	// PostEvent tries to post an event into the event stream.  This
 	// can fail if the event queue is full.  In that case, the event
@@ -112,11 +138,17 @@ type Screen interface {
 	// EnablePaste enables bracketed paste mode, if supported.
 	EnablePaste()
 
-	// DisablePaste() disables bracketed paste mode.
+	// DisablePaste disables bracketed paste mode.
 	DisablePaste()
 
+	// EnableFocus enables reporting of focus events, if your terminal supports it.
+	EnableFocus()
+
+	// DisableFocus disables reporting of focus events.
+	DisableFocus()
+
 	// HasMouse returns true if the terminal (apparently) supports a
-	// mouse.  Note that the a return value of true doesn't guarantee that
+	// mouse.  Note that the return value of true doesn't guarantee that
 	// a mouse/pointing device is present; a false return definitely
 	// indicates no mouse support is available.
 	HasMouse() bool
@@ -138,8 +170,8 @@ type Screen interface {
 	// internal model.  This may be both expensive and visually jarring,
 	// so it should only be used when believed to actually be necessary.
 	//
-	// Typically this is called as a result of a user-requested redraw
-	// (e.g. to clear up on screen corruption caused by some other program),
+	// Typically, this is called as a result of a user-requested redraw
+	// (e.g. to clear up on-screen corruption caused by some other program),
 	// or during a resize event.
 	Sync()
 
@@ -151,18 +183,18 @@ type Screen interface {
 	CharacterSet() string
 
 	// RegisterRuneFallback adds a fallback for runes that are not
-	// part of the character set -- for example one coudld register
+	// part of the character set -- for example one could register
 	// o as a fallback for ø.  This should be done cautiously for
 	// characters that might be displayed ordinarily in language
 	// specific text -- characters that could change the meaning of
-	// of written text would be dangerous.  The intention here is to
+	// written text would be dangerous.  The intention here is to
 	// facilitate fallback characters in pseudo-graphical applications.
 	//
 	// If the terminal has fallbacks already in place via an alternate
 	// character set, those are used in preference.  Also, standard
-	// fallbacks for graphical characters in the ACSC terminfo string
-	// are registered implicitly.
-
+	// fallbacks for graphical characters in the alternate character set
+	// terminfo string are registered implicitly.
+	//
 	// The display string should be the same width as original rune.
 	// This makes it possible to register two character replacements
 	// for full width East Asian characters, for example.
@@ -180,7 +212,7 @@ type Screen interface {
 	UnregisterRuneFallback(r rune)
 
 	// CanDisplay returns true if the given rune can be displayed on
-	// this screen.  Note that this is a best guess effort -- whether
+	// this screen.  Note that this is a best-guess effort -- whether
 	// your fonts support the character or not may be questionable.
 	// Mostly this is for folks who work outside of Unicode.
 	//
@@ -190,7 +222,7 @@ type Screen interface {
 	// one that is visually indistinguishable from the one requested.
 	CanDisplay(r rune, checkFallbacks bool) bool
 
-	// Resize does nothing, since its generally not possible to
+	// Resize does nothing, since it's generally not possible to
 	// ask a screen to resize, but it allows the Screen to implement
 	// the View interface.
 	Resize(int, int, int, int)
@@ -216,6 +248,23 @@ type Screen interface {
 	// Beep attempts to sound an OS-dependent audible alert and returns an error
 	// when unsuccessful.
 	Beep() error
+
+	// SetSize attempts to resize the window.  It also invalidates the cells and
+	// calls the resize function.  Note that if the window size is changed, it will
+	// not be restored upon application exit.
+	//
+	// Many terminals cannot support this.  Perversely, the "modern" Windows Terminal
+	// does not support application-initiated resizing, whereas the legacy terminal does.
+	// Also, some emulators can support this but may have it disabled by default.
+	SetSize(int, int)
+
+	// LockRegion sets or unsets a lock on a region of cells. A lock on a
+	// cell prevents the cell from being redrawn.
+	LockRegion(x, y, width, height int, lock bool)
+
+	// Tty returns the underlying Tty. If the screen is not a terminal, the
+	// returned bool will be false
+	Tty() (Tty, bool)
 }
 
 // NewScreen returns a default Screen suitable for the user's terminal
@@ -232,7 +281,7 @@ func NewScreen() (Screen, error) {
 }
 
 // MouseFlags are options to modify the handling of mouse events.
-// Actual events can be or'd together.
+// Actual events can be ORed together.
 type MouseFlags int
 
 const (
@@ -240,3 +289,178 @@ const (
 	MouseDragEvents   = MouseFlags(2) // Click-drag events (includes button events)
 	MouseMotionEvents = MouseFlags(4) // All mouse events (includes click and drag events)
 )
+
+// CursorStyle represents a given cursor style, which can include the shape and
+// whether the cursor blinks or is solid.  Support for changing this is not universal.
+type CursorStyle int
+
+const (
+	CursorStyleDefault = CursorStyle(iota) // The default
+	CursorStyleBlinkingBlock
+	CursorStyleSteadyBlock
+	CursorStyleBlinkingUnderline
+	CursorStyleSteadyUnderline
+	CursorStyleBlinkingBar
+	CursorStyleSteadyBar
+)
+
+// screenImpl is a subset of Screen that can be used with baseScreen to formulate
+// a complete implementation of Screen.  See Screen for doc comments about methods.
+type screenImpl interface {
+	Init() error
+	Fini()
+	SetStyle(style Style)
+	ShowCursor(x int, y int)
+	HideCursor()
+	SetCursorStyle(CursorStyle)
+	Size() (width, height int)
+	EnableMouse(...MouseFlags)
+	DisableMouse()
+	EnablePaste()
+	DisablePaste()
+	EnableFocus()
+	DisableFocus()
+	HasMouse() bool
+	Colors() int
+	Show()
+	Sync()
+	CharacterSet() string
+	RegisterRuneFallback(r rune, subst string)
+	UnregisterRuneFallback(r rune)
+	CanDisplay(r rune, checkFallbacks bool) bool
+	Resize(int, int, int, int)
+	HasKey(Key) bool
+	Suspend() error
+	Resume() error
+	Beep() error
+	SetSize(int, int)
+	Tty() (Tty, bool)
+
+	// Following methods are not part of the Screen api, but are used for interaction with
+	// the common layer code.
+
+	// Locker locks the underlying data structures so that we can access them
+	// in a thread-safe way.
+	sync.Locker
+
+	// GetCells returns a pointer to the underlying CellBuffer that the implementation uses.
+	// Various methods will write to these for performance, but will use the lock to do so.
+	GetCells() *CellBuffer
+
+	// StopQ is closed when the screen is shut down via Fini.  It remains open if the screen
+	// is merely suspended.
+	StopQ() <-chan struct{}
+
+	// EventQ delivers events.  Events are posted to this by the screen in response to
+	// key presses, resizes, etc.  Application code receives events from this via the
+	// Screen.PollEvent, Screen.ChannelEvents APIs.
+	EventQ() chan Event
+}
+
+type baseScreen struct {
+	screenImpl
+}
+
+func (b *baseScreen) SetCell(x int, y int, style Style, ch ...rune) {
+	if len(ch) > 0 {
+		b.SetContent(x, y, ch[0], ch[1:], style)
+	} else {
+		b.SetContent(x, y, ' ', nil, style)
+	}
+}
+
+func (b *baseScreen) Clear() {
+	b.Fill(' ', StyleDefault)
+}
+
+func (b *baseScreen) Fill(r rune, style Style) {
+	cb := b.GetCells()
+	b.Lock()
+	cb.Fill(r, style)
+	b.Unlock()
+}
+
+func (b *baseScreen) SetContent(x, y int, mainc rune, combc []rune, st Style) {
+
+	cells := b.GetCells()
+	b.Lock()
+	cells.SetContent(x, y, mainc, combc, st)
+	b.Unlock()
+}
+
+func (b *baseScreen) GetContent(x, y int) (rune, []rune, Style, int) {
+	var primary rune
+	var combining []rune
+	var style Style
+	var width int
+	cells := b.GetCells()
+	b.Lock()
+	primary, combining, style, width = cells.GetContent(x, y)
+	b.Unlock()
+	return primary, combining, style, width
+}
+
+func (b *baseScreen) LockRegion(x, y, width, height int, lock bool) {
+	cells := b.GetCells()
+	b.Lock()
+	for j := y; j < (y + height); j += 1 {
+		for i := x; i < (x + width); i += 1 {
+			switch lock {
+			case true:
+				cells.LockCell(i, j)
+			case false:
+				cells.UnlockCell(i, j)
+			}
+		}
+	}
+	b.Unlock()
+}
+
+func (b *baseScreen) ChannelEvents(ch chan<- Event, quit <-chan struct{}) {
+	defer close(ch)
+	for {
+		select {
+		case <-quit:
+			return
+		case <-b.StopQ():
+			return
+		case ev := <-b.EventQ():
+			select {
+			case <-quit:
+				return
+			case <-b.StopQ():
+				return
+			case ch <- ev:
+			}
+		}
+	}
+}
+
+func (b *baseScreen) PollEvent() Event {
+	select {
+	case <-b.StopQ():
+		return nil
+	case ev := <-b.EventQ():
+		return ev
+	}
+}
+
+func (b *baseScreen) HasPendingEvent() bool {
+	return len(b.EventQ()) > 0
+}
+
+func (b *baseScreen) PostEventWait(ev Event) {
+	select {
+	case b.EventQ() <- ev:
+	case <-b.StopQ():
+	}
+}
+
+func (b *baseScreen) PostEvent(ev Event) error {
+	select {
+	case b.EventQ() <- ev:
+		return nil
+	default:
+		return ErrEventQFull
+	}
+}

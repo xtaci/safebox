@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/tmhash"
+	"github.com/cometbft/cometbft/crypto"
+	"github.com/cometbft/cometbft/crypto/tmhash"
+	"github.com/hdevalence/ed25519consensus"
+
+	errorsmod "cosmossdk.io/errors"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -33,8 +36,10 @@ const (
 	keyType = "ed25519"
 )
 
-var _ cryptotypes.PrivKey = &PrivKey{}
-var _ codec.AminoMarshaler = &PrivKey{}
+var (
+	_ cryptotypes.PrivKey  = &PrivKey{}
+	_ codec.AminoMarshaler = &PrivKey{}
+)
 
 // Bytes returns the privkey byte format.
 func (privKey *PrivKey) Bytes() []byte {
@@ -89,12 +94,12 @@ func (privKey *PrivKey) Type() string {
 	return keyType
 }
 
-// MarshalAmino overrides Amino binary marshalling.
+// MarshalAmino overrides Amino binary marshaling.
 func (privKey PrivKey) MarshalAmino() ([]byte, error) {
 	return privKey.Key, nil
 }
 
-// UnmarshalAmino overrides Amino binary marshalling.
+// UnmarshalAmino overrides Amino binary marshaling.
 func (privKey *PrivKey) UnmarshalAmino(bz []byte) error {
 	if len(bz) != PrivKeySize {
 		return fmt.Errorf("invalid privkey size")
@@ -104,19 +109,20 @@ func (privKey *PrivKey) UnmarshalAmino(bz []byte) error {
 	return nil
 }
 
-// MarshalAminoJSON overrides Amino JSON marshalling.
+// MarshalAminoJSON overrides Amino JSON marshaling.
 func (privKey PrivKey) MarshalAminoJSON() ([]byte, error) {
 	// When we marshal to Amino JSON, we don't marshal the "key" field itself,
 	// just its contents (i.e. the key bytes).
 	return privKey.MarshalAmino()
 }
 
-// UnmarshalAminoJSON overrides Amino JSON marshalling.
+// UnmarshalAminoJSON overrides Amino JSON marshaling.
 func (privKey *PrivKey) UnmarshalAminoJSON(bz []byte) error {
 	return privKey.UnmarshalAmino(bz)
 }
 
-// GenPrivKey generates a new ed25519 private key.
+// GenPrivKey generates a new ed25519 private key. These ed25519 keys must not
+// be used in SDK apps except in a tendermint validator context.
 // It uses OS randomness in conjunction with the current global random seed
 // in tendermint/libs/common to generate the private key.
 func GenPrivKey() *PrivKey {
@@ -137,6 +143,7 @@ func genPrivKey(rand io.Reader) *PrivKey {
 
 // GenPrivKeyFromSecret hashes the secret with SHA2, and uses
 // that 32 byte output to create the private key.
+// NOTE: ed25519 keys must not be used in SDK apps except in a tendermint validator context.
 // NOTE: secret should be the output of a KDF like bcrypt,
 // if it's derived from user input.
 func GenPrivKeyFromSecret(secret []byte) *PrivKey {
@@ -147,14 +154,20 @@ func GenPrivKeyFromSecret(secret []byte) *PrivKey {
 
 //-------------------------------------
 
-var _ cryptotypes.PubKey = &PubKey{}
-var _ codec.AminoMarshaler = &PubKey{}
+var (
+	_ cryptotypes.PubKey   = &PubKey{}
+	_ codec.AminoMarshaler = &PubKey{}
+)
 
 // Address is the SHA256-20 of the raw pubkey bytes.
+// It doesn't implement ADR-28 addresses and it must not be used
+// in SDK except in a tendermint validator context.
 func (pubKey *PubKey) Address() crypto.Address {
 	if len(pubKey.Key) != PubKeySize {
 		panic("pubkey is incorrect size")
 	}
+	// For ADR-28 compatible address we would need to
+	// return address.Hash(proto.MessageName(pubKey), pubKey.Key)
 	return crypto.Address(tmhash.SumTruncated(pubKey.Key))
 }
 
@@ -163,15 +176,17 @@ func (pubKey *PubKey) Bytes() []byte {
 	return pubKey.Key
 }
 
-func (pubKey *PubKey) VerifySignature(msg []byte, sig []byte) bool {
+func (pubKey *PubKey) VerifySignature(msg, sig []byte) bool {
 	// make sure we use the same algorithm to sign
 	if len(sig) != SignatureSize {
 		return false
 	}
 
-	return ed25519.Verify(pubKey.Key, msg, sig)
+	// uses https://github.com/hdevalence/ed25519consensus.Verify to comply with zip215 verification rules
+	return ed25519consensus.Verify(pubKey.Key, msg, sig)
 }
 
+// String returns Hex representation of a pubkey with it's type
 func (pubKey *PubKey) String() string {
 	return fmt.Sprintf("PubKeyEd25519{%X}", pubKey.Key)
 }
@@ -188,29 +203,29 @@ func (pubKey *PubKey) Equals(other cryptotypes.PubKey) bool {
 	return subtle.ConstantTimeCompare(pubKey.Bytes(), other.Bytes()) == 1
 }
 
-// MarshalAmino overrides Amino binary marshalling.
+// MarshalAmino overrides Amino binary marshaling.
 func (pubKey PubKey) MarshalAmino() ([]byte, error) {
 	return pubKey.Key, nil
 }
 
-// UnmarshalAmino overrides Amino binary marshalling.
+// UnmarshalAmino overrides Amino binary marshaling.
 func (pubKey *PubKey) UnmarshalAmino(bz []byte) error {
 	if len(bz) != PubKeySize {
-		return errors.Wrap(errors.ErrInvalidPubKey, "invalid pubkey size")
+		return errorsmod.Wrap(errors.ErrInvalidPubKey, "invalid pubkey size")
 	}
 	pubKey.Key = bz
 
 	return nil
 }
 
-// MarshalAminoJSON overrides Amino JSON marshalling.
+// MarshalAminoJSON overrides Amino JSON marshaling.
 func (pubKey PubKey) MarshalAminoJSON() ([]byte, error) {
 	// When we marshal to Amino JSON, we don't marshal the "key" field itself,
 	// just its contents (i.e. the key bytes).
 	return pubKey.MarshalAmino()
 }
 
-// UnmarshalAminoJSON overrides Amino JSON marshalling.
+// UnmarshalAminoJSON overrides Amino JSON marshaling.
 func (pubKey *PubKey) UnmarshalAminoJSON(bz []byte) error {
 	return pubKey.UnmarshalAmino(bz)
 }

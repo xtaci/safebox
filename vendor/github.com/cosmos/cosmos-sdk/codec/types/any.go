@@ -1,11 +1,17 @@
 package types
 
 import (
-	"github.com/gogo/protobuf/proto"
+	fmt "fmt"
+
+	"github.com/cosmos/gogoproto/proto"
+	protov2 "google.golang.org/protobuf/proto"
+
+	errorsmod "cosmossdk.io/errors"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+// nolint:revive // XXX is reqired for proto compatibility
 type Any struct {
 	// A URL/resource name that uniquely identifies the type of the serialized
 	// protocol buffer message. This string must contain at least
@@ -35,19 +41,14 @@ type Any struct {
 	// Schemes other than `http`, `https` (or the empty scheme) might be
 	// used with implementation specific semantics.
 
-	// nolint
 	TypeUrl string `protobuf:"bytes,1,opt,name=type_url,json=typeUrl,proto3" json:"type_url,omitempty"`
+
 	// Must be a valid serialized protocol buffer of the above specified type.
 	Value []byte `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 
-	// nolint
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-
-	// nolint
-	XXX_unrecognized []byte `json:"-"`
-
-	// nolint
-	XXX_sizecache int32 `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 
 	cachedValue interface{}
 
@@ -60,22 +61,25 @@ type Any struct {
 // unmarshaling
 func NewAnyWithValue(v proto.Message) (*Any, error) {
 	if v == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrPackAny, "Expecting non nil value to create a new Any")
+		return nil, errorsmod.Wrap(sdkerrors.ErrPackAny, "Expecting non nil value to create a new Any")
 	}
-	return NewAnyWithCustomTypeURL(v, "/"+proto.MessageName(v))
-}
 
-// NewAnyWithCustomTypeURL same as NewAnyWithValue, but sets a custom type url, instead
-// using the one from proto.Message.
-// NOTE: This functions should be only used for types with additional logic bundled
-// into the protobuf Any serialization. For simple marshaling you should use NewAnyWithValue.
-func NewAnyWithCustomTypeURL(v proto.Message, typeURL string) (*Any, error) {
-	bz, err := proto.Marshal(v)
+	var (
+		bz  []byte
+		err error
+	)
+	if msg, ok := v.(protov2.Message); ok {
+		protov2MarshalOpts := protov2.MarshalOptions{Deterministic: true}
+		bz, err = protov2MarshalOpts.Marshal(msg)
+	} else {
+		bz, err = proto.Marshal(v)
+	}
 	if err != nil {
 		return nil, err
 	}
+
 	return &Any{
-		TypeUrl:     typeURL,
+		TypeUrl:     MsgTypeURL(v),
 		Value:       bz,
 		cachedValue: v,
 	}, nil
@@ -100,8 +104,18 @@ func UnsafePackAny(x interface{}) *Any {
 // the packed value so that it can be retrieved from GetCachedValue without
 // unmarshaling
 func (any *Any) pack(x proto.Message) error {
-	any.TypeUrl = "/" + proto.MessageName(x)
-	bz, err := proto.Marshal(x)
+	any.TypeUrl = MsgTypeURL(x)
+
+	var (
+		bz  []byte
+		err error
+	)
+	if msg, ok := x.(protov2.Message); ok {
+		protov2MarshalOpts := protov2.MarshalOptions{Deterministic: true}
+		bz, err = protov2MarshalOpts.Marshal(msg)
+	} else {
+		bz, err = proto.Marshal(x)
+	}
 	if err != nil {
 		return err
 	}
@@ -117,7 +131,25 @@ func (any *Any) GetCachedValue() interface{} {
 	return any.cachedValue
 }
 
-// ClearCachedValue clears the cached value from the Any
-func (any *Any) ClearCachedValue() {
-	any.cachedValue = nil
+// GoString returns a string representing valid go code to reproduce the current state of
+// the struct.
+func (any *Any) GoString() string {
+	if any == nil {
+		return "nil"
+	}
+	extra := ""
+	if any.XXX_unrecognized != nil {
+		extra = fmt.Sprintf(",\n  XXX_unrecognized: %#v,\n", any.XXX_unrecognized)
+	}
+	return fmt.Sprintf("&Any{TypeUrl: %#v,\n  Value: %#v%s\n}",
+		any.TypeUrl, any.Value, extra)
+}
+
+// String implements the stringer interface
+func (any *Any) String() string {
+	if any == nil {
+		return "nil"
+	}
+	return fmt.Sprintf("&Any{TypeUrl:%v,Value:%v,XXX_unrecognized:%v}",
+		any.TypeUrl, any.Value, any.XXX_unrecognized)
 }

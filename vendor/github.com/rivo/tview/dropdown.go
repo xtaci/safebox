@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/uniseg"
 )
 
 // dropDownOption is one option that can be selected in a drop-down primitive.
@@ -19,6 +20,9 @@ type dropDownOption struct {
 type DropDown struct {
 	*Box
 
+	// Whether or not this drop-down is disabled/read-only.
+	disabled bool
+
 	// The options from which the user can choose.
 	options []*dropDownOption
 
@@ -29,7 +33,7 @@ type DropDown struct {
 	// currently selected.
 	currentOption int
 
-	// Strings to be placed beefore and after the current option.
+	// Strings to be placed before and after the current option.
 	currentOptionPrefix, currentOptionSuffix string
 
 	// The text to be displayed when no option has yet been selected.
@@ -87,9 +91,8 @@ type DropDown struct {
 func NewDropDown() *DropDown {
 	list := NewList()
 	list.ShowSecondaryText(false).
-		SetMainTextColor(Styles.PrimitiveBackgroundColor).
-		SetSelectedTextColor(Styles.PrimitiveBackgroundColor).
-		SetSelectedBackgroundColor(Styles.PrimaryTextColor).
+		SetMainTextStyle(tcell.StyleDefault.Background(Styles.MoreContrastBackgroundColor).Foreground(Styles.PrimitiveBackgroundColor)).
+		SetSelectedStyle(tcell.StyleDefault.Background(Styles.PrimaryTextColor).Foreground(Styles.PrimitiveBackgroundColor)).
 		SetHighlightFullLine(true).
 		SetBackgroundColor(Styles.MoreContrastBackgroundColor)
 
@@ -200,6 +203,16 @@ func (d *DropDown) SetPrefixTextColor(color tcell.Color) *DropDown {
 	return d
 }
 
+// SetListStyles sets the styles of the items in the drop-down list (unselected
+// as well as selected items). Style attributes are currently ignored but may be
+// used in the future.
+func (d *DropDown) SetListStyles(unselected, selected tcell.Style) *DropDown {
+	d.list.SetMainTextStyle(unselected).SetSelectedStyle(selected)
+	_, bg, _ := unselected.Decompose()
+	d.list.SetBackgroundColor(bg)
+	return d
+}
+
 // SetFormAttributes sets attributes shared by all form items.
 func (d *DropDown) SetFormAttributes(labelWidth int, labelColor, bgColor, fieldTextColor, fieldBgColor tcell.Color) FormItem {
 	d.labelWidth = labelWidth
@@ -232,6 +245,20 @@ func (d *DropDown) GetFieldWidth() int {
 	return fieldWidth
 }
 
+// GetFieldHeight returns this primitive's field height.
+func (d *DropDown) GetFieldHeight() int {
+	return 1
+}
+
+// SetDisabled sets whether or not the item is disabled / read-only.
+func (d *DropDown) SetDisabled(disabled bool) FormItem {
+	d.disabled = disabled
+	if d.finished != nil {
+		d.finished(-1)
+	}
+	return d
+}
+
 // AddOption adds a new selectable option to this drop-down. The "selected"
 // callback is called when this option was selected. It may be nil.
 func (d *DropDown) AddOption(text string, selected func()) *DropDown {
@@ -247,12 +274,27 @@ func (d *DropDown) AddOption(text string, selected func()) *DropDown {
 func (d *DropDown) SetOptions(texts []string, selected func(text string, index int)) *DropDown {
 	d.list.Clear()
 	d.options = nil
-	for index, text := range texts {
-		func(t string, i int) {
-			d.AddOption(text, nil)
-		}(text, index)
+	for _, text := range texts {
+		d.AddOption(text, nil)
 	}
 	d.selected = selected
+	return d
+}
+
+// GetOptionCount returns the number of options in the drop-down.
+func (d *DropDown) GetOptionCount() int {
+	return len(d.options)
+}
+
+// RemoveOption removes the specified option from the drop-down. Panics if the
+// index is out of range. If the currently selected option is removed, no option
+// will be selected.
+func (d *DropDown) RemoveOption(index int) *DropDown {
+	if index == d.currentOption {
+		d.currentOption = -1
+	}
+	d.options = append(d.options[:index], d.options[index+1:]...)
+	d.list.RemoveItem(index)
 	return d
 }
 
@@ -341,6 +383,9 @@ func (d *DropDown) Draw(screen tcell.Screen) {
 	if d.HasFocus() && !d.open {
 		fieldStyle = fieldStyle.Background(d.fieldTextColor)
 	}
+	if d.disabled {
+		fieldStyle = fieldStyle.Background(d.backgroundColor)
+	}
 	for index := 0; index < fieldWidth; index++ {
 		screen.SetContent(x+index, y, ' ', nil, fieldStyle)
 	}
@@ -349,7 +394,7 @@ func (d *DropDown) Draw(screen tcell.Screen) {
 	if d.open && len(d.prefix) > 0 {
 		// Show the prefix.
 		currentOptionPrefixWidth := TaggedStringWidth(d.currentOptionPrefix)
-		prefixWidth := stringWidth(d.prefix)
+		prefixWidth := uniseg.StringWidth(d.prefix)
 		listItemText := d.options[d.list.GetCurrentItem()].Text
 		Print(screen, d.currentOptionPrefix, x, y, fieldWidth, AlignLeft, d.fieldTextColor)
 		Print(screen, d.prefix, x+currentOptionPrefixWidth, y, fieldWidth-currentOptionPrefixWidth, AlignLeft, d.prefixTextColor)
@@ -363,7 +408,7 @@ func (d *DropDown) Draw(screen tcell.Screen) {
 			text = d.currentOptionPrefix + d.options[d.currentOption].Text + d.currentOptionSuffix
 		}
 		// Just show the current selection.
-		if d.HasFocus() && !d.open {
+		if d.HasFocus() && !d.open && !d.disabled {
 			color = d.fieldBackgroundColor
 		}
 		Print(screen, text, x, y, fieldWidth, AlignLeft, color)
@@ -371,12 +416,20 @@ func (d *DropDown) Draw(screen tcell.Screen) {
 
 	// Draw options list.
 	if d.HasFocus() && d.open {
-		// We prefer to drop down but if there is no space, maybe drop up?
 		lx := x
 		ly := y + 1
 		lwidth := maxWidth
 		lheight := len(d.options)
-		_, sheight := screen.Size()
+		swidth, sheight := screen.Size()
+		// We prefer to align the left sides of the list and the main widget, but
+		// if there is no space to the right, then shift the list to the left.
+		if lx+lwidth >= swidth {
+			lx = swidth - lwidth
+			if lx < 0 {
+				lx = 0
+			}
+		}
+		// We prefer to drop down but if there is no space, maybe drop up?
 		if ly+lheight >= sheight && ly-2 > lheight-ly {
 			ly = y - lheight
 			if ly < 0 {
@@ -394,6 +447,10 @@ func (d *DropDown) Draw(screen tcell.Screen) {
 // InputHandler returns the handler for this primitive.
 func (d *DropDown) InputHandler() func(event *tcell.EventKey, setFocus func(p Primitive)) {
 	return d.WrapInputHandler(func(event *tcell.EventKey, setFocus func(p Primitive)) {
+		if d.disabled {
+			return
+		}
+
 		// If the list has focus, let it process its own key events.
 		if d.list.HasFocus() {
 			if handler := d.list.InputHandler(); handler != nil {
@@ -456,11 +513,12 @@ func (d *DropDown) openList(setFocus func(Primitive)) {
 		d.closeList(setFocus)
 
 		// Trigger "selected" event.
+		currentOption := d.options[d.currentOption]
 		if d.selected != nil {
-			d.selected(d.options[d.currentOption].Text, d.currentOption)
+			d.selected(currentOption.Text, d.currentOption)
 		}
-		if d.options[d.currentOption].Selected != nil {
-			d.options[d.currentOption].Selected()
+		if currentOption.Selected != nil {
+			currentOption.Selected()
 		}
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyRune {
@@ -494,11 +552,24 @@ func (d *DropDown) closeList(setFocus func(Primitive)) {
 	}
 }
 
+// IsOpen returns true if the drop-down list is currently open.
+func (d *DropDown) IsOpen() bool {
+	return d.open
+}
+
 // Focus is called by the application when the primitive receives focus.
 func (d *DropDown) Focus(delegate func(p Primitive)) {
-	d.Box.Focus(delegate)
+	// If we're part of a form and this item is disabled, there's nothing the
+	// user can do here so we're finished.
+	if d.finished != nil && d.disabled {
+		d.finished(-1)
+		return
+	}
+
 	if d.open {
 		delegate(d.list)
+	} else {
+		d.Box.Focus(delegate)
 	}
 }
 
@@ -507,21 +578,29 @@ func (d *DropDown) HasFocus() bool {
 	if d.open {
 		return d.list.HasFocus()
 	}
-	return d.hasFocus
+	return d.Box.HasFocus()
 }
 
 // MouseHandler returns the mouse handler for this primitive.
 func (d *DropDown) MouseHandler() func(action MouseAction, event *tcell.EventMouse, setFocus func(p Primitive)) (consumed bool, capture Primitive) {
 	return d.WrapMouseHandler(func(action MouseAction, event *tcell.EventMouse, setFocus func(p Primitive)) (consumed bool, capture Primitive) {
+		if d.disabled {
+			return false, nil
+		}
+
 		// Was the mouse event in the drop-down box itself (or on its label)?
 		x, y := event.Position()
-		_, rectY, _, _ := d.GetInnerRect()
-		inRect := y == rectY
+		rectX, rectY, rectWidth, _ := d.GetInnerRect()
+		inRect := y == rectY && x >= rectX && x < rectX+rectWidth
 		if !d.open && !inRect {
 			return d.InRect(x, y), nil // No, and it's not expanded either. Ignore.
 		}
 
-		// Handle dragging. Clicks are implicitly handled by this logic.
+		// As long as the drop-down is open, we capture all mouse events.
+		if d.open {
+			capture = d
+		}
+
 		switch action {
 		case MouseLeftDown:
 			consumed = d.open || inRect
@@ -538,7 +617,6 @@ func (d *DropDown) MouseHandler() func(action MouseAction, event *tcell.EventMou
 				// dragging. Because we don't act upon it, it's not a problem.
 				d.list.MouseHandler()(MouseLeftClick, event, setFocus)
 				consumed = true
-				capture = d
 			}
 		case MouseLeftUp:
 			if d.dragging {
