@@ -7,7 +7,8 @@ cd $BUILD_DIR
 sum="sha1sum"
 
 export GO111MODULE=on
-echo "BUILDING SAFEBOX" 
+VERSION=`git describe --tags --abbrev=0`
+echo "BUILDING SAFEBOX $VERSION" 
 echo "Setting GO111MODULE to" $GO111MODULE
 
 if ! hash sha1sum 2>/dev/null; then
@@ -24,7 +25,6 @@ if hash upx 2>/dev/null; then
 	UPX=true
 fi
 
-VERSION="1.0.4"
 LDFLAGS="-X main.VERSION=$VERSION -s -w"
 GCFLAGS=""
 
