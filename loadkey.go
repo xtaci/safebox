@@ -20,7 +20,7 @@ func showLoadPassword(parent string, path string) {
 	form.SetTitle(windowTitle)
 	form.SetBorder(true)
 	passwordField := tview.NewInputField().SetLabel("Password").
-		SetFieldWidth(64).
+		SetFieldWidth(0).
 		SetMaskCharacter('*')
 
 	passChangedFunc := func(text string) {
@@ -68,7 +68,7 @@ func showLoadKeyWindow() {
 	inputField := tview.NewInputField().
 		SetLabel("Path: ").
 		SetText(filepath.Join(path, ".safebox.key")).
-		SetFieldWidth(64)
+		SetFieldWidth(0)
 
 	form.AddFormItem(inputField)
 	form.AddButton("Load", func() {

@@ -16,11 +16,11 @@ func showChangePasswordWindow() {
 	form.SetTitle(windowTitle)
 	form.SetBorder(true)
 	passwordField := tview.NewInputField().SetLabel("Password").
-		SetFieldWidth(64).
+		SetFieldWidth(0).
 		SetMaskCharacter('*')
 
 	passwordFieldConfirm := tview.NewInputField().SetLabel("Password Confirm").
-		SetFieldWidth(64).
+		SetFieldWidth(0).
 		SetMaskCharacter('*')
 
 	form.AddButton("OK", func() {
