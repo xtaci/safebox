@@ -25,7 +25,7 @@ func showFailWindow(msg string) {
 			layoutRoot.RemovePage("fail")
 		})
 
-	fail.SetBackgroundColor(tcell.ColorHotPink)
+	fail.SetBackgroundColor(tcell.ColorDarkRed)
 
 	layoutRoot.AddPage("fail", fail, true, true)
 }
@@ -42,8 +42,7 @@ func showSuccessWindow(msg string, callback func()) {
 			}
 		})
 
-	succ.SetBackgroundColor(tcell.ColorLightGreen)
-
+	succ.SetBackgroundColor(tcell.ColorDarkGreen)
 	layoutRoot.AddPage("success", succ, true, true)
 }
 
@@ -59,7 +58,6 @@ func showInfoWindow(msg string, callback func()) {
 			}
 		})
 
-	succ.SetBackgroundColor(tcell.ColorDarkOrange)
-
+	succ.SetBackgroundColor(tcell.ColorDarkBlue)
 	layoutRoot.AddPage("info", succ, true, true)
 }

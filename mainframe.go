@@ -125,25 +125,25 @@ export LANG=en_US.UTF-8
 	}
 
 	// key table
-	layoutMainBodyTable = tview.NewTable().SetBorders(true)
+	layoutMainBodyTable = tview.NewTable().SetBorders(true).SetBordersColor(tcell.ColorDarkGreen)
 	layoutMainBodyTable.SetTitle(S_MAIN_FRAME_TITLE)
 
 	// table header
 	layoutMainBodyTable.SetCell(0, 0,
 		tview.NewTableCell(S_MAIN_FRAME_CELL_ID).
-			SetTextColor(tcell.ColorDarkOrange).
+			SetTextColor(tcell.ColorDarkGreen).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
 	layoutMainBodyTable.SetCell(0, 1,
 		tview.NewTableCell(S_MAIN_FRAME_CELL_LABEL).
-			SetTextColor(tcell.ColorDarkOrange).
+			SetTextColor(tcell.ColorDarkGreen).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
 	layoutMainBodyTable.SetCell(0, 2,
 		tview.NewTableCell(S_MAIN_FRAME_CELL_DERIVED_KEYS).
-			SetTextColor(tcell.ColorDarkOrange).
+			SetTextColor(tcell.ColorDarkGreen).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
@@ -172,7 +172,7 @@ export LANG=en_US.UTF-8
 
 			layoutMainBodyTable.SetCell(int(idx)+1, 2,
 				tview.NewTableCell(mask(hex.EncodeToString(key), 4, '*')).
-					SetTextColor(tcell.ColorDarkCyan).
+					SetTextColor(tcell.ColorDarkRed).
 					SetAlign(tview.AlignLeft))
 		}
 	}
@@ -199,7 +199,7 @@ export LANG=en_US.UTF-8
 
 			layoutMainBodyTable.SetCell(lastRow, lastCol,
 				tview.NewTableCell(mask(hex.EncodeToString(key), 4, '*')).
-					SetTextColor(tcell.ColorDarkCyan).
+					SetTextColor(tcell.ColorDarkRed).
 					SetAlign(tview.AlignLeft))
 		}
 
@@ -214,7 +214,7 @@ export LANG=en_US.UTF-8
 			// uncover mask
 			layoutMainBodyTable.SetCell(row, column,
 				tview.NewTableCell(hex.EncodeToString(key)).
-					SetTextColor(tcell.ColorDarkCyan).
+					SetTextColor(tcell.ColorDarkRed).
 					SetAlign(tview.AlignLeft))
 			// remember last selection
 			lastRow = row

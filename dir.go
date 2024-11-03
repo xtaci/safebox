@@ -23,7 +23,7 @@ func showDirWindow(inputField *tview.InputField) {
 		rootDir = "C:\\"
 	}
 
-	node := tview.NewTreeNode(rootDir).SetColor(tcell.ColorRed)
+	node := tview.NewTreeNode(rootDir)
 	tree := tview.NewTreeView().
 		SetRoot(node).
 		SetCurrentNode(node)
@@ -42,7 +42,7 @@ func showDirWindow(inputField *tview.InputField) {
 				SetReference(filepath.Join(path, file.Name())).
 				SetSelectable(file.IsDir())
 			if file.IsDir() {
-				node.SetColor(tcell.ColorGreen)
+				node.SetColor(tcell.ColorDarkGreen)
 			}
 			target.AddChild(node)
 		}
@@ -89,7 +89,7 @@ func showDirWindow(inputField *tview.InputField) {
 						SetReference(filepath.Join(route[i], file.Name())).
 						SetSelectable(true)
 					if file.IsDir() {
-						node.SetColor(tcell.ColorGreen)
+						node.SetColor(tcell.ColorDarkGreen)
 					} else {
 						if os.SameFile(fi, file) { // select the given file if match
 							tree.SetCurrentNode(node)

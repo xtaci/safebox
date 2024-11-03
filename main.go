@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/awnumar/memguard"
-	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -13,20 +12,6 @@ var app *tview.Application
 
 // The master key
 var masterKey *MasterKey
-
-var theme = tview.Theme{
-	PrimitiveBackgroundColor:    tcell.ColorWhite,
-	ContrastBackgroundColor:     tcell.ColorBlue,
-	MoreContrastBackgroundColor: tcell.ColorGreen,
-	BorderColor:                 tcell.ColorBlack,
-	TitleColor:                  tcell.ColorRed,
-	GraphicsColor:               tcell.ColorBlack,
-	PrimaryTextColor:            tcell.ColorBlack,
-	SecondaryTextColor:          tcell.ColorBlack,
-	TertiaryTextColor:           tcell.ColorGreen,
-	InverseTextColor:            tcell.ColorBlue,
-	ContrastSecondaryTextColor:  tcell.ColorDarkCyan,
-}
 
 func main() {
 	fixCharset()

@@ -29,12 +29,12 @@ func refreshFooter() {
 	if masterKey == nil {
 		keys := []tcell.Key{tcell.KeyCtrlG, tcell.KeyCtrlL, tcell.KeyEsc, tcell.KeyCtrlC}
 		for _, key := range keys {
-			fmt.Fprintf(layoutShortcuts, `[darkorange]%v ["%d"][black]%s[""] `, tview.Escape("<"+keyNames[key]+">"), key, shortCuts[key])
+			fmt.Fprintf(layoutShortcuts, `[darkorange]%v ["%d"][white]%s[""] `, tview.Escape("<"+keyNames[key]+">"), key, shortCuts[key])
 		}
 	} else {
 		keys := []tcell.Key{tcell.KeyCtrlG, tcell.KeyCtrlL, tcell.KeyCtrlP, tcell.KeyEsc, tcell.KeyCtrlC}
 		for _, key := range keys {
-			fmt.Fprintf(layoutShortcuts, `[darkorange]%v ["%d"][black]%s[""] `, tview.Escape("<"+keyNames[key]+">"), key, shortCuts[key])
+			fmt.Fprintf(layoutShortcuts, `[darkorange]%v ["%d"][white]%s[""] `, tview.Escape("<"+keyNames[key]+">"), key, shortCuts[key])
 		}
 	}
 
