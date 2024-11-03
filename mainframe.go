@@ -91,7 +91,7 @@ func mainFrameWindow() (content *tview.Flex) {
 	layoutMainBody = tview.NewFlex()
 	layoutMainBody.SetDirection(tview.FlexRow).
 		SetBorder(true).
-		SetTitle(S_MAIN_FRAME_TITLE)
+		SetTitle(fmt.Sprintf(S_MAIN_FRAME_TITLE, VERSION))
 
 	refreshMainFrame()
 	return layoutMainBody
@@ -163,6 +163,7 @@ export LANG=en_US.UTF-8
 			layoutMainBodyTable.SetCell(int(idx)+1, 0,
 				tview.NewTableCell(fmt.Sprint(idx)).
 					SetAlign(tview.AlignLeft).
+					SetTextColor(tcell.ColorGray).
 					SetSelectable(false))
 
 			layoutMainBodyTable.SetCell(int(idx)+1, 1,

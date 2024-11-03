@@ -4,7 +4,7 @@ const (
 	S_WINDOW_SHOWLOADPASSWORD_TITLE = " 🔓 Decrypting masterkey... "
 	S_WINDOW_SHOW_LOADKEY_TITLE     = " Loading master key... "
 
-	S_MAIN_FRAME_TITLE             = " SAFEBOX KEY MANGEMENT SYSTEM "
+	S_MAIN_FRAME_TITLE             = " SAFEBOX KEY MANGEMENT SYSTEM (ver:%v) "
 	S_MAIN_FRAME_CELL_ID           = "Id"
 	S_MAIN_FRAME_CELL_LABEL        = "Label"
 	S_MAIN_FRAME_CELL_DERIVED_KEYS = "Derived Keys"
@@ -35,7 +35,10 @@ const (
 
 	S_WINDOW_SHOWDIR_TITLE = " Select a path to save masterkey... "
 
-	S_MODAL_BUTTON_OK = "OK"
+	S_MODAL_BUTTON_OK     = "OK"
+	S_MODAL_TITLE_ERROR   = "<ERROR>"
+	S_MODAL_TITLE_SUCCESS = "<SUCCESS>"
+	S_MODAL_TITLE_INFO    = "<INFO>"
 
 	S_MSG_PASSWORD_MISMATCH = "Password mismatch"
 	S_MSG_PASSWORD_CHANGED  = "Masterkey Password changed"

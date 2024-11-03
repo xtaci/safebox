@@ -12,9 +12,9 @@ var theme = tview.Theme{
 	BorderColor:                 tcell.ColorDarkSeaGreen,
 	TitleColor:                  tcell.ColorForestGreen,
 	GraphicsColor:               tcell.ColorOrchid,
-	PrimaryTextColor:            tcell.ColorWhite,
-	SecondaryTextColor:          tcell.ColorAntiqueWhite,
-	TertiaryTextColor:           tcell.ColorWhite,
+	PrimaryTextColor:            tcell.ColorLightGray,
+	SecondaryTextColor:          tcell.ColorLightGreen,
+	TertiaryTextColor:           tcell.ColorLightGreen,
 	InverseTextColor:            tcell.ColorBlack,
 	ContrastSecondaryTextColor:  tcell.ColorDarkCyan,
 }

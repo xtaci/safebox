@@ -25,6 +25,8 @@ func showFailWindow(msg string) {
 			layoutRoot.RemovePage("fail")
 		})
 
+	fail.SetTitle(S_MODAL_TITLE_ERROR)
+	fail.Box.SetBackgroundColor(tcell.ColorDarkRed)
 	fail.SetBackgroundColor(tcell.ColorDarkRed)
 
 	layoutRoot.AddPage("fail", fail, true, true)
@@ -42,12 +44,14 @@ func showSuccessWindow(msg string, callback func()) {
 			}
 		})
 
+	succ.SetTitle(S_MODAL_TITLE_SUCCESS)
+	succ.Box.SetBackgroundColor(tcell.ColorDarkGreen)
 	succ.SetBackgroundColor(tcell.ColorDarkGreen)
 	layoutRoot.AddPage("success", succ, true, true)
 }
 
 func showInfoWindow(msg string, callback func()) {
-	succ := tview.NewModal().
+	info := tview.NewModal().
 		SetText(msg).
 		AddButtons([]string{S_MODAL_BUTTON_OK}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
@@ -58,6 +62,8 @@ func showInfoWindow(msg string, callback func()) {
 			}
 		})
 
-	succ.SetBackgroundColor(tcell.ColorDarkBlue)
-	layoutRoot.AddPage("info", succ, true, true)
+	info.SetTitle(S_MODAL_TITLE_INFO)
+	info.Box.SetBackgroundColor(tcell.ColorDarkBlue)
+	info.SetBackgroundColor(tcell.ColorDarkBlue)
+	layoutRoot.AddPage("info", info, true, true)
 }
