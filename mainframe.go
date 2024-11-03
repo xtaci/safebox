@@ -10,13 +10,8 @@ import (
 	"github.com/rivo/tview"
 )
 
-const (
-	mainFrameTitle = "SAFEBOX KEY MANGEMENT SYSTEM"
-)
-
 func showExporterWindow(row int, col int) {
 	windowName := "showExporterWindow"
-	exporterLabel := "Select an exporter (hit Enter):"
 	var exportorNames []string
 	for k := range exports {
 		exportorNames = append(exportorNames, exports[k].Name())
@@ -30,10 +25,10 @@ func showExporterWindow(row int, col int) {
 	idx := uint16(row - 1)
 	selected := 0
 	form := tview.NewForm()
-	form.SetTitle("EXPORT KEY")
+	form.SetTitle(S_WINDOW_EXPORT_TITLE)
 
 	dropdown := tview.NewDropDown()
-	dropdown.SetLabel(exporterLabel)
+	dropdown.SetLabel(S_WINDOW_EXPORT_LABEL)
 	dropdown.SetOptions(exportorNames, func(option string, optionIndex int) {
 		selected = optionIndex
 		desc.Clear()
@@ -43,7 +38,7 @@ func showExporterWindow(row int, col int) {
 	dropdown.SetCurrentOption(0)
 	form.AddFormItem(dropdown)
 
-	form.AddButton("Export", func() {
+	form.AddButton(S_WINDOW_EXPORT_BUTTON, func() {
 		key, _ := masterKey.deriveKey(idx, exports[selected].KeySize())
 		bts, _ := exports[selected].Export(key)
 
@@ -72,9 +67,9 @@ func showSetLabelWindow(row int, col int) {
 
 	form := tview.NewForm()
 	form.SetBorder(true)
-	form.SetTitle("SETTING KEY LABEL")
+	form.SetTitle(S_WINDOW_SETLABEL_TITLE)
 	form.AddInputField("Label", masterKey.labels[idx], 16, nil, nil)
-	form.AddButton("Update", func() {
+	form.AddButton(S_WINDOW_SETLABEL_BUTTON, func() {
 		//update key
 		masterKey.setLabel(idx, form.GetFormItemByLabel("Label").(*tview.InputField).GetText())
 		masterKey.store(masterKey.path)
@@ -96,7 +91,7 @@ func mainFrameWindow() (content *tview.Flex) {
 	layoutMainBody = tview.NewFlex()
 	layoutMainBody.SetDirection(tview.FlexRow).
 		SetBorder(true).
-		SetTitle(mainFrameTitle)
+		SetTitle(S_MAIN_FRAME_TITLE)
 
 	refreshMainFrame()
 	return layoutMainBody
@@ -131,23 +126,23 @@ export LANG=en_US.UTF-8
 
 	// key table
 	layoutMainBodyTable = tview.NewTable().SetBorders(true)
-	layoutMainBodyTable.SetTitle(mainFrameTitle)
+	layoutMainBodyTable.SetTitle(S_MAIN_FRAME_TITLE)
 
 	// table header
 	layoutMainBodyTable.SetCell(0, 0,
-		tview.NewTableCell("ID").
+		tview.NewTableCell(S_MAIN_FRAME_CELL_ID).
 			SetTextColor(tcell.ColorDarkOrange).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
 	layoutMainBodyTable.SetCell(0, 1,
-		tview.NewTableCell("NAME").
+		tview.NewTableCell(S_MAIN_FRAME_CELL_LABEL).
 			SetTextColor(tcell.ColorDarkOrange).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
 	layoutMainBodyTable.SetCell(0, 2,
-		tview.NewTableCell("DERIVED KEY").
+		tview.NewTableCell(S_MAIN_FRAME_CELL_DERIVED_KEYS).
 			SetTextColor(tcell.ColorDarkOrange).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))

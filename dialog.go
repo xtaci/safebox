@@ -20,7 +20,7 @@ func popup(width int, height int, primitive tview.Primitive) *tview.Flex {
 func showFailWindow(msg string) {
 	fail := tview.NewModal().
 		SetText(msg).
-		AddButtons([]string{"OK"}).
+		AddButtons([]string{S_MODAL_BUTTON_OK}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 			layoutRoot.RemovePage("fail")
 		})
@@ -33,7 +33,7 @@ func showFailWindow(msg string) {
 func showSuccessWindow(msg string, callback func()) {
 	succ := tview.NewModal().
 		SetText(msg).
-		AddButtons([]string{"OK"}).
+		AddButtons([]string{S_MODAL_BUTTON_OK}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 			// update info window & mainFrame window
 			layoutRoot.RemovePage("success")
@@ -50,7 +50,7 @@ func showSuccessWindow(msg string, callback func()) {
 func showInfoWindow(msg string, callback func()) {
 	succ := tview.NewModal().
 		SetText(msg).
-		AddButtons([]string{"OK"}).
+		AddButtons([]string{S_MODAL_BUTTON_OK}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 			// update info window & mainFrame window
 			layoutRoot.RemovePage("info")

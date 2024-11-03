@@ -13,7 +13,7 @@ func showLoadPassword(parent string, path string) {
 		windowName   = "showLoadPassword"
 		windowWidth  = 40
 		windowHeight = 6
-		windowTitle  = "🔓MASTERKEY DECRYPTION"
+		windowTitle  = S_WINDOW_SHOWLOADPASSWORD_TITLE
 	)
 
 	form := tview.NewForm()
@@ -54,7 +54,7 @@ func showLoadKeyWindow() {
 		windowName   = "showLoadKeyWindow"
 		windowWidth  = 80
 		windowHeight = 7
-		windowTitle  = "-=- LOAD MASTER KEY -=-"
+		windowTitle  = S_WINDOW_SHOW_LOADKEY_TITLE
 	)
 
 	// path input field

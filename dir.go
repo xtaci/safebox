@@ -15,7 +15,7 @@ func showDirWindow(inputField *tview.InputField) {
 		windowName   = "showDirWindow"
 		windowWidth  = 80
 		windowHeight = 30
-		windowTitle  = "- DIRECTORY TREE -"
+		windowTitle  = S_WINDOW_SHOWDIR_TITLE
 	)
 
 	rootDir := "/"

@@ -27,24 +27,24 @@ func showKeyGenPasswordPrompt(newkey *MasterKey, parent string, path string) {
 		windowName   = "showKeyGenPasswordPrompt"
 		windowWidth  = 40
 		windowHeight = 10
-		windowTitle  = "SET MASTERKEY PASSWORD 🔑"
+		windowTitle  = S_WINDOW_KEYGEN_PASSWORD_TITLE
 	)
 
 	form := tview.NewForm()
 	form.SetTitle(windowTitle)
 	form.SetBorder(true)
-	passwordField := tview.NewInputField().SetLabel("Password").
+	passwordField := tview.NewInputField().SetLabel(S_WINDOW_KEYGEN_PASSWORD_LABEL_PASSWORD).
 		SetFieldWidth(0).
 		SetMaskCharacter('*')
 
-	passwordFieldConfirm := tview.NewInputField().SetLabel("Password Confirm").
+	passwordFieldConfirm := tview.NewInputField().SetLabel(S_WINDOW_KEYGEN_PASSWORD_LABEL_CONFIRM).
 		SetFieldWidth(0).
 		SetMaskCharacter('*')
 
 	form.AddFormItem(passwordField)
 	form.AddFormItem(passwordFieldConfirm)
 
-	form.AddButton("OK", func() {
+	form.AddButton(S_WINDOW_KEYGEN_PASSWORD_BUTTON_OK, func() {
 		if passwordField.GetText() != passwordFieldConfirm.GetText() {
 			showFailWindow("PASSWORD MISMATCH")
 		} else {
@@ -76,7 +76,7 @@ func showKeyEntropyInputWindow() {
 		windowName   = "showKeyEntropyInputWindow"
 		windowWidth  = 100
 		windowHeight = 4
-		windowTitle  = "- TYPE IN RANDOM KEYS TO GATHER ENTROPY -"
+		windowTitle  = S_WINDOW_ENTROPY_TITLE
 	)
 
 	const (
@@ -176,7 +176,7 @@ func showKeySaveWindow(newkey *MasterKey) {
 		windowName   = "showKeySaveWindow"
 		windowWidth  = 100
 		windowHeight = 12
-		windowTitle  = "- MASTERKEY GENERATED -"
+		windowTitle  = S_WINDOW_KEYSAVE_TITLE
 	)
 
 	text := tview.NewTextView().
@@ -197,11 +197,11 @@ func showKeySaveWindow(newkey *MasterKey) {
 
 	form := tview.NewForm()
 	inputField := tview.NewInputField().
-		SetLabel("Save To:").
+		SetLabel(S_WINDOW_KEYSAVE_LABEL_SAVETO).
 		SetText(filepath.Join(path, ".safebox.key")).
 		SetFieldWidth(0)
 	form.AddFormItem(inputField)
-	form.AddButton("Save", func() {
+	form.AddButton(S_WINDOW_KEYSAVE_BUTTON_SAVE, func() {
 		// check file existence
 		if _, err := os.Stat(inputField.GetText()); os.IsNotExist(err) {
 			showKeyGenPasswordPrompt(newkey, windowName, inputField.GetText())
@@ -209,7 +209,7 @@ func showKeySaveWindow(newkey *MasterKey) {
 			showFailWindow("MASTER KEY FILE EXISTS, IF YOU WANT TO OVERWRITE, PLEASE DELETE THIS FILE BY YOURSELF.")
 		}
 	})
-	form.AddButton("...", func() {
+	form.AddButton(S_WINDOW_KEYSAVE_BUTTON_3DOTS, func() {
 		showDirWindow(inputField)
 	})
 
