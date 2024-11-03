@@ -8,7 +8,7 @@ import (
 var theme = tview.Theme{
 	PrimitiveBackgroundColor:    tcell.ColorBlack,
 	ContrastBackgroundColor:     tcell.ColorDarkGreen,
-	MoreContrastBackgroundColor: tcell.ColorDarkBlue,
+	MoreContrastBackgroundColor: tcell.ColorLightGreen,
 	BorderColor:                 tcell.ColorDarkSeaGreen,
 	TitleColor:                  tcell.ColorForestGreen,
 	GraphicsColor:               tcell.ColorOrchid,
