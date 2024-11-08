@@ -4,7 +4,7 @@ const (
 	S_WINDOW_SHOWLOADPASSWORD_TITLE = " 🔓 Decrypting masterkey... "
 	S_WINDOW_SHOW_LOADKEY_TITLE     = " Loading master key... "
 
-	S_MAIN_FRAME_TITLE             = " SAFEBOX KEY MANGEMENT SYSTEM (ver:%v) "
+	S_MAIN_FRAME_TITLE             = " SAFEBOX KEY MANAGEMENT SYSTEM "
 	S_MAIN_FRAME_CELL_ID           = "Id"
 	S_MAIN_FRAME_CELL_LABEL        = "Label"
 	S_MAIN_FRAME_CELL_DERIVED_KEYS = "Derived Keys"

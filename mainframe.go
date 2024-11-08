@@ -73,11 +73,7 @@ func showSetLabelWindow(row int, col int) {
 		//update key
 		masterKey.setLabel(idx, form.GetFormItemByLabel("Label").(*tview.InputField).GetText())
 		masterKey.store(masterKey.path)
-		layoutMainBodyTable.SetCell(int(idx)+1, 1,
-			tview.NewTableCell(masterKey.labels[idx]).
-				SetAlign(tview.AlignLeft).
-				SetSelectable(true))
-
+		layoutMainBodyTable.GetCell(int(idx)+1, 1).Text = masterKey.labels[idx]
 		layoutRoot.RemovePage(windowName)
 		refreshInfo()
 	})
@@ -89,10 +85,7 @@ func showSetLabelWindow(row int, col int) {
 // main operation frame
 func mainFrameWindow() (content *tview.Flex) {
 	layoutMainBody = tview.NewFlex()
-	layoutMainBody.SetDirection(tview.FlexRow).
-		SetBorder(true).
-		SetTitle(fmt.Sprintf(S_MAIN_FRAME_TITLE, VERSION))
-
+	layoutMainBody.SetDirection(tview.FlexRow).SetBorder(true)
 	refreshMainFrame()
 	return layoutMainBody
 }
@@ -124,26 +117,31 @@ export LANG=en_US.UTF-8
 		return
 	}
 
+	// disable border, show table only
+	layoutMainBody.SetBorder(false)
+
 	// key table
-	layoutMainBodyTable = tview.NewTable().SetBorders(true).SetBordersColor(tcell.ColorDarkGreen)
-	layoutMainBodyTable.SetTitle(S_MAIN_FRAME_TITLE)
+	layoutMainBodyTable = tview.NewTable().SetBorders(true).SetBordersColor(tcell.ColorWhite)
 
 	// table header
 	layoutMainBodyTable.SetCell(0, 0,
 		tview.NewTableCell(S_MAIN_FRAME_CELL_ID).
-			SetTextColor(tcell.ColorDarkGreen).
+			SetTextColor(tcell.ColorWhite).
+			SetBackgroundColor(tcell.ColorDarkGreen).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
 	layoutMainBodyTable.SetCell(0, 1,
 		tview.NewTableCell(S_MAIN_FRAME_CELL_LABEL).
-			SetTextColor(tcell.ColorDarkGreen).
+			SetTextColor(tcell.ColorWhite).
+			SetBackgroundColor(tcell.ColorDarkGreen).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
 	layoutMainBodyTable.SetCell(0, 2,
 		tview.NewTableCell(S_MAIN_FRAME_CELL_DERIVED_KEYS).
-			SetTextColor(tcell.ColorDarkGreen).
+			SetTextColor(tcell.ColorWhite).
+			SetBackgroundColor(tcell.ColorDarkGreen).
 			SetSelectable(false).
 			SetAlign(tview.AlignLeft))
 
@@ -163,17 +161,21 @@ export LANG=en_US.UTF-8
 			layoutMainBodyTable.SetCell(int(idx)+1, 0,
 				tview.NewTableCell(fmt.Sprint(idx)).
 					SetAlign(tview.AlignLeft).
-					SetTextColor(tcell.ColorGray).
+					SetTextColor(tcell.ColorWhite).
+					SetBackgroundColor(tcell.ColorDarkGreen).
 					SetSelectable(false))
 
 			layoutMainBodyTable.SetCell(int(idx)+1, 1,
 				tview.NewTableCell(masterKey.labels[idx]).
+					SetTextColor(tcell.ColorWhite).
+					SetBackgroundColor(tcell.ColorDarkGreen).
 					SetAlign(tview.AlignLeft).
 					SetSelectable(true))
 
 			layoutMainBodyTable.SetCell(int(idx)+1, 2,
 				tview.NewTableCell(mask(hex.EncodeToString(key), 4, '*')).
-					SetTextColor(tcell.ColorDarkRed).
+					SetTextColor(tcell.ColorLightGreen).
+					SetBackgroundColor(tcell.ColorDarkGreen).
 					SetAlign(tview.AlignLeft))
 		}
 	}
@@ -200,7 +202,8 @@ export LANG=en_US.UTF-8
 
 			layoutMainBodyTable.SetCell(lastRow, lastCol,
 				tview.NewTableCell(mask(hex.EncodeToString(key), 4, '*')).
-					SetTextColor(tcell.ColorDarkRed).
+					SetTextColor(tcell.ColorLightGreen).
+					SetBackgroundColor(tcell.ColorDarkGreen).
 					SetAlign(tview.AlignLeft))
 		}
 
@@ -215,7 +218,8 @@ export LANG=en_US.UTF-8
 			// uncover mask
 			layoutMainBodyTable.SetCell(row, column,
 				tview.NewTableCell(hex.EncodeToString(key)).
-					SetTextColor(tcell.ColorDarkRed).
+					SetTextColor(tcell.ColorLightGreen).
+					SetBackgroundColor(tcell.ColorDarkGreen).
 					SetAlign(tview.AlignLeft))
 			// remember last selection
 			lastRow = row
