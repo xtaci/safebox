@@ -54,9 +54,13 @@ Common Storage Lifetime Table:
 
 Safebox is designed with a **retro-style** text-based user interface(tui), so a box such as Raspberry Pi will be able to act as key mangement box for offline storage. And keys can be obtain via text-based **QR-Code**.
 
-![image](https://user-images.githubusercontent.com/2346725/117523871-35397500-afed-11eb-9cce-cce2635929e7.png)
+![image](https://github.com/user-attachments/assets/cdfb6c13-30f6-4892-ac38-53ae090614d6)
+![image](https://github.com/user-attachments/assets/431d773d-b597-4dd0-a7aa-5b7c45a738cb)
+![1731123361910](https://github.com/user-attachments/assets/d9cf031d-8ec0-4708-b91b-04bcb4ff9a2f)
+![image](https://github.com/user-attachments/assets/be031eb0-2fa7-4b0e-8558-d21667a58f9e)
 
-![image](https://user-images.githubusercontent.com/2346725/116669957-c8612200-a9d1-11eb-8c16-1d0f340070c7.png)
+
+
 
 ![image](https://user-images.githubusercontent.com/2346725/116670086-e595f080-a9d1-11eb-92b1-b5724b5e764e.png)
 
