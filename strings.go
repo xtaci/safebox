@@ -43,3 +43,42 @@ const (
 	S_MSG_PASSWORD_MISMATCH = "Password mismatch"
 	S_MSG_PASSWORD_CHANGED  = "Masterkey Password changed"
 )
+
+const (
+	S_INFOBOX_KEYINFO = `
+[-:-:-]Version
+[darkblue]%v
+
+[-:-:-]Location:
+[darkblue]%v
+
+[-:-:-]Master Key SHA256:
+[darkblue]%v
+
+[-:-:-]Master Keys Created At:
+[darkblue]%v
+
+[-:-:-]Number of keys with label:
+[darkblue]%v
+
+[-:-:-]System:
+[darkblue]%v %v
+
+`
+
+	S_INFOBOX_INSTRUCTIONS = `
+Instructions
+
+1) Use ArrowKeys [darkred]← ↑ → ↓ [-:-:-]To Select Keys, masks on derived keys will be uncovered when selected.
+
+2) Press [darkred]<Enter>[-:-:-] on 'Derived Keys' column to export.
+
+3) Press [darkred]<Enter>[-:-:-] on 'Label' column to set label.
+
+4) Use [darkred]<TAB>[-:-:-] to focus on different items.
+`
+)
+
+const (
+	S_FOOTER_COPYRIGHT = "//safebox // Copyright (c) 2021 xtaci"
+)

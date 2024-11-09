@@ -12,39 +12,6 @@ import (
 	"github.com/rivo/tview"
 )
 
-var infoString = `
-[-:-:-]Version
-[darkblue]%v
-
-[-:-:-]Location:
-[darkblue]%v
-
-[-:-:-]Master Key SHA256:
-[darkblue]%v
-
-[-:-:-]Master Keys Created At:
-[darkblue]%v
-
-[-:-:-]Number of keys with label:
-[darkblue]%v
-
-[-:-:-]System:
-[darkblue]%v %v
-
-`
-
-var instructionsString = `
-Instructions
-
-1) Use ArrowKeys [darkred]← ↑ → ↓ [-:-:-]To Select Keys, masks on derived keys will be uncovered when selected.
-
-2) Press [darkred]<Enter>[-:-:-] on 'Derived Keys' column to export.
-
-3) Press [darkred]<Enter>[-:-:-] on 'Label' column to set label.
-
-4) Use [darkred]<TAB>[-:-:-] to focus on different items.
-`
-
 func infoWindow() (content *tview.Flex) {
 	layoutInfo = tview.NewFlex()
 	layoutInfo.SetDirection(tview.FlexRow)
@@ -76,7 +43,7 @@ func infoMasterKey() *tview.TextView {
 
 	if masterKey != nil {
 		md := sha256.Sum256(masterKey.masterKey[:])
-		fmt.Fprintf(textview, infoString,
+		fmt.Fprintf(textview, S_INFOBOX_KEYINFO,
 			VERSION,
 			masterKey.path,
 			hexutil.Encode(md[:]),
@@ -86,7 +53,7 @@ func infoMasterKey() *tview.TextView {
 			runtime.GOARCH,
 		)
 	} else {
-		fmt.Fprintf(textview, infoString,
+		fmt.Fprintf(textview, S_INFOBOX_KEYINFO,
 			VERSION,
 			"N/A",
 			"N/A",
@@ -107,6 +74,6 @@ func infoInstructions() *tview.TextView {
 	textview.SetWordWrap(true)
 	textview.SetBackgroundColor(tcell.ColorBlue)
 	fmt.Fprint(textview, strings.Repeat("\n", 100))
-	fmt.Fprint(textview, instructionsString)
+	fmt.Fprint(textview, S_INFOBOX_INSTRUCTIONS)
 	return textview
 }
