@@ -185,7 +185,7 @@ func showKeySaveWindow(newkey *MasterKey) {
 		SetWrap(false)
 
 	fmt.Fprint(text, "GENERATED MASTER KEY SHA256:\n\n")
-	md := sha256.Sum256(newkey.masterKey[:])
+	md := sha256.Sum256(newkey.masterKey.Bytes())
 	fmt.Fprintf(text, "[darkorange::]%v[-:-:-]\n", hexutil.Encode(md[:]))
 	fmt.Fprint(text, "[white::l]MAKE SURE YOU BACKUP THIS FILE CORRECTLY\n")
 

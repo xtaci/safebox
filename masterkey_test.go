@@ -25,7 +25,7 @@ func TestCreateKey(t *testing.T) {
 
 	assert.Equal(t, mkey.labels[0], loaded.labels[0])
 	os.Remove(testMKeyPath)
-	t.Log(hexutil.Encode(mkey.masterKey[:100]))
+	t.Log(hexutil.Encode(mkey.masterKey.Bytes()[:100]))
 }
 
 func TestCreateKeySalted(t *testing.T) {
@@ -41,5 +41,5 @@ func TestCreateKeySalted(t *testing.T) {
 	assert.Equal(t, mkey.labels[0], loaded.labels[0])
 	os.Remove(testMKeyPath)
 
-	t.Log(hexutil.Encode(mkey.masterKey[:100]))
+	t.Log(hexutil.Encode(mkey.masterKey.Bytes()[:100]))
 }

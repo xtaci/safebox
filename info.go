@@ -42,7 +42,7 @@ func infoMasterKey() *tview.TextView {
 	textview.SetWrap(true)
 
 	if masterKey != nil {
-		md := sha256.Sum256(masterKey.masterKey[:])
+		md := sha256.Sum256(masterKey.masterKey.Bytes())
 		fmt.Fprintf(textview, S_INFOBOX_KEYINFO,
 			VERSION,
 			masterKey.path,

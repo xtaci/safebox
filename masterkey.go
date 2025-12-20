@@ -16,6 +16,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/awnumar/memguard"
 	xor "github.com/templexxx/xorsimd"
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -47,23 +48,24 @@ func init() {
 
 // MasterKey defines the master key memory structure
 type MasterKey struct {
-	password  []byte                // the password to encrypt storage masterkey
-	createdAt int64                 // the date for masterkey creation
-	path      string                // the path where the master key located
-	masterKey [MasterKeyLength]byte // the mster key memory data(decrypted)
-	labels    map[uint16]string     // labels of derived keys
+	password  *memguard.LockedBuffer // the password to encrypt storage masterkey
+	createdAt int64                  // the date for masterkey creation
+	path      string                 // the path where the master key located
+	masterKey *memguard.LockedBuffer // the mster key memory data(decrypted)
+	labels    map[uint16]string      // labels of derived keys
 }
 
 // newMasterKey creates
 func newMasterKey() *MasterKey {
 	mkey := new(MasterKey)
 	mkey.labels = make(map[uint16]string)
+	mkey.masterKey = memguard.NewBuffer(MasterKeyLength)
 	return mkey
 }
 
 // generate master key with give entropy and system entropy
 func (mkey *MasterKey) generateMasterKey(entropy []byte) error {
-	_, err := io.ReadFull(rand.Reader, mkey.masterKey[:])
+	_, err := io.ReadFull(rand.Reader, mkey.masterKey.Bytes())
 	if err != nil {
 		return err
 	}
@@ -99,7 +101,7 @@ func (mkey *MasterKey) generateMasterKey(entropy []byte) error {
 	if err != nil {
 		return err
 	}
-	aesBlock.Encrypt(mkey.masterKey[:], mkey.masterKey[:])
+	aesBlock.Encrypt(mkey.masterKey.Bytes(), mkey.masterKey.Bytes())
 
 	mkey.createdAt = time.Now().Unix()
 	return nil
@@ -114,12 +116,12 @@ func (mkey *MasterKey) deriveKey(id uint16, keySize int) (key []byte, err error)
 	// Approcach:
 	// 1. take the N-th 16Byte as the key to encrypt the whole master key in CFB
 	var encryptedKey [MasterKeyLength]byte
-	aesKey := mkey.masterKey[int(id)*aes.BlockSize : (int(id)+1)*aes.BlockSize]
+	aesKey := mkey.masterKey.Bytes()[int(id)*aes.BlockSize : (int(id)+1)*aes.BlockSize]
 	aesBlock, err := NewAESBlockCrypt(aesKey)
 	if err != nil {
 		return nil, err
 	}
-	aesBlock.Encrypt(encryptedKey[:], mkey.masterKey[:])
+	aesBlock.Encrypt(encryptedKey[:], mkey.masterKey.Bytes())
 
 	// 2. create a SHA-256 of the encrypted master key as the derived key
 	md := sha256.Sum256(encryptedKey[:])
@@ -151,7 +153,6 @@ func (mkey *MasterKey) deriveKey(id uint16, keySize int) (key []byte, err error)
 // ...
 // |Lable N(uint16 little endian) | Label(16Byte 0 ending) |
 //
-//
 // NOTE: all integers are stored in LITTLE-ENDIAN
 func (mkey *MasterKey) store(path string) (err error) {
 	file, err := os.Create(path)
@@ -167,7 +168,7 @@ func (mkey *MasterKey) store(path string) (err error) {
 	}
 
 	// SHA 256 of raw key
-	md := sha256.Sum256(mkey.masterKey[:])
+	md := sha256.Sum256(mkey.masterKey.Bytes())
 	_, err = file.Write(md[:])
 	if err != nil {
 		return err
@@ -181,13 +182,13 @@ func (mkey *MasterKey) store(path string) (err error) {
 
 	// write encrypted(AES-256) master key
 	// expand the password to create AES-256 key
-	key := pbkdf2.Key(mkey.password, []byte(SALT), pbkdf2Iterations, 32, sha1.New)
+	key := pbkdf2.Key(mkey.password.Bytes(), []byte(SALT), pbkdf2Iterations, 32, sha1.New)
 	var encryptedMasterKey [MasterKeyLength]byte
 	aesBlock, err := NewAESBlockCrypt(key)
 	if err != nil {
 		return err
 	}
-	aesBlock.Encrypt(encryptedMasterKey[:], mkey.masterKey[:])
+	aesBlock.Encrypt(encryptedMasterKey[:], mkey.masterKey.Bytes())
 
 	// write encrypted key
 	_, err = file.Write(encryptedMasterKey[:])
@@ -223,7 +224,10 @@ func (mkey *MasterKey) load(password []byte, path string) (err error) {
 	}
 	defer file.Close()
 
-	mkey.password = password
+	if mkey.password != nil {
+		mkey.password.Destroy()
+	}
+	mkey.password = memguard.NewBufferFromBytes(password)
 	// Read Created At
 	err = binary.Read(file, binary.LittleEndian, &mkey.createdAt)
 	if err != nil {
@@ -245,23 +249,27 @@ func (mkey *MasterKey) load(password []byte, path string) (err error) {
 	}
 
 	// Read encrypted Key
-	_, err = io.ReadFull(file, mkey.masterKey[:])
+	if mkey.masterKey != nil {
+		mkey.masterKey.Destroy()
+	}
+	mkey.masterKey = memguard.NewBuffer(MasterKeyLength)
+	_, err = io.ReadFull(file, mkey.masterKey.Bytes())
 	if err != nil {
 		return err
 	}
 
 	// expand the password to create AES-256 key
-	key := pbkdf2.Key(password, []byte(SALT), pbkdf2Iterations, 32, sha1.New)
+	key := pbkdf2.Key(mkey.password.Bytes(), []byte(SALT), pbkdf2Iterations, 32, sha1.New)
 	aesBlock, err := NewAESBlockCrypt(key)
 	if err != nil {
 		return err
 	}
 
 	// decrypt the key
-	aesBlock.Decrypt(mkey.masterKey[:], mkey.masterKey[:])
+	aesBlock.Decrypt(mkey.masterKey.Bytes(), mkey.masterKey.Bytes())
 
 	// Compare SHA256
-	computedMD := sha256.Sum256(mkey.masterKey[:])
+	computedMD := sha256.Sum256(mkey.masterKey.Bytes())
 	if computedMD != loadedMD {
 		return ErrPasswordIncorrect
 	}
@@ -309,7 +317,10 @@ func (mkey *MasterKey) setLabel(idx uint16, label string) error {
 
 // change password
 func (mkey *MasterKey) changePassword(password []byte) {
-	mkey.password = password
+	if mkey.password != nil {
+		mkey.password.Destroy()
+	}
+	mkey.password = memguard.NewBufferFromBytes(password)
 }
 
 // BlockCrypt defines encryption/decryption methods for a given byte slice.
