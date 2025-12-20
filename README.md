@@ -1,6 +1,8 @@
 # 🔐 SafeBox
 [![GoDoc][1]][2] [![MIT licensed][3]][4]
 
+[English](README.md) | [中文](README_zh.md)
+
 [1]: https://godoc.org/github.com/xtaci/safebox?status.svg
 [2]: https://pkg.go.dev/github.com/xtaci/safebox
 [3]: https://img.shields.io/badge/license-MIT-blue.svg
