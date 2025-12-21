@@ -32,7 +32,7 @@ func showExporterWindow(row int, col int) {
 	dropdown.SetOptions(exportorNames, func(option string, optionIndex int) {
 		selected = optionIndex
 		desc.Clear()
-		fmt.Fprintf(desc, exports[selected].Desc())
+		fmt.Fprint(desc, exports[selected].Desc())
 	})
 
 	dropdown.SetCurrentOption(0)
