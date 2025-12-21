@@ -8,51 +8,59 @@
 [3]: https://img.shields.io/badge/license-MIT-blue.svg
 [4]: LICENSE
 
-一个旨在让生活更轻松的统一密钥管理系统。
+一个致力于简化密钥管理的统一密钥管理系统，让您的数字资产管理更轻松。
 
-Safebox 的主要目标是简化密钥备份，通过单个主密钥派生其余所有密钥。您只需将**一个**约 **256KB** 的文件备份到可移动磁盘上，例如软盘、U盘、MO 磁盘（磁光盘）、DVD-RAM 等……
+Safebox 的核心理念是通过单个主密钥派生所有子密钥，从而大幅简化密钥备份流程。您只需将**一个**约 **256KB** 的文件备份到可移动存储介质上，例如软盘、U 盘、磁光盘 (MO)、DVD-RAM 等，即可完成所有密钥的备份。
 
-# 特性
+# 核心特性
 
-1. **无限密钥派生**：单个主密钥可以派生无限数量的子密钥，但我们建议每个主密钥最多派生 16384 个子密钥。
-2. **多源熵**：熵源来自按键输入、系统熵 (/dev/urandom)、启动时间、进程 PID 等……
-3. **可插拔导出器**：适应不同场景，如区块链、SSH 等。
+1. **无限密钥派生**：单个主密钥可以派生无限数量的子密钥，建议每个主密钥最多派生 16,384 个子密钥以确保最佳安全性。
+2. **多源熵池**：熵源包括按键输入时序、系统随机数 (/dev/urandom)、启动时间戳、进程 PID 等多维度混合，确保密钥生成的高度随机性。
+3. **可插拔导出器架构**：灵活适配不同应用场景，支持区块链钱包、SSH 密钥等多种密钥格式导出。
 
-# Safebox 支持派生以下密钥：
+# 支持的密钥类型
 
-1. SSH
-2. Ethereum (以太坊)
-3. Bitcoin (比特币)
-4. Atom
-5. Band
-6. Persistence
-7. Kava
-8. Akash
-9. Filecoin
-10. NEM
-11. Tron (波场)
+Safebox 目前支持派生以下类型的密钥：
 
-更多可插拔导出插件持续更新中……
+1. **SSH** - 安全外壳协议密钥
+2. **Ethereum (以太坊)** - 以太坊区块链钱包
+3. **Bitcoin (比特币)** - 比特币区块链钱包
+4. **Atom** - Cosmos 生态系统
+5. **Band** - Band Protocol
+6. **Persistence** - Persistence 链
+7. **Kava** - Kava 链
+8. **Akash** - Akash Network
+9. **Filecoin** - Filecoin 去中心化存储
+10. **NEM** - NEM 区块链
+11. **Tron (波场)** - 波场区块链
 
-# 建议
+更多导出插件持续开发中，欢迎贡献……
 
-1. 安装在 OpenBSD 上。
-2. 将主密钥文件备份在**可移动且可靠的存储介质**上，例如 [DVD-RAM](https://en.wikipedia.org/wiki/DVD-RAM)、[MO](https://en.wikipedia.org/wiki/Magneto-optical_drive)。
+# 安全建议
 
-常见存储介质寿命表：
+1. **推荐运行环境**：建议在 OpenBSD 系统上运行，以获得最高的安全性保障。
+2. **备份介质选择**：务必将主密钥文件备份到**可移动且可靠的冷存储介质**上，推荐使用 [DVD-RAM](https://en.wikipedia.org/wiki/DVD-RAM) 或 [磁光盘 (MO)](https://en.wikipedia.org/wiki/Magneto-optical_drive) 等长寿命存储介质。
 
-| 存储介质 | 寿命 | 冷存储 |
+## 常见存储介质寿命对比
+
+| 存储介质 | 预期寿命 | 适合冷存储 |
 |------|------|------|
-|磁光盘 (Magneto Optical Disk)| 预计 50 年 | 是 |
-|DVD-RAM|预计 30 年| 是 |
-|软盘 (Floppy disk) | 10-20 年 | 是 |
-|闪存 (SD卡/U盘/SSD)|5-10 年或更久 (取决于写入周期)| 是 |
-|硬盘 (Hard Disk) | 3-5 年| **否** |
-|可刻录 CD/DVD| 2-5 年 | 是|
+| 磁光盘 (Magneto Optical Disk) | 约 50 年 | ✅ 是 |
+| DVD-RAM | 约 30 年 | ✅ 是 |
+| 软盘 (Floppy Disk) | 10-20 年 | ✅ 是 |
+| 闪存 (SD 卡/U 盘/SSD) | 5-10 年或更久<br/>(取决于写入周期) | ✅ 是 |
+| 硬盘 (Hard Disk) | 3-5 年 | ❌ **否** |
+| 可刻录 CD/DVD | 2-5 年 | ✅ 是 |
 
 # 文本用户界面 (TUI)
 
-Safebox 采用了**复古风格**的文本用户界面 (TUI) 设计，因此像树莓派这样的设备可以作为离线存储的密钥管理盒。并且可以通过基于文本的 **二维码** 获取密钥。
+Safebox 采用**复古风格**的文本用户界面 (TUI) 设计，具有以下优势：
+
+- **轻量级部署**：可在树莓派等低功耗设备上运行，打造离线密钥管理终端
+- **离线安全**：完全脱离网络环境，确保密钥不被远程窃取
+- **文本二维码**：支持通过基于文本的二维码展示和传输密钥，无需图形界面
+
+## 界面预览
 
 ![image](https://github.com/user-attachments/assets/cdfb6c13-30f6-4892-ac38-53ae090614d6)
 ![image](https://github.com/user-attachments/assets/431d773d-b597-4dd0-a7aa-5b7c45a738cb)
@@ -61,6 +69,8 @@ Safebox 采用了**复古风格**的文本用户界面 (TUI) 设计，因此像�
 
 ![image](https://user-images.githubusercontent.com/2346725/116670086-e595f080-a9d1-11eb-92b1-b5724b5e764e.png)
 
-# 状态
+# 项目状态
 
-Beta (测试版)
+当前版本：**Beta (测试版)**
+
+> ⚠️ **安全提示**：本项目仍在测试阶段，请在生产环境使用前进行充分测试。建议先使用小额资产进行验证。
