@@ -108,6 +108,8 @@ github.com/btcsuite/btcd/chaincfg/chainhash
 # github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
 ## explicit; go 1.14
 github.com/btcsuite/btcutil/base58
+# github.com/cenkalti/backoff/v4 v4.2.0
+## explicit; go 1.18
 # github.com/cespare/xxhash v1.1.0
 ## explicit
 github.com/cespare/xxhash
@@ -330,6 +332,8 @@ github.com/ethereum/go-ethereum/crypto/secp256k1/libsecp256k1/src
 github.com/ethereum/go-ethereum/crypto/secp256k1/libsecp256k1/src/modules/recovery
 github.com/ethereum/go-ethereum/rlp
 github.com/ethereum/go-ethereum/rlp/internal/rlpstruct
+# github.com/felixge/httpsnoop v1.0.4
+## explicit; go 1.13
 # github.com/filecoin-project/go-address v1.1.0
 ## explicit; go 1.17
 github.com/filecoin-project/go-address
@@ -444,6 +448,8 @@ github.com/hashicorp/go-immutable-radix
 # github.com/hashicorp/go-metrics v0.5.3
 ## explicit; go 1.12
 github.com/hashicorp/go-metrics
+# github.com/hashicorp/go-uuid v1.0.3
+## explicit
 # github.com/hashicorp/golang-lru v1.0.2
 ## explicit; go 1.12
 github.com/hashicorp/golang-lru/simplelru
@@ -574,6 +580,8 @@ github.com/oasisprotocol/curve25519-voi/primitives/ed25519
 github.com/oasisprotocol/curve25519-voi/primitives/ed25519/extra/cache
 github.com/oasisprotocol/curve25519-voi/primitives/merlin
 github.com/oasisprotocol/curve25519-voi/primitives/sr25519
+# github.com/onsi/gomega v1.27.10
+## explicit; go 1.18
 # github.com/petermattis/goid v0.0.0-20231207134359-e60b3f734c67
 ## explicit; go 1.17
 github.com/petermattis/goid
@@ -710,7 +718,7 @@ golang.org/x/exp/constraints
 golang.org/x/exp/maps
 golang.org/x/exp/rand
 golang.org/x/exp/slices
-# golang.org/x/net v0.27.0
+# golang.org/x/net v0.28.0
 ## explicit; go 1.18
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
@@ -857,6 +865,8 @@ gopkg.in/yaml.v3
 lukechampine.com/blake3
 lukechampine.com/blake3/bao
 lukechampine.com/blake3/guts
+# nhooyr.io/websocket v1.8.7 => github.com/coder/websocket v1.8.7
+## explicit; go 1.13
 # sigs.k8s.io/yaml v1.4.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
